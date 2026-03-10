@@ -1,0 +1,1463 @@
+ 0000                   cpu LMM
+                        .module bootloader.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./bootloader.c
+                        .area BootCheckSum(rom, con, rel)
+ 0000                   .dbfile ./bootloader.c
+                        .area memory(abs)
+                        .org 0x7200
+ 7200                   .dbfile ./bootloader.c
+ 7200           _BootCheckSumBlock::
+ 7200                   .blkb 0
+ 7200                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\bootloader.c
+ 7200                   .dbsym e BootCheckSumBlock _BootCheckSumBlock A[0:0]V
+                        .area memory(abs)
+                        .org 0x73fe
+ 73FE                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\bootloader.c
+ 73FE           _LastBlock_To_Check::
+ 73FE 0000              .word 0
+ 7400                   .dbsym e LastBlock_To_Check _LastBlock_To_Check kI
+                        .area lit(rom, con, rel)
+                        .area BootLoaderArea(rom, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\bootloader.c
+ 0000                   .dbfunc e Boot_ASCIItoBYTE _Boot_ASCIItoBYTE fc
+ 0000           ;           byte -> X+0
+ 0000           ;           High -> X-5
+ 0000           ;            Low -> X-4
+ 0000           _Boot_ASCIItoBYTE::
+ 0000                   .dbline -1
+ 0000 10                push X
+ 0001 4F                mov X,SP
+ 0002 3801              add SP,1
+ 0004                   .dbline 68
+ 0004           ; //*****************************************************************************/
+ 0004           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0004           ; //
+ 0004           ; //  Copyright © 2010 Melchor Varela - EA4FRB.  All rights reserved.
+ 0004           ; //  Melchor Varela, Madrid, Spain.
+ 0004           ; //  melchor.varela@gmail.com
+ 0004           ; //
+ 0004           ; //  Modified in 2024 by Alan Robinson G1OJS Hampshire England G1OJS@yahoo.com 
+ 0004           ; //
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0004           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0004           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0004           ; //  or (at your option) any later version.
+ 0004           ; //
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0004           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0004           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0004           ; //  GNU General Public License for more details.
+ 0004           ; //
+ 0004           ; //  You should have received a copy of the GNU General Public License
+ 0004           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0004           ; //  see <http://www.gnu.org/licenses/>.
+ 0004           ; //*****************************************************************************/
+ 0004           ; //*****************************************************************************/
+ 0004           ; //
+ 0004           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0004           ; //    FILE NAME:      BOOTLOADER.C
+ 0004           ; //    AUTHOR:         EA4FRB - Melchor Varela
+ 0004           ; //
+ 0004           ; //    DESCRIPTION
+ 0004           ; //
+ 0004           ; //    Bootloader main logic
+ 0004           ; //
+ 0004           ; //    HISTORY
+ 0004           ; //
+ 0004           ; //    NAME            DATE            REMARKS
+ 0004           ; //
+ 0004           ; //    MVM             DEC 2009        Creation
+ 0004           ; //    G1OJSv1.0       DEC 2024        update () to (void)
+ 0004           ; //
+ 0004           ; //*****************************************************************************/
+ 0004           ; #include <m8c.h>              // part specific constants and macros
+ 0004           ; #include "bootloader.h"       // API definitions for all BootLoader Modules
+ 0004           ; #include "psocgpioint.h"
+ 0004           ; #include <FlashBlock.h>
+ 0004           ; 
+ 0004           ; #define LAST_BLOCK_TO_CHECK   0               // Minimum = 1; Maximum = 455; if 0 then don't calculate CS
+ 0004           ; #define ENABLE_CONNECT_BY_PSOC        1       // 0-disable    1-enable
+ 0004           ; 
+ 0004           ; #pragma text:BootCheckSum
+ 0004           ; #pragma abs_address:0x7200
+ 0004           ; const char BootCheckSumBlock[];
+ 0004           ; #pragma abs_address:0x73FE
+ 0004           ; const int LastBlock_To_Check = LAST_BLOCK_TO_CHECK;
+ 0004           ; #pragma end_abs_address
+ 0004           ; 
+ 0004           ; #pragma text:BootLoaderArea
+ 0004           ; 
+ 0004           ; //#define SETBUTTON() PRT0DR|=0x20    // pull up for button on P0[5] pin
+ 0004           ; //#define GETBUTTON() (PRT0DR&0x20)           // get value on button pin
+ 0004           ; //#define BOOTLOADER_MODE_LED_ON() PRT1DR|=0x80
+ 0004           ; //#define BOOTLOADER_MODE_LED_OFF() PRT1DR&=0x7F
+ 0004           ; 
+ 0004           ; //extern void Boot_LoadConfigInit(void);
+ 0004           ; extern char FlashCheckSum(int);
+ 0004           ; extern char Boot_Is_Program_Good(void);
+ 0004           ; 
+ 0004           ; char Boot_ASCIItoBYTE(char Low,char High){
+ 0004                   .dbline 70
+ 0004           ;     char byte;
+ 0004           ;       if (High>='a') byte=(High-'a'+10)<<4; else byte=(High-'0')<<4;
+ 0004 3DFB61            cmp [X-5],97
+ 0007 C017              jc L4
+ 0009           X0:
+ 0009                   .dbline 70
+ 0009 62D000            mov REG[0xd0],>__r0
+ 000C 52FB              mov A,[X-5]
+ 000E 1161              sub A,97
+ 0010 5300              mov [__r0],A
+ 0012 06000A            add [__r0],10
+ 0015 5100              mov A,[__r0]
+ 0017 64                asl A
+ 0018 64                asl A
+ 0019 64                asl A
+ 001A 64                asl A
+ 001B 5400              mov [X+0],A
+ 001D 800E              xjmp L5
+ 001F           L4:
+ 001F                   .dbline 70
+ 001F 62D000            mov REG[0xd0],>__r0
+ 0022 52FB              mov A,[X-5]
+ 0024 1130              sub A,48
+ 0026 64                asl A
+ 0027 64                asl A
+ 0028 64                asl A
+ 0029 64                asl A
+ 002A 5400              mov [X+0],A
+ 002C           L5:
+ 002C                   .dbline 71
+ 002C           ;       if (Low>='a') byte|=(Low-'a'+10); else byte|=(Low-'0');
+ 002C 3DFC61            cmp [X-4],97
+ 002F C015              jc L6
+ 0031           X1:
+ 0031                   .dbline 71
+ 0031 62D000            mov REG[0xd0],>__r0
+ 0034 52FC              mov A,[X-4]
+ 0036 1161              sub A,97
+ 0038 5300              mov [__r0],A
+ 003A 06000A            add [__r0],10
+ 003D 5200              mov A,[X+0]
+ 003F 2A00              or A,[__r0]
+ 0041 5400              mov [X+0],A
+ 0043 8010              xjmp L7
+ 0045           L6:
+ 0045                   .dbline 71
+ 0045 62D000            mov REG[0xd0],>__r0
+ 0048 52FC              mov A,[X-4]
+ 004A 1130              sub A,48
+ 004C 5300              mov [__r0],A
+ 004E 5200              mov A,[X+0]
+ 0050 2A00              or A,[__r0]
+ 0052 5400              mov [X+0],A
+ 0054           L7:
+ 0054                   .dbline 72
+ 0054           ;       return byte;
+ 0054 5200              mov A,[X+0]
+ 0056 62D000            mov REG[0xd0],>__r0
+ 0059                   .dbline -2
+ 0059           L3:
+ 0059 38FF              add SP,-1
+ 005B 20                pop X
+ 005C                   .dbline 0 ; func end
+ 005C 7F                ret
+ 005D                   .dbsym l byte 0 c
+ 005D                   .dbsym l High -5 c
+ 005D                   .dbsym l Low -4 c
+ 005D                   .dbend
+ 005D                   .dbfunc e Boot_UART_cGetChar _Boot_UART_cGetChar fc
+ 005D           ;      bRxStatus -> X+0
+ 005D           _Boot_UART_cGetChar::
+ 005D                   .dbline -1
+ 005D 10                push X
+ 005E 4F                mov X,SP
+ 005F 3801              add SP,1
+ 0061                   .dbline 75
+ 0061           ; }
+ 0061           ; 
+ 0061           ; BYTE Boot_UART_cGetChar(void){
+ 0061           L9:
+ 0061                   .dbline 77
+ 0061           ;       BYTE bRxStatus;
+ 0061           ;       while (!(bRxStatus=Boot_RxD_bReadRxStatus() & RX8_RX_COMPLETE));
+ 0061           L10:
+ 0061                   .dbline 77
+ 0061 10                push X
+ 0062 7C0000            xcall _Boot_RxD_bReadRxStatus
+ 0065 62D000            mov REG[0xd0],>__r0
+ 0068 20                pop X
+ 0069 5300              mov [__r0],A
+ 006B 260008            and [__r0],8
+ 006E 5100              mov A,[__r0]
+ 0070 5400              mov [X+0],A
+ 0072 3C0000            cmp [__r0],0
+ 0075 AFEB              jz L9
+ 0077                   .dbline 78
+ 0077           ;     return Boot_RxD_bReadRxData();
+ 0077 10                push X
+ 0078 7C0000            xcall _Boot_RxD_bReadRxData
+ 007B 62D000            mov REG[0xd0],>__r0
+ 007E 20                pop X
+ 007F                   .dbline -2
+ 007F           L8:
+ 007F 38FF              add SP,-1
+ 0081 20                pop X
+ 0082                   .dbline 0 ; func end
+ 0082 7F                ret
+ 0083                   .dbsym l bRxStatus 0 c
+ 0083                   .dbend
+ 0083                   .dbfunc e Boot_UART_PutChar _Boot_UART_PutChar fV
+ 0083           ;         TxData -> X-4
+ 0083           _Boot_UART_PutChar::
+ 0083                   .dbline -1
+ 0083 10                push X
+ 0084 4F                mov X,SP
+ 0085                   .dbline 81
+ 0085           ; }
+ 0085           ; 
+ 0085           ; void Boot_UART_PutChar(char TxData){
+ 0085           L13:
+ 0085                   .dbline 82
+ 0085           ;       while (!(Boot_TxD_bReadTxStatus() & TX8_TX_BUFFER_EMPTY));
+ 0085           L14:
+ 0085                   .dbline 82
+ 0085 10                push X
+ 0086 7C0000            xcall _Boot_TxD_bReadTxStatus
+ 0089 62D000            mov REG[0xd0],>__r0
+ 008C 20                pop X
+ 008D 5300              mov [__r0],A
+ 008F 470010            tst [__r0],16
+ 0092 AFF2              jz L13
+ 0094                   .dbline 83
+ 0094           ;       Boot_TxD_SendData(TxData);
+ 0094 10                push X
+ 0095 52FC              mov A,[X-4]
+ 0097 7C0000            xcall _Boot_TxD_SendData
+ 009A 20                pop X
+ 009B                   .dbline -2
+ 009B           L12:
+ 009B 20                pop X
+ 009C                   .dbline 0 ; func end
+ 009C 7F                ret
+ 009D                   .dbsym l TxData -4 c
+ 009D                   .dbend
+ 009D                   .dbfunc e Boot_UART_CPutString _Boot_UART_CPutString fV
+ 009D           ;           pstr -> X-5
+ 009D           _Boot_UART_CPutString::
+ 009D                   .dbline -1
+ 009D 10                push X
+ 009E 4F                mov X,SP
+ 009F                   .dbline 86
+ 009F           ; }
+ 009F           ; 
+ 009F           ; void Boot_UART_CPutString(char* pstr){
+ 009F 8018              xjmp L18
+ 00A1           L17:
+ 00A1                   .dbline 87
+ 00A1           ;       while (*pstr != 0){
+ 00A1                   .dbline 88
+ 00A1           ;          Boot_UART_PutChar(*pstr);
+ 00A1 62D000            mov REG[0xd0],>__r0
+ 00A4 52FC              mov A,[X-4]
+ 00A6 5300              mov [__r1],A
+ 00A8 52FB              mov A,[X-5]
+ 00AA 60D4              mov REG[0xd4],A
+ 00AC 3E00              mvi A,[__r1]
+ 00AE 08                push A
+ 00AF 9FD2              xcall _Boot_UART_PutChar
+ 00B1 38FF              add SP,-1
+ 00B3                   .dbline 89
+ 00B3           ;          pstr++;
+ 00B3 77FC              inc [X-4]
+ 00B5 0FFB00            adc [X-5],0
+ 00B8                   .dbline 90
+ 00B8           ;       }
+ 00B8           L18:
+ 00B8                   .dbline 87
+ 00B8 62D000            mov REG[0xd0],>__r0
+ 00BB 52FC              mov A,[X-4]
+ 00BD 5300              mov [__r1],A
+ 00BF 52FB              mov A,[X-5]
+ 00C1 60D4              mov REG[0xd4],A
+ 00C3 3E00              mvi A,[__r1]
+ 00C5 3900              cmp A,0
+ 00C7 BFD9              jnz L17
+ 00C9                   .dbline -2
+ 00C9           L16:
+ 00C9 20                pop X
+ 00CA                   .dbline 0 ; func end
+ 00CA 7F                ret
+ 00CB                   .dbsym l pstr -5 pc
+ 00CB                   .dbend
+ 00CB                   .dbfunc e Boot_PerformWrite _Boot_PerformWrite fV
+ 00CB                   .dbstruct 0 8 .1
+ 00CB                   .dbfield 0 wARG_BlockId i
+ 00CB                   .dbfield 2 pARG_FlashBuffer pc
+ 00CB                   .dbfield 4 cARG_Temperature C
+ 00CB                   .dbfield 5 bDATA_PWErase c
+ 00CB                   .dbfield 6 bDATA_PWProgram c
+ 00CB                   .dbfield 7 bDATA_PWMultiplier c
+ 00CB                   .dbend
+ 00CB                   .dbstruct 0 6 .2
+ 00CB                   .dbfield 0 wARG_BlockId i
+ 00CB                   .dbfield 2 pARG_FlashBuffer pc
+ 00CB                   .dbfield 4 wARG_ReadCount i
+ 00CB                   .dbend
+ 00CB           ;        BlockID -> X+88
+ 00CB           ;            led -> X+87
+ 00CB           ;       frStruct -> X+81
+ 00CB           ;              j -> X+79
+ 00CB           ;       fwStruct -> X+71
+ 00CB           ;           data -> X+3
+ 00CB           ;             cl -> X+2
+ 00CB           ;              i -> X+1
+ 00CB           ;             ch -> X+0
+ 00CB           _Boot_PerformWrite::
+ 00CB                   .dbline -1
+ 00CB 10                push X
+ 00CC 4F                mov X,SP
+ 00CD 385A              add SP,90
+ 00CF                   .dbline 93
+ 00CF           ; }
+ 00CF           ; 
+ 00CF           ; void Boot_PerformWrite(void){
+ 00CF                   .dbline 99
+ 00CF           ;       char data[68];
+ 00CF           ;       char i,ch,cl;
+ 00CF           ;       int BlockID,j;
+ 00CF           ;       FLASH_WRITE_STRUCT fwStruct;
+ 00CF           ;       FLASH_READ_STRUCT frStruct;
+ 00CF           ;       char led=0x00;  //LED off
+ 00CF 565700            mov [X+87],0
+ 00D2 8193              xjmp L22
+ 00D4           L21:
+ 00D4                   .dbline 101
+ 00D4           ; 
+ 00D4           ;     while(1){
+ 00D4                   .dbline 103
+ 00D4           ; //       if (led) BOOTLOADER_MODE_LED_OFF(); else BOOTLOADER_MODE_LED_ON();
+ 00D4           ;        led=~led;
+ 00D4 5257              mov A,[X+87]
+ 00D6 73                cpl A
+ 00D7 5457              mov [X+87],A
+ 00D9           L24:
+ 00D9                   .dbline 104
+ 00D9           ;        while ((ch=Boot_UART_cGetChar())!='S'); // waiting for start symbol 'S'
+ 00D9           L25:
+ 00D9                   .dbline 104
+ 00D9 9F82              xcall _Boot_UART_cGetChar
+ 00DB 62D000            mov REG[0xd0],>__r0
+ 00DE 5400              mov [X+0],A
+ 00E0 3953              cmp A,83
+ 00E2 BFF6              jnz L24
+ 00E4                   .dbline 105
+ 00E4           ;          if ((ch = Boot_UART_cGetChar())=='S') break; // All blocks are sent ?
+ 00E4 9F77              xcall _Boot_UART_cGetChar
+ 00E6 62D000            mov REG[0xd0],>__r0
+ 00E9 5400              mov [X+0],A
+ 00EB 3953              cmp A,83
+ 00ED B003              jnz L27
+ 00EF                   .dbline 105
+ 00EF 8178              xjmp L23
+ 00F1           L27:
+ 00F1                   .dbline 106
+ 00F1           ;             else {
+ 00F1                   .dbline 107
+ 00F1           ;                   cl=Boot_UART_cGetChar();
+ 00F1 9F6A              xcall _Boot_UART_cGetChar
+ 00F3 62D000            mov REG[0xd0],>__r0
+ 00F6 5402              mov [X+2],A
+ 00F8                   .dbline 108
+ 00F8           ;               data[0]=Boot_ASCIItoBYTE(cl,ch);
+ 00F8 5200              mov A,[X+0]
+ 00FA 08                push A
+ 00FB 5202              mov A,[X+2]
+ 00FD 08                push A
+ 00FE 9F00              xcall _Boot_ASCIItoBYTE
+ 0100 38FE              add SP,-2
+ 0102 62D000            mov REG[0xd0],>__r0
+ 0105 5403              mov [X+3],A
+ 0107                   .dbline 109
+ 0107           ;             }
+ 0107                   .dbline 110
+ 0107           ;          for (i=1; i<68; i++) {
+ 0107 560101            mov [X+1],1
+ 010A 8038              xjmp L32
+ 010C           L29:
+ 010C                   .dbline 110
+ 010C                   .dbline 111
+ 010C           ;             ch=Boot_UART_cGetChar();  // Read high nibble
+ 010C 9F4F              xcall _Boot_UART_cGetChar
+ 010E 62D000            mov REG[0xd0],>__r0
+ 0111 5400              mov [X+0],A
+ 0113                   .dbline 112
+ 0113           ;             cl=Boot_UART_cGetChar();  // Read low nibble
+ 0113 9F48              xcall _Boot_UART_cGetChar
+ 0115 62D000            mov REG[0xd0],>__r0
+ 0118 5402              mov [X+2],A
+ 011A                   .dbline 113
+ 011A           ;             data[i]=Boot_ASCIItoBYTE(cl,ch);  // Write transformed byte in buffer
+ 011A 5200              mov A,[X+0]
+ 011C 08                push A
+ 011D 5202              mov A,[X+2]
+ 011F 08                push A
+ 0120 9EDE              xcall _Boot_ASCIItoBYTE
+ 0122 38FE              add SP,-2
+ 0124 62D000            mov REG[0xd0],>__r0
+ 0127 5300              mov [__r0],A
+ 0129 550007            mov [__r2],7
+ 012C 5A00              mov [__r3],X
+ 012E 060003            add [__r3],3
+ 0131 5201              mov A,[X+1]
+ 0133 0200              add A,[__r3]
+ 0135 5300              mov [__r3],A
+ 0137 5000              mov A,0
+ 0139 0A00              adc A,[__r2]
+ 013B 60D5              mov REG[0xd5],A
+ 013D 5100              mov A,[__r0]
+ 013F 3F00              mvi [__r3],A
+ 0141                   .dbline 114
+ 0141           ;          }
+ 0141           L30:
+ 0141                   .dbline 110
+ 0141 7701              inc [X+1]
+ 0143           L32:
+ 0143                   .dbline 110
+ 0143 3D0144            cmp [X+1],68
+ 0146 CFC5              jc L29
+ 0148           X2:
+ 0148                   .dbline 117
+ 0148           ; 
+ 0148           ;          // Read Last Block Symbol 'F'
+ 0148           ;          if ((ch=Boot_UART_cGetChar())!='F') ; // Error Info!
+ 0148 9F13              xcall _Boot_UART_cGetChar
+ 014A 62D000            mov REG[0xd0],>__r0
+ 014D 5400              mov [X+0],A
+ 014F 3946              cmp A,70
+ 0151 A001              jz L33
+ 0153                   .dbline 117
+ 0153           L33:
+ 0153                   .dbline 120
+ 0153           ; 
+ 0153           ;          // Write Block to Flash
+ 0153           ;          fwStruct.wARG_BlockId = (((int)data[1])<<2) + (data[2]>>6); // Form Block ID form Block Address
+ 0153 62D000            mov REG[0xd0],>__r0
+ 0156 5205              mov A,[X+5]
+ 0158 5300              mov [__r1],A
+ 015A 550000            mov [__r0],0
+ 015D 6800              asr [__r0]
+ 015F 6E00              rrc [__r1]
+ 0161 6800              asr [__r0]
+ 0163 6E00              rrc [__r1]
+ 0165 6800              asr [__r0]
+ 0167 6E00              rrc [__r1]
+ 0169 6800              asr [__r0]
+ 016B 6E00              rrc [__r1]
+ 016D 6800              asr [__r0]
+ 016F 6E00              rrc [__r1]
+ 0171 6800              asr [__r0]
+ 0173 6E00              rrc [__r1]
+ 0175 5204              mov A,[X+4]
+ 0177 5300              mov [__r3],A
+ 0179 550000            mov [__r2],0
+ 017C 6500              asl [__r3]
+ 017E 6B00              rlc [__r2]
+ 0180 6500              asl [__r3]
+ 0182 6B00              rlc [__r2]
+ 0184 5100              mov A,[__r3]
+ 0186 0200              add A,[__r1]
+ 0188 5300              mov [__r1],A
+ 018A 5100              mov A,[__r2]
+ 018C 0A00              adc A,[__r0]
+ 018E 5300              mov [__r0],A
+ 0190 5100              mov A,[__r1]
+ 0192 5448              mov [X+72],A
+ 0194 5100              mov A,[__r0]
+ 0196 5447              mov [X+71],A
+ 0198                   .dbline 121
+ 0198           ;          fwStruct.pARG_FlashBuffer = data+4;  // Data start Address
+ 0198 5A00              mov [__r1],X
+ 019A 060007            add [__r1],7
+ 019D 5100              mov A,[__r1]
+ 019F 544A              mov [X+74],A
+ 01A1 564907            mov [X+73],7
+ 01A4                   .dbline 122
+ 01A4           ;          fwStruct.cARG_Temperature = 25;              // Temperature in Celsius
+ 01A4 564B19            mov [X+75],25
+ 01A7                   .dbline 123
+ 01A7           ;          bFlashWriteBlock(&fwStruct);                 // Write Block
+ 01A7 5A00              mov [__r1],X
+ 01A9 060047            add [__r1],71
+ 01AC 10                push X
+ 01AD 5007              mov A,7
+ 01AF 08                push A
+ 01B0 5100              mov A,[__r1]
+ 01B2 5C                mov X,A
+ 01B3 18                pop A
+ 01B4 7C0000            xcall _bFlashWriteBlock
+ 01B7 62D000            mov REG[0xd0],>__r0
+ 01BA 20                pop X
+ 01BB                   .dbline 126
+ 01BB           ; 
+ 01BB           ;          // Read back Block
+ 01BB           ;          frStruct.wARG_BlockId = fwStruct.wARG_BlockId;       // Read back the same block
+ 01BB 5248              mov A,[X+72]
+ 01BD 5452              mov [X+82],A
+ 01BF 5247              mov A,[X+71]
+ 01C1 5451              mov [X+81],A
+ 01C3                   .dbline 127
+ 01C3           ;          frStruct.pARG_FlashBuffer = data+4;  // Buffer Address
+ 01C3 5A00              mov [__r1],X
+ 01C5 060007            add [__r1],7
+ 01C8 5100              mov A,[__r1]
+ 01CA 5454              mov [X+84],A
+ 01CC 565307            mov [X+83],7
+ 01CF                   .dbline 128
+ 01CF           ;          frStruct.wARG_ReadCount = 64;                // Read 64 bytes
+ 01CF 565640            mov [X+86],64
+ 01D2 565500            mov [X+85],0
+ 01D5                   .dbline 129
+ 01D5           ;          FlashReadBlock(&frStruct);                   // Read Block
+ 01D5 5A00              mov [__r1],X
+ 01D7 060051            add [__r1],81
+ 01DA 10                push X
+ 01DB 5007              mov A,7
+ 01DD 08                push A
+ 01DE 5100              mov A,[__r1]
+ 01E0 5C                mov X,A
+ 01E1 18                pop A
+ 01E2 7C0000            xcall _FlashReadBlock
+ 01E5 20                pop X
+ 01E6                   .dbline 132
+ 01E6           ; 
+ 01E6           ;          // Sending Back Written Block for Analyzing
+ 01E6           ;          Boot_UART_PutChar('S');         // Start frame Symbol
+ 01E6 5053              mov A,83
+ 01E8 08                push A
+ 01E9 9E98              xcall _Boot_UART_PutChar
+ 01EB 38FF              add SP,-1
+ 01ED                   .dbline 133
+ 01ED           ;          for (i=0;i<68;i++){
+ 01ED 560100            mov [X+1],0
+ 01F0 8069              xjmp L46
+ 01F2           L43:
+ 01F2                   .dbline 133
+ 01F2                   .dbline 134
+ 01F2           ;             ch = data[i]>>4;
+ 01F2 62D000            mov REG[0xd0],>__r0
+ 01F5 550007            mov [__r0],7
+ 01F8 5A00              mov [__r1],X
+ 01FA 060003            add [__r1],3
+ 01FD 5201              mov A,[X+1]
+ 01FF 0200              add A,[__r1]
+ 0201 5300              mov [__r1],A
+ 0203 5000              mov A,0
+ 0205 0A00              adc A,[__r0]
+ 0207 60D4              mov REG[0xd4],A
+ 0209 3E00              mvi A,[__r1]
+ 020B 67                asr A
+ 020C 67                asr A
+ 020D 67                asr A
+ 020E 67                asr A
+ 020F 210F              and A,15
+ 0211 5400              mov [X+0],A
+ 0213                   .dbline 135
+ 0213           ;             if (ch>=0x0A) ch+=('a'-10); else ch+='0';
+ 0213 3D000A            cmp [X+0],10
+ 0216 C006              jc L47
+ 0218           X3:
+ 0218                   .dbline 135
+ 0218 070057            add [X+0],87
+ 021B 8004              xjmp L48
+ 021D           L47:
+ 021D                   .dbline 135
+ 021D 070030            add [X+0],48
+ 0220           L48:
+ 0220                   .dbline 136
+ 0220           ;             Boot_UART_PutChar(ch);            // Send High Nibble
+ 0220 5200              mov A,[X+0]
+ 0222 08                push A
+ 0223 9E5E              xcall _Boot_UART_PutChar
+ 0225 38FF              add SP,-1
+ 0227                   .dbline 137
+ 0227           ;             cl = data[i]&0x0F;
+ 0227 62D000            mov REG[0xd0],>__r0
+ 022A 550007            mov [__r0],7
+ 022D 5A00              mov [__r1],X
+ 022F 060003            add [__r1],3
+ 0232 5201              mov A,[X+1]
+ 0234 0200              add A,[__r1]
+ 0236 5300              mov [__r1],A
+ 0238 5000              mov A,0
+ 023A 0A00              adc A,[__r0]
+ 023C 60D4              mov REG[0xd4],A
+ 023E 3E00              mvi A,[__r1]
+ 0240 210F              and A,15
+ 0242 5402              mov [X+2],A
+ 0244                   .dbline 138
+ 0244           ;             if (cl>=0x0A) cl+=('a'-10); else cl+='0';
+ 0244 3D020A            cmp [X+2],10
+ 0247 C006              jc L49
+ 0249           X4:
+ 0249                   .dbline 138
+ 0249 070257            add [X+2],87
+ 024C 8004              xjmp L50
+ 024E           L49:
+ 024E                   .dbline 138
+ 024E 070230            add [X+2],48
+ 0251           L50:
+ 0251                   .dbline 139
+ 0251           ;             Boot_UART_PutChar(cl);            // Send Low Nibble
+ 0251 5202              mov A,[X+2]
+ 0253 08                push A
+ 0254 9E2D              xcall _Boot_UART_PutChar
+ 0256 38FF              add SP,-1
+ 0258                   .dbline 140
+ 0258           ;          }
+ 0258           L44:
+ 0258                   .dbline 133
+ 0258 7701              inc [X+1]
+ 025A           L46:
+ 025A                   .dbline 133
+ 025A 3D0144            cmp [X+1],68
+ 025D CF94              jc L43
+ 025F           X5:
+ 025F                   .dbline 141
+ 025F           ;          Boot_UART_PutChar('F');         // Last frame Symbol
+ 025F 5046              mov A,70
+ 0261 08                push A
+ 0262 9E1F              xcall _Boot_UART_PutChar
+ 0264 38FF              add SP,-1
+ 0266                   .dbline 142
+ 0266           ;       }
+ 0266           L22:
+ 0266                   .dbline 101
+ 0266 8E6D              xjmp L21
+ 0268           L23:
+ 0268                   .dbline 144
+ 0268           ; 
+ 0268           ;       if (LastBlock_To_Check==0) return;      // Don't calculate a checksum
+ 0268 62D000            mov REG[0xd0],>__r0
+ 026B 50FE              mov A,>_LastBlock_To_Check
+ 026D 10                push X
+ 026E 08                push A
+ 026F 57FE              mov X,<_LastBlock_To_Check
+ 0271 28                romx
+ 0272 5300              mov [__r0],A
+ 0274 18                pop A
+ 0275 75                inc X
+ 0276 0900              adc A,0
+ 0278 28                romx
+ 0279 20                pop X
+ 027A 3C0000            cmp [__r0],0
+ 027D B007              jnz L51
+ 027F 3900              cmp A,0
+ 0281 B003              jnz L51
+ 0283           X6:
+ 0283                   .dbline 144
+ 0283 8158              xjmp L20
+ 0285           L51:
+ 0285                   .dbline 145
+ 0285           ;       BlockID = 456;  // first block where checksum is saved (blocks of CheckSum Area:456,457,458,459,460,461,462,463)
+ 0285 5659C8            mov [X+89],-56
+ 0288 565801            mov [X+88],1
+ 028B                   .dbline 147
+ 028B           ;       // Calculate CheckSum and Write It In Flash
+ 028B           ;       for (j=1;j<=LastBlock_To_Check;j++){
+ 028B 565001            mov [X+80],1
+ 028E 564F00            mov [X+79],0
+ 0291 8083              xjmp L56
+ 0293           L53:
+ 0293                   .dbline 147
+ 0293                   .dbline 148
+ 0293           ;               if ((j&0x3F)==0) {
+ 0293 62D000            mov REG[0xd0],>__r0
+ 0296 5250              mov A,[X+80]
+ 0298 213F              and A,63
+ 029A 5300              mov [__r1],A
+ 029C 524F              mov A,[X+79]
+ 029E 2100              and A,0
+ 02A0 3900              cmp A,0
+ 02A2 B039              jnz L57
+ 02A4 3C0000            cmp [__r1],0
+ 02A7 B034              jnz L57
+ 02A9           X7:
+ 02A9                   .dbline 148
+ 02A9                   .dbline 149
+ 02A9           ;                 fwStruct.wARG_BlockId = BlockID;       // Block ID
+ 02A9 5259              mov A,[X+89]
+ 02AB 5448              mov [X+72],A
+ 02AD 5258              mov A,[X+88]
+ 02AF 5447              mov [X+71],A
+ 02B1                   .dbline 150
+ 02B1           ;             fwStruct.pARG_FlashBuffer = data;         // Data start Address
+ 02B1 62D000            mov REG[0xd0],>__r0
+ 02B4 5A00              mov [__r1],X
+ 02B6 060003            add [__r1],3
+ 02B9 5100              mov A,[__r1]
+ 02BB 544A              mov [X+74],A
+ 02BD 564907            mov [X+73],7
+ 02C0                   .dbline 151
+ 02C0           ;             fwStruct.cARG_Temperature = 25;           // Temperature in Celsius
+ 02C0 564B19            mov [X+75],25
+ 02C3                   .dbline 152
+ 02C3           ;             bFlashWriteBlock(&fwStruct);                      // Write Block
+ 02C3 5A00              mov [__r1],X
+ 02C5 060047            add [__r1],71
+ 02C8 10                push X
+ 02C9 5007              mov A,7
+ 02CB 08                push A
+ 02CC 5100              mov A,[__r1]
+ 02CE 5C                mov X,A
+ 02CF 18                pop A
+ 02D0 7C0000            xcall _bFlashWriteBlock
+ 02D3 62D000            mov REG[0xd0],>__r0
+ 02D6 20                pop X
+ 02D7                   .dbline 153
+ 02D7           ;                 BlockID++;                                                    // Increment Block ID
+ 02D7 7759              inc [X+89]
+ 02D9 0F5800            adc [X+88],0
+ 02DC                   .dbline 154
+ 02DC           ;               }
+ 02DC           L57:
+ 02DC                   .dbline 155
+ 02DC           ;               data[j&0x3F] = FlashCheckSum(j);                // data[i%64] <- CheckSum of i-th block
+ 02DC 524F              mov A,[X+79]
+ 02DE 08                push A
+ 02DF 5250              mov A,[X+80]
+ 02E1 08                push A
+ 02E2 7C0000            xcall _FlashCheckSum
+ 02E5 38FE              add SP,-2
+ 02E7 62D000            mov REG[0xd0],>__r0
+ 02EA 5300              mov [__r0],A
+ 02EC 550007            mov [__r2],7
+ 02EF 5A00              mov [__r3],X
+ 02F1 060003            add [__r3],3
+ 02F4 5250              mov A,[X+80]
+ 02F6 213F              and A,63
+ 02F8 5300              mov [__r5],A
+ 02FA 524F              mov A,[X+79]
+ 02FC 2100              and A,0
+ 02FE 5300              mov [__r4],A
+ 0300 5100              mov A,[__r5]
+ 0302 0200              add A,[__r3]
+ 0304 5300              mov [__r3],A
+ 0306 5100              mov A,[__r4]
+ 0308 0A00              adc A,[__r2]
+ 030A 60D5              mov REG[0xd5],A
+ 030C 5100              mov A,[__r0]
+ 030E 3F00              mvi [__r3],A
+ 0310                   .dbline 156
+ 0310           ;     }
+ 0310           L54:
+ 0310                   .dbline 147
+ 0310 7750              inc [X+80]
+ 0312 0F4F00            adc [X+79],0
+ 0315           L56:
+ 0315                   .dbline 147
+ 0315 62D000            mov REG[0xd0],>__r0
+ 0318 50FE              mov A,>_LastBlock_To_Check
+ 031A 10                push X
+ 031B 08                push A
+ 031C 57FE              mov X,<_LastBlock_To_Check
+ 031E 28                romx
+ 031F 5300              mov [__r0],A
+ 0321 18                pop A
+ 0322 75                inc X
+ 0323 0900              adc A,0
+ 0325 28                romx
+ 0326 20                pop X
+ 0327 1350              sub A,[X+80]
+ 0329 524F              mov A,[X+79]
+ 032B 3180              xor A,-128
+ 032D 5300              mov [__rX],A
+ 032F 5100              mov A,[__r0]
+ 0331 3180              xor A,-128
+ 0333 1A00              sbb A,[__rX]
+ 0335 DF5D              jnc L53
+ 0337           X8:
+ 0337                   .dbline 158
+ 0337           ; 
+ 0337           ;     fwStruct.wARG_BlockId = BlockID;         // Block ID
+ 0337 5259              mov A,[X+89]
+ 0339 5448              mov [X+72],A
+ 033B 5258              mov A,[X+88]
+ 033D 5447              mov [X+71],A
+ 033F                   .dbline 159
+ 033F           ;     fwStruct.pARG_FlashBuffer = data;         // Data start Address
+ 033F 62D000            mov REG[0xd0],>__r0
+ 0342 5A00              mov [__r1],X
+ 0344 060003            add [__r1],3
+ 0347 5100              mov A,[__r1]
+ 0349 544A              mov [X+74],A
+ 034B 564907            mov [X+73],7
+ 034E                   .dbline 160
+ 034E           ;     fwStruct.cARG_Temperature = 25;           // Temperature in Celsius
+ 034E 564B19            mov [X+75],25
+ 0351                   .dbline 162
+ 0351           ; 
+ 0351           ;     if (BlockID!=463){
+ 0351 3D5801            cmp [X+88],1
+ 0354 B006              jnz X9
+ 0356 3D59CF            cmp [X+89],-49
+ 0359 A01E              jz L63
+ 035B           X9:
+ 035B                   .dbline 162
+ 035B                   .dbline 163
+ 035B           ;        bFlashWriteBlock(&fwStruct);           // Write Block
+ 035B 62D000            mov REG[0xd0],>__r0
+ 035E 5A00              mov [__r1],X
+ 0360 060047            add [__r1],71
+ 0363 10                push X
+ 0364 5007              mov A,7
+ 0366 08                push A
+ 0367 5100              mov A,[__r1]
+ 0369 5C                mov X,A
+ 036A 18                pop A
+ 036B 7C0000            xcall _bFlashWriteBlock
+ 036E 62D000            mov REG[0xd0],>__r0
+ 0371 20                pop X
+ 0372                   .dbline 164
+ 0372           ;        BlockID=463;
+ 0372 5659CF            mov [X+89],-49
+ 0375 565801            mov [X+88],1
+ 0378                   .dbline 165
+ 0378           ;     };
+ 0378           L63:
+ 0378                   .dbline 165
+ 0378                   .dbline 167
+ 0378           ; 
+ 0378           ;     data[62]=(char)(LastBlock_To_Check>>8);   // Save last block to check (MSB)
+ 0378 62D000            mov REG[0xd0],>__r0
+ 037B 50FE              mov A,>_LastBlock_To_Check
+ 037D 10                push X
+ 037E 08                push A
+ 037F 57FE              mov X,<_LastBlock_To_Check
+ 0381 28                romx
+ 0382 5300              mov [__r0],A
+ 0384 18                pop A
+ 0385 75                inc X
+ 0386 0900              adc A,0
+ 0388 28                romx
+ 0389 20                pop X
+ 038A 5100              mov A,[__r0]
+ 038C 5300              mov [__r1],A
+ 038E 470080            tst [__r1],-128
+ 0391 B006              jnz X10
+ 0393 550000            mov [__r0],0
+ 0396 8004              jmp X11
+ 0398           X10:
+ 0398 62D000            mov REG[0xd0],>__r0
+ 039B           X11:
+ 039B 62D000            mov REG[0xd0],>__r0
+ 039E 5100              mov A,[__r1]
+ 03A0 5441              mov [X+65],A
+ 03A2                   .dbline 168
+ 03A2           ;     data[63]=(char)LastBlock_To_Check;                // Save last block to check (LSB)
+ 03A2 50FE              mov A,>_LastBlock_To_Check
+ 03A4 10                push X
+ 03A5 08                push A
+ 03A6 57FE              mov X,<_LastBlock_To_Check
+ 03A8 28                romx
+ 03A9 18                pop A
+ 03AA 75                inc X
+ 03AB 0900              adc A,0
+ 03AD 28                romx
+ 03AE 20                pop X
+ 03AF 5442              mov [X+66],A
+ 03B1                   .dbline 170
+ 03B1           ; 
+ 03B1           ;     fwStruct.wARG_BlockId = BlockID;         // Block ID
+ 03B1 5259              mov A,[X+89]
+ 03B3 5448              mov [X+72],A
+ 03B5 5258              mov A,[X+88]
+ 03B7 5447              mov [X+71],A
+ 03B9                   .dbline 171
+ 03B9           ;     fwStruct.pARG_FlashBuffer = data;         // Data start Address
+ 03B9 5A00              mov [__r1],X
+ 03BB 060003            add [__r1],3
+ 03BE 5100              mov A,[__r1]
+ 03C0 544A              mov [X+74],A
+ 03C2 564907            mov [X+73],7
+ 03C5                   .dbline 172
+ 03C5           ;     fwStruct.cARG_Temperature = 25;           // Temperature in Celsius
+ 03C5 564B19            mov [X+75],25
+ 03C8                   .dbline 173
+ 03C8           ;     bFlashWriteBlock(&fwStruct);              // Write Block
+ 03C8 5A00              mov [__r1],X
+ 03CA 060047            add [__r1],71
+ 03CD 10                push X
+ 03CE 5007              mov A,7
+ 03D0 08                push A
+ 03D1 5100              mov A,[__r1]
+ 03D3 5C                mov X,A
+ 03D4 18                pop A
+ 03D5 7C0000            xcall _bFlashWriteBlock
+ 03D8 62D000            mov REG[0xd0],>__r0
+ 03DB 20                pop X
+ 03DC                   .dbline -2
+ 03DC           L20:
+ 03DC 38A6              add SP,-90
+ 03DE 20                pop X
+ 03DF                   .dbline 0 ; func end
+ 03DF 7F                ret
+ 03E0                   .dbsym l BlockID 88 I
+ 03E0                   .dbsym l led 87 c
+ 03E0                   .dbsym l frStruct 81 S[.2]
+ 03E0                   .dbsym l j 79 I
+ 03E0                   .dbsym l fwStruct 71 S[.1]
+ 03E0                   .dbsym l data 3 A[68:68]c
+ 03E0                   .dbsym l cl 2 c
+ 03E0                   .dbsym l i 1 c
+ 03E0                   .dbsym l ch 0 c
+ 03E0                   .dbend
+ 03E0                   .dbfunc e BootLoader _BootLoader fV
+ 03E0           ;       CheckSum -> X+27
+ 03E0           ;              k -> X+26
+ 03E0           ;              j -> X+24
+ 03E0           ;     strConnect -> X+16
+ 03E0           ;      strAnswer -> X+12
+ 03E0           ;          Error -> X+11
+ 03E0           ;         buffer -> X+1
+ 03E0           ;              i -> X+0
+ 03E0           _BootLoader::
+ 03E0                   .dbline -1
+ 03E0 10                push X
+ 03E1 4F                mov X,SP
+ 03E2 381C              add SP,28
+ 03E4                   .dbline 176
+ 03E4           ; }
+ 03E4           ; 
+ 03E4           ; void BootLoader(void){
+ 03E4                   .dbline 188
+ 03E4           ; //    long int x;
+ 03E4           ; //    char z;
+ 03E4           ;       int j;
+ 03E4           ;       char buffer[10];
+ 03E4           ;       char Error,i,k;
+ 03E4           ;       char CheckSum;
+ 03E4           ;     char strConnect[8];//={'C','O','N','N','E','C','T','\0'};
+ 03E4           ;     char strAnswer[4];//={'O','K','!','\0'};
+ 03E4           ;       // Initiate communications Strings:
+ 03E4           ;     // strConnect[]="CONNECT", // Initiate string form PC
+ 03E4           ;     // strAnswer[]="OK!";      // Answer to PC
+ 03E4           ;       strConnect[0]='C';strConnect[1]='O';strConnect[2]='N';strConnect[3]='N';strConnect[4]='E';
+ 03E4 561043            mov [X+16],67
+ 03E7                   .dbline 188
+ 03E7 56114F            mov [X+17],79
+ 03EA                   .dbline 188
+ 03EA 56124E            mov [X+18],78
+ 03ED                   .dbline 188
+ 03ED 56134E            mov [X+19],78
+ 03F0                   .dbline 188
+ 03F0 561445            mov [X+20],69
+ 03F3                   .dbline 189
+ 03F3           ;     strConnect[5]='C';strConnect[6]='T';strConnect[7]=0;
+ 03F3 561543            mov [X+21],67
+ 03F6                   .dbline 189
+ 03F6 561654            mov [X+22],84
+ 03F9                   .dbline 189
+ 03F9 561700            mov [X+23],0
+ 03FC                   .dbline 190
+ 03FC           ;       strAnswer[0]='O';strAnswer[1]='K';strAnswer[2]='!';strAnswer[3]=0;
+ 03FC 560C4F            mov [X+12],79
+ 03FF                   .dbline 190
+ 03FF 560D4B            mov [X+13],75
+ 0402                   .dbline 190
+ 0402 560E21            mov [X+14],33
+ 0405                   .dbline 190
+ 0405 560F00            mov [X+15],0
+ 0408                   .dbline 193
+ 0408           ; 
+ 0408           ;       // Initiate UART Module
+ 0408           ;       Boot_RxD_Start(RX8_PARITY_NONE);
+ 0408 10                push X
+ 0409 5000              mov A,0
+ 040B 7C0000            xcall _Boot_RxD_Start
+ 040E 20                pop X
+ 040F                   .dbline 194
+ 040F           ;       Boot_TxD_Start(TX8_PARITY_NONE);
+ 040F 10                push X
+ 0410 5000              mov A,0
+ 0412 7C0000            xcall _Boot_TxD_Start
+ 0415 20                pop X
+ 0416                   .dbline 200
+ 0416           ; 
+ 0416           ; #if ENABLE_CONNECT_BY_PSOC
+ 0416           ;       // Check conditions for remote programming only through UART
+ 0416           ;       // if was Power On Reset then check this
+ 0416           ;       //
+ 0416           ;       if (CPU_SCR0 & CPU_SCR0_PORS_MASK){
+ 0416 5DFF              mov A,REG[0xff]
+ 0418 62D000            mov REG[0xd0],>__r0
+ 041B 5300              mov [__r0],A
+ 041D 470010            tst [__r0],16
+ 0420 A0CA              jz L80
+ 0422                   .dbline 200
+ 0422                   .dbline 201
+ 0422           ;               Boot_UART_CPutString(strConnect);       // Send Connect Message to PC
+ 0422 5A00              mov [__r1],X
+ 0424 060010            add [__r1],16
+ 0427 5007              mov A,7
+ 0429 08                push A
+ 042A 5100              mov A,[__r1]
+ 042C 08                push A
+ 042D 9C6E              xcall _Boot_UART_CPutString
+ 042F 38FE              add SP,-2
+ 0431                   .dbline 202
+ 0431           ;               Boot_Counter_DisableInt();      // Disable Counter Interrupts
+ 0431 10                push X
+ 0432 7C0000            xcall _Boot_Counter_DisableInt
+ 0435 20                pop X
+ 0436                   .dbline 203
+ 0436           ;               Boot_Counter_WritePeriod(8191); // a half second timeout (Counter Clock=32kHz)
+ 0436 10                push X
+ 0437 571F              mov X,31
+ 0439 50FF              mov A,-1
+ 043B 7C0000            xcall _Boot_Counter_WritePeriod
+ 043E 20                pop X
+ 043F                   .dbline 204
+ 043F           ;               Boot_Counter_WriteCompareValue(4094);// compare value
+ 043F 10                push X
+ 0440 570F              mov X,15
+ 0442 50FE              mov A,-2
+ 0444 7C0000            xcall _Boot_Counter_WriteCompareValue
+ 0447                   .dbline 205
+ 0447           ;               Boot_Counter_Start();           // Start Counter
+ 0447 7C0000            xcall _Boot_Counter_Start
+ 044A 20                pop X
+ 044B                   .dbline 206
+ 044B           ;               k=0;
+ 044B 561A00            mov [X+26],0
+ 044E 8084              xjmp L83
+ 0450           L82:
+ 0450                   .dbline 207
+ 0450           ;               while (Boot_Counter_wReadCounter()!=0){ // Timeout - a half second
+ 0450                   .dbline 208
+ 0450           ;              if (Boot_RxD_bReadRxStatus() & RX8_RX_COMPLETE){ // if character was got by RxD
+ 0450 10                push X
+ 0451 7C0000            xcall _Boot_RxD_bReadRxStatus
+ 0454 62D000            mov REG[0xd0],>__r0
+ 0457 20                pop X
+ 0458 5300              mov [__r0],A
+ 045A 470008            tst [__r0],8
+ 045D A059              jz L85
+ 045F                   .dbline 208
+ 045F                   .dbline 209
+ 045F           ;                  buffer[k]=Boot_RxD_bReadRxData();            // then read this character
+ 045F 10                push X
+ 0460 7C0000            xcall _Boot_RxD_bReadRxData
+ 0463 62D000            mov REG[0xd0],>__r0
+ 0466 20                pop X
+ 0467 5300              mov [__r0],A
+ 0469 550007            mov [__r2],7
+ 046C 5A00              mov [__r3],X
+ 046E 060001            add [__r3],1
+ 0471 521A              mov A,[X+26]
+ 0473 0200              add A,[__r3]
+ 0475 5300              mov [__r3],A
+ 0477 5000              mov A,0
+ 0479 0A00              adc A,[__r2]
+ 047B 60D5              mov REG[0xd5],A
+ 047D 5100              mov A,[__r0]
+ 047F 3F00              mvi [__r3],A
+ 0481                   .dbline 210
+ 0481           ;                  if (buffer[k]==strAnswer[k]) k++;    // if match then go on
+ 0481 550007            mov [__r0],7
+ 0484 5A00              mov [__r1],X
+ 0486 06000C            add [__r1],12
+ 0489 521A              mov A,[X+26]
+ 048B 0200              add A,[__r1]
+ 048D 5300              mov [__r1],A
+ 048F 5000              mov A,0
+ 0491 0A00              adc A,[__r0]
+ 0493 60D4              mov REG[0xd4],A
+ 0495 3E00              mvi A,[__r1]
+ 0497 5300              mov [__r0],A
+ 0499 5A00              mov [__r3],X
+ 049B 060001            add [__r3],1
+ 049E 521A              mov A,[X+26]
+ 04A0 0200              add A,[__r3]
+ 04A2 5300              mov [__r3],A
+ 04A4 5000              mov A,0
+ 04A6 0A00              adc A,[__r2]
+ 04A8 60D4              mov REG[0xd4],A
+ 04AA 3E00              mvi A,[__r3]
+ 04AC 3A00              cmp A,[__r0]
+ 04AE B005              jnz L87
+ 04B0                   .dbline 210
+ 04B0 771A              inc [X+26]
+ 04B2 8004              xjmp L88
+ 04B4           L87:
+ 04B4                   .dbline 211
+ 04B4           ;                    else k=0;                                                  // Start receiving symbol from the beginning
+ 04B4 561A00            mov [X+26],0
+ 04B7           L88:
+ 04B7                   .dbline 212
+ 04B7           ;              }
+ 04B7           L85:
+ 04B7                   .dbline 213
+ 04B7           ;              if (k==3) {
+ 04B7 3D1A03            cmp [X+26],3
+ 04BA B018              jnz L89
+ 04BC                   .dbline 213
+ 04BC                   .dbline 214
+ 04BC           ;                Boot_UART_CPutString(strAnswer);       // send back strAnswer to establish connection
+ 04BC 62D000            mov REG[0xd0],>__r0
+ 04BF 5A00              mov [__r1],X
+ 04C1 06000C            add [__r1],12
+ 04C4 5007              mov A,7
+ 04C6 08                push A
+ 04C7 5100              mov A,[__r1]
+ 04C9 08                push A
+ 04CA 9BD1              xcall _Boot_UART_CPutString
+ 04CC 38FE              add SP,-2
+ 04CE                   .dbline 215
+ 04CE           ;                    Boot_PerformWrite();                       // reprogram Flash
+ 04CE 9BFB              xcall _Boot_PerformWrite
+ 04D0                   .dbline 216
+ 04D0           ;            M8C_Reset;                                         // Perform Software Reset by Supervisory Call
+ 04D0 5000                      mov A, 0
+ 04D2 00                SSC
+ 04D3           
+ 04D3                   .dbline 216
+ 04D3                   .dbline 217
+ 04D3           ;              }
+ 04D3           L89:
+ 04D3                   .dbline 218
+ 04D3           ;               };
+ 04D3           L83:
+ 04D3                   .dbline 207
+ 04D3 10                push X
+ 04D4 7C0000            xcall _Boot_Counter_wReadCounter
+ 04D7 62D000            mov REG[0xd0],>__r0
+ 04DA 5A00              mov [__r0],X
+ 04DC 20                pop X
+ 04DD 3C0000            cmp [__r0],0
+ 04E0 BF6F              jnz L82
+ 04E2 3900              cmp A,0
+ 04E4 BF6B              jnz L82
+ 04E6           X12:
+ 04E6                   .dbline 218
+ 04E6                   .dbline 219
+ 04E6           ;               Boot_Counter_Stop();                            // Stop Counter
+ 04E6 10                push X
+ 04E7 7C0000            xcall _Boot_Counter_Stop
+ 04EA 20                pop X
+ 04EB                   .dbline 220
+ 04EB           ;       }
+ 04EB           L80:
+ 04EB                   .dbline 224
+ 04EB           ; #endif
+ 04EB           ; 
+ 04EB           ;       // Control if a BoootLoader Program is correct
+ 04EB           ;       Error=0;
+ 04EB 560B00            mov [X+11],0
+ 04EE                   .dbline 225
+ 04EE           ;       if (!Boot_Is_Program_Good()) Error=1;
+ 04EE 7C0000            xcall _Boot_Is_Program_Good
+ 04F1 62D000            mov REG[0xd0],>__r0
+ 04F4 3900              cmp A,0
+ 04F6 B004              jnz L91
+ 04F8                   .dbline 225
+ 04F8 560B01            mov [X+11],1
+ 04FB           L91:
+ 04FB                   .dbline 227
+ 04FB           ;       // Control CheckSum if needed
+ 04FB           ;       if (LastBlock_To_Check!=0) {    // Don't calculate checksum if 0
+ 04FB 62D000            mov REG[0xd0],>__r0
+ 04FE 50FE              mov A,>_LastBlock_To_Check
+ 0500 10                push X
+ 0501 08                push A
+ 0502 57FE              mov X,<_LastBlock_To_Check
+ 0504 28                romx
+ 0505 5300              mov [__r0],A
+ 0507 18                pop A
+ 0508 75                inc X
+ 0509 0900              adc A,0
+ 050B 28                romx
+ 050C 20                pop X
+ 050D 3C0000            cmp [__r0],0
+ 0510 B005              jnz X13
+ 0512 3900              cmp A,0
+ 0514 A05D              jz L93
+ 0516           X13:
+ 0516                   .dbline 227
+ 0516                   .dbline 228
+ 0516           ;       for (j=1;j<=LastBlock_To_Check;j++){
+ 0516 561901            mov [X+25],1
+ 0519 561800            mov [X+24],0
+ 051C 8033              xjmp L98
+ 051E           L95:
+ 051E                   .dbline 228
+ 051E                   .dbline 229
+ 051E           ;          CheckSum=BootCheckSumBlock[j];
+ 051E 62D000            mov REG[0xd0],>__r0
+ 0521 5219              mov A,[X+25]
+ 0523 0100              add A,<_BootCheckSumBlock
+ 0525 5300              mov [__r1],A
+ 0527 5218              mov A,[X+24]
+ 0529 0900              adc A,>_BootCheckSumBlock
+ 052B 10                push X
+ 052C 5800              mov X,[__r1]
+ 052E 28                romx
+ 052F 20                pop X
+ 0530 541B              mov [X+27],A
+ 0532                   .dbline 230
+ 0532           ;          if (CheckSum!=FlashCheckSum(j)) Error=1;     // Set CheckSum Error Flag
+ 0532 5218              mov A,[X+24]
+ 0534 08                push A
+ 0535 5219              mov A,[X+25]
+ 0537 08                push A
+ 0538 7C0000            xcall _FlashCheckSum
+ 053B 38FE              add SP,-2
+ 053D 62D000            mov REG[0xd0],>__r0
+ 0540 5300              mov [__r0],A
+ 0542 521B              mov A,[X+27]
+ 0544 3A00              cmp A,[__r0]
+ 0546 A004              jz L99
+ 0548                   .dbline 230
+ 0548 560B01            mov [X+11],1
+ 054B           L99:
+ 054B                   .dbline 231
+ 054B           ;       }
+ 054B           L96:
+ 054B                   .dbline 228
+ 054B 7719              inc [X+25]
+ 054D 0F1800            adc [X+24],0
+ 0550           L98:
+ 0550                   .dbline 228
+ 0550 62D000            mov REG[0xd0],>__r0
+ 0553 50FE              mov A,>_LastBlock_To_Check
+ 0555 10                push X
+ 0556 08                push A
+ 0557 57FE              mov X,<_LastBlock_To_Check
+ 0559 28                romx
+ 055A 5300              mov [__r0],A
+ 055C 18                pop A
+ 055D 75                inc X
+ 055E 0900              adc A,0
+ 0560 28                romx
+ 0561 20                pop X
+ 0562 1319              sub A,[X+25]
+ 0564 5218              mov A,[X+24]
+ 0566 3180              xor A,-128
+ 0568 5300              mov [__rX],A
+ 056A 5100              mov A,[__r0]
+ 056C 3180              xor A,-128
+ 056E 1A00              sbb A,[__rX]
+ 0570 DFAD              jnc L95
+ 0572           X14:
+ 0572                   .dbline 232
+ 0572           ;     }
+ 0572           L93:
+ 0572                   .dbline 233
+ 0572           ;     if (!Error) asm("ljmp __Start");  // if button not pressed - Start Firmwire
+ 0572 3D0B00            cmp [X+11],0
+ 0575 B004              jnz L101
+ 0577                   .dbline 233
+ 0577 7D0000                    ljmp __Start
+ 057A           
+ 057A           L101:
+ 057A                   .dbline 237
+ 057A           ;     // Here it communicates with PC and then starts programming
+ 057A           ; 
+ 057A           ;       // Connect with PC Terminal Program
+ 057A           ;       Error=1;
+ 057A 560B01            mov [X+11],1
+ 057D 80DB              xjmp L104
+ 057F           L103:
+ 057F                   .dbline 239
+ 057F           ;       // Set Communication here
+ 057F           ;       while (Error){
+ 057F                   .dbline 240
+ 057F           ;               Error=0;
+ 057F 560B00            mov [X+11],0
+ 0582                   .dbline 241
+ 0582           ;               for (i=0;i<7; i++) {
+ 0582 560000            mov [X+0],0
+ 0585 8056              xjmp L109
+ 0587           L106:
+ 0587                   .dbline 241
+ 0587                   .dbline 242
+ 0587           ;                 buffer[i]=Boot_UART_cGetChar();
+ 0587 9AD4              xcall _Boot_UART_cGetChar
+ 0589 62D000            mov REG[0xd0],>__r0
+ 058C 5300              mov [__r0],A
+ 058E 550007            mov [__r2],7
+ 0591 5A00              mov [__r3],X
+ 0593 060001            add [__r3],1
+ 0596 5200              mov A,[X+0]
+ 0598 0200              add A,[__r3]
+ 059A 5300              mov [__r3],A
+ 059C 5000              mov A,0
+ 059E 0A00              adc A,[__r2]
+ 05A0 60D5              mov REG[0xd5],A
+ 05A2 5100              mov A,[__r0]
+ 05A4 3F00              mvi [__r3],A
+ 05A6                   .dbline 243
+ 05A6           ;                 if (buffer[i]!=*(strConnect+i)) {
+ 05A6 550007            mov [__r0],7
+ 05A9 5A00              mov [__r1],X
+ 05AB 060010            add [__r1],16
+ 05AE 5200              mov A,[X+0]
+ 05B0 0200              add A,[__r1]
+ 05B2 5300              mov [__r1],A
+ 05B4 5000              mov A,0
+ 05B6 0A00              adc A,[__r0]
+ 05B8 60D4              mov REG[0xd4],A
+ 05BA 3E00              mvi A,[__r1]
+ 05BC 5300              mov [__r0],A
+ 05BE 5A00              mov [__r3],X
+ 05C0 060001            add [__r3],1
+ 05C3 5200              mov A,[X+0]
+ 05C5 0200              add A,[__r3]
+ 05C7 5300              mov [__r3],A
+ 05C9 5000              mov A,0
+ 05CB 0A00              adc A,[__r2]
+ 05CD 60D4              mov REG[0xd4],A
+ 05CF 3E00              mvi A,[__r3]
+ 05D1 3A00              cmp A,[__r0]
+ 05D3 A006              jz L110
+ 05D5                   .dbline 243
+ 05D5                   .dbline 244
+ 05D5           ;                      Error=1;
+ 05D5 560B01            mov [X+11],1
+ 05D8                   .dbline 245
+ 05D8           ;                      break;
+ 05D8 8008              xjmp L108
+ 05DA           L110:
+ 05DA                   .dbline 247
+ 05DA           ;                 }
+ 05DA           ;               }
+ 05DA           L107:
+ 05DA                   .dbline 241
+ 05DA 7700              inc [X+0]
+ 05DC           L109:
+ 05DC                   .dbline 241
+ 05DC 3D0007            cmp [X+0],7
+ 05DF CFA7              jc L106
+ 05E1           X15:
+ 05E1           L108:
+ 05E1                   .dbline 248
+ 05E1           ;               if (Error) continue;
+ 05E1 3D0B00            cmp [X+11],0
+ 05E4 A003              jz L112
+ 05E6                   .dbline 248
+ 05E6 8072              xjmp L104
+ 05E8           L112:
+ 05E8                   .dbline 251
+ 05E8           ; 
+ 05E8           ;           // Send Back Annswer - "Ok!"
+ 05E8           ;               Boot_UART_CPutString(strAnswer);
+ 05E8 62D000            mov REG[0xd0],>__r0
+ 05EB 5A00              mov [__r1],X
+ 05ED 06000C            add [__r1],12
+ 05F0 5007              mov A,7
+ 05F2 08                push A
+ 05F3 5100              mov A,[__r1]
+ 05F5 08                push A
+ 05F6 9AA5              xcall _Boot_UART_CPutString
+ 05F8 38FE              add SP,-2
+ 05FA                   .dbline 253
+ 05FA           ;       // Get Answer back -"Ok!"
+ 05FA           ;       for (i=0;i<3; i++) {
+ 05FA 560000            mov [X+0],0
+ 05FD 8056              xjmp L117
+ 05FF           L114:
+ 05FF                   .dbline 253
+ 05FF                   .dbline 254
+ 05FF           ;                 buffer[i]=Boot_UART_cGetChar();
+ 05FF 9A5C              xcall _Boot_UART_cGetChar
+ 0601 62D000            mov REG[0xd0],>__r0
+ 0604 5300              mov [__r0],A
+ 0606 550007            mov [__r2],7
+ 0609 5A00              mov [__r3],X
+ 060B 060001            add [__r3],1
+ 060E 5200              mov A,[X+0]
+ 0610 0200              add A,[__r3]
+ 0612 5300              mov [__r3],A
+ 0614 5000              mov A,0
+ 0616 0A00              adc A,[__r2]
+ 0618 60D5              mov REG[0xd5],A
+ 061A 5100              mov A,[__r0]
+ 061C 3F00              mvi [__r3],A
+ 061E                   .dbline 255
+ 061E           ;                 if (buffer[i]!=*(strAnswer+i)) {
+ 061E 550007            mov [__r0],7
+ 0621 5A00              mov [__r1],X
+ 0623 06000C            add [__r1],12
+ 0626 5200              mov A,[X+0]
+ 0628 0200              add A,[__r1]
+ 062A 5300              mov [__r1],A
+ 062C 5000              mov A,0
+ 062E 0A00              adc A,[__r0]
+ 0630 60D4              mov REG[0xd4],A
+ 0632 3E00              mvi A,[__r1]
+ 0634 5300              mov [__r0],A
+ 0636 5A00              mov [__r3],X
+ 0638 060001            add [__r3],1
+ 063B 5200              mov A,[X+0]
+ 063D 0200              add A,[__r3]
+ 063F 5300              mov [__r3],A
+ 0641 5000              mov A,0
+ 0643 0A00              adc A,[__r2]
+ 0645 60D4              mov REG[0xd4],A
+ 0647 3E00              mvi A,[__r3]
+ 0649 3A00              cmp A,[__r0]
+ 064B A006              jz L118
+ 064D                   .dbline 255
+ 064D                   .dbline 256
+ 064D           ;                      Error=1;
+ 064D 560B01            mov [X+11],1
+ 0650                   .dbline 257
+ 0650           ;                      break;
+ 0650 8008              xjmp L116
+ 0652           L118:
+ 0652                   .dbline 259
+ 0652           ;                 }
+ 0652           ;               }
+ 0652           L115:
+ 0652                   .dbline 253
+ 0652 7700              inc [X+0]
+ 0654           L117:
+ 0654                   .dbline 253
+ 0654 3D0003            cmp [X+0],3
+ 0657 CFA7              jc L114
+ 0659           X16:
+ 0659           L116:
+ 0659                   .dbline 260
+ 0659           ;       }
+ 0659           L104:
+ 0659                   .dbline 239
+ 0659 3D0B00            cmp [X+11],0
+ 065C BF22              jnz L103
+ 065E                   .dbline 263
+ 065E           ; 
+ 065E           ;       // Waiting for blocks to be written
+ 065E           ;       Boot_PerformWrite();
+ 065E 9A6B              xcall _Boot_PerformWrite
+ 0660                   .dbline 265
+ 0660           ; 
+ 0660           ;       M8C_Reset;              // Perform Software Reset by Supervisory Call
+ 0660 5000                      mov A, 0
+ 0662 00                SSC
+ 0663           
+ 0663                   .dbline 265
+ 0663                   .dbline -2
+ 0663           L69:
+ 0663 38E4              add SP,-28
+ 0665 20                pop X
+ 0666                   .dbline 0 ; func end
+ 0666 7F                ret
+ 0667                   .dbsym l CheckSum 27 c
+ 0667                   .dbsym l k 26 c
+ 0667                   .dbsym l j 24 I
+ 0667                   .dbsym l strConnect 16 A[8:8]c
+ 0667                   .dbsym l strAnswer 12 A[4:4]c
+ 0667                   .dbsym l Error 11 c
+ 0667                   .dbsym l buffer 1 A[10:10]c
+ 0667                   .dbsym l i 0 c
+ 0667                   .dbend

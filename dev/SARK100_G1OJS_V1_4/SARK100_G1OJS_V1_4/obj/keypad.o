@@ -1,0 +1,215 @@
+XH
+H 2 areas B global symbols
+M keypad.c
+S _g_bLongPress Ref0000
+S _g_bLongPressKeyCounter Ref0000
+S __r0 Ref0000
+S _Delay_64ths Ref0000
+S _g_bDebounceCounter Ref0000
+S _g_bIdleCounter Ref0000
+S _Morse_Dit Ref0000
+A text size 1C7 flags 0
+dbfile ./keypad.c
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\keypad.c
+dbfunc e KEYPAD_Get 0 fc
+dbsym l bSpeedAllowed 1 c
+dbsym l bKey 0 c
+dbline FFFFFFFF 0
+dbline 36 4
+dbline 39 4
+dbline 3B 7
+dbline 3B F
+dbline 3D 16
+dbline 3E 1D
+dbline 3E 2A
+dbline 40 2D
+dbline 40 32
+dbline 41 32
+dbline 42 35
+dbline 43 3B
+dbline 43 44
+dbline 44 44
+dbline 44 4C
+dbline 45 4C
+dbline 45 56
+dbline 46 56
+dbline 47 5C
+dbline 48 64
+dbline 49 64
+dbline 4A 6A
+dbline 4B 6A
+dbline 4B 6C
+dbline 4C 6C
+dbline 4D 72
+dbline 4E 79
+dbline 4F 7F
+dbline 50 7F
+dbline 50 81
+dbline 54 87
+dbline FFFFFFFE 8C
+dbline 0 8F
+dbfunc e KEYPAD_WaitKey 90 fc
+dbsym l bKey 0 c
+dbsym l bDelayS FFFFFFFC c
+dbline FFFFFFFF 90
+dbline 5F 94
+dbline 62 94
+dbline 63 99
+dbline 64 9C
+dbline 66 A5
+dbline 67 A5
+dbline 68 A8
+dbline 69 AC
+dbline 6A B1
+dbline 6B B1
+dbline 6C B9
+dbline 6D BB
+dbline 6E BB
+dbline 6E BB
+dbline 6F C0
+dbline 70 C5
+dbline 72 C8
+dbline FFFFFFFE CF
+dbline 0 D2
+dbfunc e KEYPAD_Scan D3 fc
+dbsym l bKey 0 c
+dbline FFFFFFFF D3
+dbline 7C D7
+dbline 7D D7
+dbline 7F DA
+dbline 80 DD
+dbline 81 E0
+dbline 83 E3
+dbline 84 E6
+dbline 84 F2
+dbline 85 F5
+dbline 85 101
+dbline 86 104
+dbline 88 107
+dbline 89 10A
+dbline 89 116
+dbline 8A 119
+dbline 8A 125
+dbline 8B 128
+dbline 8D 12B
+dbline 8E 12E
+dbline 8E 13A
+dbline 8F 13D
+dbline 8F 149
+dbline 90 163
+dbline 92 166
+dbline FFFFFFFE 16B
+dbline 0 16E
+dbfunc e KEYPAD_SysSuspendAndWakeFromPress 16F fV
+dbsym l bSave_ABF_CR0 1 c
+dbsym l bSave_ARF_CR 0 c
+dbline FFFFFFFF 16F
+dbline 9C 173
+dbline 9F 173
+dbline A1 175
+dbline A2 178
+dbline A3 17B
+dbline A5 17E
+dbline A6 182
+dbline A7 188
+dbline A8 18D
+dbline AA 192
+dbline AB 195
+dbline AC 198
+dbline AE 19D
+dbline B0 1A0
+dbline B1 1A3
+dbline B2 1A6
+dbline B3 1A8
+dbline B4 1AB
+dbline B5 1AE
+dbline B6 1B1
+dbline B7 1B4
+dbline B8 1B7
+dbline B9 1BB
+dbline FFFFFFFE 1C1
+dbline 0 1C6
+S _KEYPAD_Scan Def00D3
+S _KEYPAD_WaitKey Def0090
+S _KEYPAD_Get Def0000
+S _KEYPAD_SysSuspendAndWakeFromPress Def016F
+A data size 1 flags 20
+dbfile ./keypad.c
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\keypad.c
+dbsym s bLastKey 0 c
+T 00 00 00
+R 00 00 00 01
+T 00 00 10 4F 38 02 56 01 00 62 D0 00 00 3C 00 00
+R 00 00 00 00 43 0B 00 04 03 0E 00 04
+T 00 0C 00 A0 08 62 D0 00 00 50 00 80 77 90 BB 62
+R 00 00 00 00 43 07 00 02
+T 00 19 D0 00 00 54 00 90 B4 62 D0 00 00 53 00 00
+R 00 00 00 00 43 03 00 02 43 0B 00 02 03 0E 00 02
+T 00 24 52 00 3A 00 00 A0 04 56 00 00 3D 00 00 A0
+R 00 00 00 00 03 05 00 02
+T 00 31 50 7C 00 00 62 D0 00 00 55 00 00 04 62 D0
+R 00 00 00 00 02 04 00 06 43 08 00 04 03 0B 00 04
+T 00 3D 00 00 52 00 3A 00 00 B0 29 62 D0 00 00 3C
+R 00 00 00 00 41 02 00 01 01 07 00 01 43 0D 00 01
+T 00 48 00 00 00 B0 3C 3D 00 05 A0 06 3D 00 06 B0
+R 00 00 00 00 03 02 00 01
+T 00 55 0F 62 D0 00 00 55 00 00 00 50 02 08 7C
+R 00 00 00 00 43 05 00 04 03 08 00 04
+T 00 60 00 00 38 FF 62 D0 00 00 55 00 00 01 80 1C
+R 00 00 00 00 02 02 00 03 43 08 00 00 03 0B 00 00
+T 00 6C 62 D0 00 00 55 00 00 02 52 00 62 D0 00 00
+R 00 00 00 00 43 04 00 01 03 07 00 01 41 0E 00 01
+T 00 77 53 00 00 62 D0 00 00 55 00 00 00 80 07 62
+R 00 00 00 00 01 03 00 01 43 07 00 00 03 0A 00 00
+T 00 82 D0 00 00 55 00 00 00 52 00 62 D0 00 00 38
+R 00 00 00 00 41 03 00 01 01 06 00 01 43 0D 00 02
+T 00 8D FE 20 7F 10 4F 38 01 71 10 41 E0 F8 43 E0
+R 00 00 00 00
+T 00 9B 05 52 FC 70 CF 62 D0 00 00 53 00 00 43 FF
+R 00 00 00 00 43 09 00 05 03 0C 00 05
+T 00 A7 08 9F 56 54 00 3D FC 00 A0 0B 62 D0 00 00
+R 00 00 00 00 43 0E 00 05
+T 00 B4 3C 00 00 00 B0 03 80 06 3D 00 00 AF E6 71
+R 00 00 00 00 03 03 00 05
+T 00 C1 10 41 E0 F8 43 E0 03 52 00 70 CF 62 D0
+R 00 00 00 00
+T 00 CE 00 00 38 FF 20 7F 10 4F 38 03 56 00 00 43
+R 00 00 00 00 43 02 00 02
+T 00 DB 04 80 43 04 20 43 00 40 41 04 DF 5D 04 62
+R 00 00 00 00
+T 00 E9 D0 00 00 53 00 00 47 00 00 02 B0 04 56 00
+R 00 00 00 00 43 03 00 02 03 06 00 02 03 09 00 02
+T 00 F4 04 5D 04 62 D0 00 00 53 00 00 47 00 00 01
+R 00 00 00 00 43 07 00 02 03 0A 00 02 03 0D 00 02
+T 00 FF B0 04 56 00 05 43 04 20 41 04 7F 5D 04 62
+R 00 00 00 00
+T 01 0D D0 00 00 53 00 00 47 00 00 02 B0 04 56 00
+R 00 00 00 00 43 03 00 02 03 06 00 02 03 09 00 02
+T 01 18 01 5D 04 62 D0 00 00 53 00 00 47 00 00 01
+R 00 00 00 00 43 07 00 02 03 0A 00 02 03 0D 00 02
+T 01 23 B0 04 56 00 03 43 04 80 41 00 BF 5D 04 62
+R 00 00 00 00
+T 01 31 D0 00 00 53 00 00 47 00 00 02 B0 04 56 00
+R 00 00 00 00 43 03 00 02 03 06 00 02 03 09 00 02
+T 01 3C 02 5D 04 62 D0 00 00 53 00 00 47 00 00 01
+R 00 00 00 00 43 07 00 02 03 0A 00 02 03 0D 00 02
+T 01 47 B0 1B 3D 00 05 B0 09 56 02 09 56 01 00 80
+R 00 00 00 00
+T 01 55 07 56 02 06 56 01 00 62 D0 00 00 52 02 54
+R 00 00 00 00 43 0B 00 02
+T 01 62 00 43 00 40 52 00 62 D0 00 00 38 FD 20 7F
+R 00 00 00 00 43 0A 00 02
+T 01 6F 10 4F 38 02 70 FE 41 04 7F 41 04 DF 41 00
+R 00 00 00 00
+T 01 7D BF 5D 63 54 00 71 10 5D 62 54 01 70 CF 41
+R 00 00 00 00
+T 01 8B 63 F8 71 10 41 62 C3 43 06 03 41 07 FC 70
+R 00 00 00 00
+T 01 99 CF 43 05 03 41 E0 BF 43 E0 20 41 DA 20 71
+R 00 00 00 00
+T 01 A7 01 43 FF 08 62 E2 00 41 05 FC 41 E0 DF 43
+R 00 00 00 00
+T 01 B5 E0 40 52 00 60 63 52 01 71 10 60 62 70 CF
+R 00 00 00 00
+T 01 C3 38 FE 20 7F
+R 00 00 00 00

@@ -1,0 +1,429 @@
+ 0000                   cpu LMM
+                        .module morse.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./morse.c
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\morse.c
+ 0000                   .dbfunc e Morse_U _Morse_U fV
+ 0000           _Morse_U::
+ 0000                   .dbline -1
+ 0000                   .dbline 44
+ 0000           ; //*****************************************************************************/
+ 0000           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0000           ; //
+ 0000           ; //    Copyright © 2025 Alan Robinson G1OJS Hampshire England G1OJS@yahoo.com with 
+ 0000           ; //  acknowledgement & thanks to Melchor Varela © 2010, EA4FRB Madrid, Spain 
+ 0000           ; //    (melchor.varela@gmail.com) for the overall software and ideas.
+ 0000           ; //  
+ 0000           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0000           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0000           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0000           ; //  or (at your option) any later version.
+ 0000           ; //
+ 0000           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0000           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0000           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0000           ; //  GNU General Public License for more details.
+ 0000           ; //
+ 0000           ; //  You should have received a copy of the GNU General Public License
+ 0000           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0000           ; //  see <http://www.gnu.org/licenses/>.
+ 0000           ; //*****************************************************************************/
+ 0000           ; //*****************************************************************************/
+ 0000           ; //
+ 0000           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0000           ; //    FILE NAME:      morse.c
+ 0000           ; //    AUTHOR:         G1OJS - Alan Robinson
+ 0000           ; //    DESCRIPTION     Uses the PWM_Buzzer to create morse code notifications
+ 0000           ; //    HISTORY
+ 0000           ; //    NAME            DATE            REMARKS
+ 0000           ; //    AJR                     Feb 2025        G1OJS  - creation
+ 0000           ; //*****************************************************************************/
+ 0000           ; #include "morse.h"
+ 0000           ; #include "control.h"
+ 0000           ; #include "glb_data.h"
+ 0000           ; #include "timers.h"
+ 0000           ; 
+ 0000           ; #define CW_WPM 20
+ 0000           ; #define CW_DitNum 1200
+ 0000           ; #define CW_DahNum 3600
+ 0000           ; 
+ 0000           ; 
+ 0000           ; // to do - define MORSE_ENSIGN DIT|DAH, have one function Morse(MORSE_ENSIGN) OR classic Morse("-.-");
+ 0000           ; 
+ 0000           ; void Morse_U(void)                    { Morse_Dit(); Morse_Dit(); Morse_Dah();                }
+ 0000                   .dbline 44
+ 0000 903E              xcall _Morse_Dit
+ 0002                   .dbline 44
+ 0002 903C              xcall _Morse_Dit
+ 0004                   .dbline 44
+ 0004 9082              xcall _Morse_Dah
+ 0006                   .dbline -2
+ 0006           L9:
+ 0006                   .dbline 0 ; func end
+ 0006 7F                ret
+ 0007                   .dbend
+ 0007                   .dbfunc e Morse_K _Morse_K fV
+ 0007           _Morse_K::
+ 0007                   .dbline -1
+ 0007                   .dbline 45
+ 0007           ; void Morse_K(void)                    { Morse_Dah(); Morse_Dit(); Morse_Dah();                }
+ 0007                   .dbline 45
+ 0007 907F              xcall _Morse_Dah
+ 0009                   .dbline 45
+ 0009 9035              xcall _Morse_Dit
+ 000B                   .dbline 45
+ 000B 907B              xcall _Morse_Dah
+ 000D                   .dbline -2
+ 000D           L10:
+ 000D                   .dbline 0 ; func end
+ 000D 7F                ret
+ 000E                   .dbend
+ 000E                   .dbfunc e Morse_Err _Morse_Err fV
+ 000E           ;           bCnt -> X+0
+ 000E           _Morse_Err::
+ 000E                   .dbline -1
+ 000E 10                push X
+ 000F 4F                mov X,SP
+ 0010 3801              add SP,1
+ 0012                   .dbline 46
+ 0012           ; void Morse_Err(void)          { BYTE bCnt=0; for(;bCnt<8;bCnt++) {Morse_Dit(); }              }
+ 0012                   .dbline 46
+ 0012 560000            mov [X+0],0
+ 0015                   .dbline 46
+ 0015 8005              xjmp L15
+ 0017           L12:
+ 0017                   .dbline 46
+ 0017                   .dbline 46
+ 0017 9027              xcall _Morse_Dit
+ 0019                   .dbline 46
+ 0019           L13:
+ 0019                   .dbline 46
+ 0019 7700              inc [X+0]
+ 001B           L15:
+ 001B                   .dbline 46
+ 001B 3D0008            cmp [X+0],8
+ 001E CFF8              jc L12
+ 0020           X0:
+ 0020                   .dbline -2
+ 0020           L11:
+ 0020 38FF              add SP,-1
+ 0022 20                pop X
+ 0023                   .dbline 0 ; func end
+ 0023 7F                ret
+ 0024                   .dbsym l bCnt 0 c
+ 0024                   .dbend
+ 0024                   .dbfunc e Morse_End _Morse_End fV
+ 0024           ;           bCnt -> X+0
+ 0024           _Morse_End::
+ 0024                   .dbline -1
+ 0024 10                push X
+ 0025 4F                mov X,SP
+ 0026 3801              add SP,1
+ 0028                   .dbline 47
+ 0028           ; void Morse_End(void)          { BYTE bCnt=0; for(;bCnt<3;bCnt++) {Morse_Dit();} Morse_Dah(); Morse_Dit(); Morse_Dah(); }
+ 0028                   .dbline 47
+ 0028 560000            mov [X+0],0
+ 002B                   .dbline 47
+ 002B 8005              xjmp L20
+ 002D           L17:
+ 002D                   .dbline 47
+ 002D                   .dbline 47
+ 002D 9011              xcall _Morse_Dit
+ 002F                   .dbline 47
+ 002F           L18:
+ 002F                   .dbline 47
+ 002F 7700              inc [X+0]
+ 0031           L20:
+ 0031                   .dbline 47
+ 0031 3D0003            cmp [X+0],3
+ 0034 CFF8              jc L17
+ 0036           X1:
+ 0036                   .dbline 47
+ 0036 9050              xcall _Morse_Dah
+ 0038                   .dbline 47
+ 0038 9006              xcall _Morse_Dit
+ 003A                   .dbline 47
+ 003A 904C              xcall _Morse_Dah
+ 003C                   .dbline -2
+ 003C           L16:
+ 003C 38FF              add SP,-1
+ 003E 20                pop X
+ 003F                   .dbline 0 ; func end
+ 003F 7F                ret
+ 0040                   .dbsym l bCnt 0 c
+ 0040                   .dbend
+ 0040                   .dbfunc e Morse_Dit _Morse_Dit fV
+ 0040           _Morse_Dit::
+ 0040                   .dbline -1
+ 0040                   .dbline 49
+ 0040           ; 
+ 0040           ; void Morse_Dit(void)          { Tone(100*g_bCWPitches[g_xConf.bCWPitch], CW_DitNum / CW_WPM); Tone(0, CW_DitNum / CW_WPM);    }
+ 0040                   .dbline 49
+ 0040 503C              mov A,60
+ 0042 08                push A
+ 0043 62D000            mov REG[0xd0],>_g_xConf
+ 0046 5101              mov A,[_g_xConf+1]
+ 0048 62D000            mov REG[0xd0],>__r0
+ 004B 5300              mov [__r1],A
+ 004D 550000            mov [__r0],0
+ 0050 060000            add [__r1],<_g_bCWPitches
+ 0053 0E0000            adc [__r0],>_g_bCWPitches
+ 0056 5100              mov A,[__r0]
+ 0058 10                push X
+ 0059 5800              mov X,[__r1]
+ 005B 28                romx
+ 005C 20                pop X
+ 005D 5300              mov [__r1],A
+ 005F 5000              mov A,0
+ 0061 08                push A
+ 0062 5100              mov A,[__r1]
+ 0064 08                push A
+ 0065 5000              mov A,0
+ 0067 08                push A
+ 0068 5064              mov A,100
+ 006A 08                push A
+ 006B 7C0000            xcall __mul16
+ 006E 38FC              add SP,-4
+ 0070 5100              mov A,[__rX]
+ 0072 5300              mov [__r1],A
+ 0074 5100              mov A,[__rY]
+ 0076 08                push A
+ 0077 5100              mov A,[__r1]
+ 0079 08                push A
+ 007A 9054              xcall _Tone
+ 007C                   .dbline 49
+ 007C 503C              mov A,60
+ 007E 08                push A
+ 007F 5000              mov A,0
+ 0081 08                push A
+ 0082 08                push A
+ 0083 904B              xcall _Tone
+ 0085 38FA              add SP,-6
+ 0087                   .dbline -2
+ 0087           L21:
+ 0087                   .dbline 0 ; func end
+ 0087 7F                ret
+ 0088                   .dbend
+ 0088                   .dbfunc e Morse_Dah _Morse_Dah fV
+ 0088           _Morse_Dah::
+ 0088                   .dbline -1
+ 0088                   .dbline 50
+ 0088           ; void Morse_Dah(void)          { Tone(100*g_bCWPitches[g_xConf.bCWPitch], CW_DahNum / CW_WPM); Tone(0, CW_DitNum / CW_WPM);  }
+ 0088                   .dbline 50
+ 0088 50B4              mov A,-76
+ 008A 08                push A
+ 008B 62D000            mov REG[0xd0],>_g_xConf
+ 008E 5101              mov A,[_g_xConf+1]
+ 0090 62D000            mov REG[0xd0],>__r0
+ 0093 5300              mov [__r1],A
+ 0095 550000            mov [__r0],0
+ 0098 060000            add [__r1],<_g_bCWPitches
+ 009B 0E0000            adc [__r0],>_g_bCWPitches
+ 009E 5100              mov A,[__r0]
+ 00A0 10                push X
+ 00A1 5800              mov X,[__r1]
+ 00A3 28                romx
+ 00A4 20                pop X
+ 00A5 5300              mov [__r1],A
+ 00A7 5000              mov A,0
+ 00A9 08                push A
+ 00AA 5100              mov A,[__r1]
+ 00AC 08                push A
+ 00AD 5000              mov A,0
+ 00AF 08                push A
+ 00B0 5064              mov A,100
+ 00B2 08                push A
+ 00B3 7C0000            xcall __mul16
+ 00B6 38FC              add SP,-4
+ 00B8 5100              mov A,[__rX]
+ 00BA 5300              mov [__r1],A
+ 00BC 5100              mov A,[__rY]
+ 00BE 08                push A
+ 00BF 5100              mov A,[__r1]
+ 00C1 08                push A
+ 00C2 900C              xcall _Tone
+ 00C4                   .dbline 50
+ 00C4 503C              mov A,60
+ 00C6 08                push A
+ 00C7 5000              mov A,0
+ 00C9 08                push A
+ 00CA 08                push A
+ 00CB 9003              xcall _Tone
+ 00CD 38FA              add SP,-6
+ 00CF                   .dbline -2
+ 00CF           L23:
+ 00CF                   .dbline 0 ; func end
+ 00CF 7F                ret
+ 00D0                   .dbend
+ 00D0                   .dbfunc e Tone _Tone fV
+ 00D0           ;         b64ths -> X+0
+ 00D0           ;        bLen_ms -> X-6
+ 00D0           ;      wPitch_Hz -> X-5
+ 00D0           _Tone::
+ 00D0                   .dbline -1
+ 00D0 10                push X
+ 00D1 4F                mov X,SP
+ 00D2 3801              add SP,1
+ 00D4                   .dbline 53
+ 00D4           ; 
+ 00D4           ; void Tone(WORD wPitch_Hz, BYTE bLen_ms)
+ 00D4           ; {
+ 00D4                   .dbline 56
+ 00D4           ;       #define ticks_per_us 15625
+ 00D4           ;       BYTE b64ths;
+ 00D4           ;       if(wPitch_Hz>16000)  wPitch_Hz=16000;   
+ 00D4 5080              mov A,-128
+ 00D6 13FC              sub A,[X-4]
+ 00D8 503E              mov A,62
+ 00DA 1BFB              sbb A,[X-5]
+ 00DC D007              jnc L26
+ 00DE           X2:
+ 00DE                   .dbline 56
+ 00DE 56FC80            mov [X-4],-128
+ 00E1 56FB3E            mov [X-5],62
+ 00E4           L26:
+ 00E4                   .dbline 57
+ 00E4           ;       if(wPitch_Hz>0) {                                                               // b_Pitch_kHz==0 signifies silent delay
+ 00E4 3DFB00            cmp [X-5],0
+ 00E7 B006              jnz X3
+ 00E9 3DFC00            cmp [X-4],0
+ 00EC A045              jz L28
+ 00EE           X3:
+ 00EE                   .dbline 57
+ 00EE                   .dbline 58
+ 00EE           ;               PWM8_BUZZ_WritePeriod(32000/wPitch_Hz);         // Set period in clock ticks (clock 32Khz). Must be at least 2!
+ 00EE 62D000            mov REG[0xd0],>__r0
+ 00F1 52FB              mov A,[X-5]
+ 00F3 08                push A
+ 00F4 52FC              mov A,[X-4]
+ 00F6 08                push A
+ 00F7 507D              mov A,125
+ 00F9 08                push A
+ 00FA 5000              mov A,0
+ 00FC 08                push A
+ 00FD 7C0000            xcall __divmodu_16X16_16
+ 0100 18                pop A
+ 0101 5300              mov [__r1],A
+ 0103 18                pop A
+ 0104 38FE              add SP,-2
+ 0106 5100              mov A,[__r1]
+ 0108 10                push X
+ 0109 7C0000            xcall _PWM8_BUZZ_WritePeriod
+ 010C 20                pop X
+ 010D                   .dbline 59
+ 010D           ;               PWM8_BUZZ_WritePulseWidth(16000/wPitch_Hz);     // Set pulse width to generate a 50% duty cycle
+ 010D 62D000            mov REG[0xd0],>__r0
+ 0110 52FB              mov A,[X-5]
+ 0112 08                push A
+ 0113 52FC              mov A,[X-4]
+ 0115 08                push A
+ 0116 503E              mov A,62
+ 0118 08                push A
+ 0119 5080              mov A,-128
+ 011B 08                push A
+ 011C 7C0000            xcall __divmodu_16X16_16
+ 011F 18                pop A
+ 0120 5300              mov [__r1],A
+ 0122 18                pop A
+ 0123 38FE              add SP,-2
+ 0125 5100              mov A,[__r1]
+ 0127 10                push X
+ 0128 7C0000            xcall _PWM8_BUZZ_WritePulseWidth
+ 012B                   .dbline 60
+ 012B           ;               PWM8_BUZZ_DisableInt();                                         // Ensure interrupt is disabled
+ 012B 7C0000            xcall _PWM8_BUZZ_DisableInt
+ 012E                   .dbline 61
+ 012E           ;               PWM8_BUZZ_Start();                                                      // Start the buzzer
+ 012E 7C0000            xcall _PWM8_BUZZ_Start
+ 0131 20                pop X
+ 0132                   .dbline 62
+ 0132           ;       }
+ 0132           L28:
+ 0132                   .dbline 63
+ 0132           ;       b64ths=(BYTE)(  ((DWORD)bLen_ms*1000) / ticks_per_us  );
+ 0132 62D000            mov REG[0xd0],>__r0
+ 0135 52FA              mov A,[X-6]
+ 0137 5300              mov [__r3],A
+ 0139 5000              mov A,0
+ 013B 08                push A
+ 013C 08                push A
+ 013D 08                push A
+ 013E 5100              mov A,[__r3]
+ 0140 08                push A
+ 0141 5000              mov A,0
+ 0143 08                push A
+ 0144 08                push A
+ 0145 5003              mov A,3
+ 0147 08                push A
+ 0148 50E8              mov A,-24
+ 014A 08                push A
+ 014B 7C0000            xcall __mul_32X32_32
+ 014E 38FC              add SP,-4
+ 0150 18                pop A
+ 0151 5300              mov [__r3],A
+ 0153 18                pop A
+ 0154 5300              mov [__r2],A
+ 0156 18                pop A
+ 0157 5300              mov [__r1],A
+ 0159 18                pop A
+ 015A 5300              mov [__r0],A
+ 015C 5000              mov A,0
+ 015E 08                push A
+ 015F 08                push A
+ 0160 503D              mov A,61
+ 0162 08                push A
+ 0163 5009              mov A,9
+ 0165 08                push A
+ 0166 5100              mov A,[__r0]
+ 0168 08                push A
+ 0169 5100              mov A,[__r1]
+ 016B 08                push A
+ 016C 5100              mov A,[__r2]
+ 016E 08                push A
+ 016F 5100              mov A,[__r3]
+ 0171 08                push A
+ 0172 7C0000            xcall __divmodu_32X32_32
+ 0175 18                pop A
+ 0176 5300              mov [__r3],A
+ 0178 18                pop A
+ 0179 18                pop A
+ 017A 18                pop A
+ 017B 38FC              add SP,-4
+ 017D 5100              mov A,[__r3]
+ 017F 5400              mov [X+0],A
+ 0181                   .dbline 64
+ 0181           ;       if(b64ths<1) b64ths=1;
+ 0181 3D0001            cmp [X+0],1
+ 0184 D004              jnc L30
+ 0186           X4:
+ 0186                   .dbline 64
+ 0186 560001            mov [X+0],1
+ 0189           L30:
+ 0189                   .dbline 65
+ 0189           ;       Delay_64ths(b64ths);                                                    // wait approx bLen_ms
+ 0189 5200              mov A,[X+0]
+ 018B 08                push A
+ 018C 7C0000            xcall _Delay_64ths
+ 018F 38FF              add SP,-1
+ 0191                   .dbline 66
+ 0191           ;       if(wPitch_Hz>0) PWM8_BUZZ_Stop();                               // Stop the buzzer if we started it     
+ 0191 3DFB00            cmp [X-5],0
+ 0194 B006              jnz X5
+ 0196 3DFC00            cmp [X-4],0
+ 0199 A006              jz L32
+ 019B           X5:
+ 019B                   .dbline 66
+ 019B 10                push X
+ 019C 7C0000            xcall _PWM8_BUZZ_Stop
+ 019F 20                pop X
+ 01A0           L32:
+ 01A0                   .dbline -2
+ 01A0           L25:
+ 01A0 38FF              add SP,-1
+ 01A2 20                pop X
+ 01A3                   .dbline 0 ; func end
+ 01A3 7F                ret
+ 01A4                   .dbsym l b64ths 0 c
+ 01A4                   .dbsym l bLen_ms -6 c
+ 01A4                   .dbsym l wPitch_Hz -5 i
+ 01A4                   .dbend

@@ -1,0 +1,13 @@
+Version 4
+SymbolType BLOCK
+LINE Normal 67 45 12 20
+LINE Normal 12 75 67 45
+LINE Normal 12 20 12 75
+RECTANGLE Normal 128 96 -64 -32
+WINDOW 0 31 -32 Bottom 2
+PIN -64 32 LEFT 8
+PINATTR PinName In
+PINATTR SpiceOrder 1
+PIN 128 32 RIGHT 8
+PINATTR PinName Vx
+PINATTR SpiceOrder 2

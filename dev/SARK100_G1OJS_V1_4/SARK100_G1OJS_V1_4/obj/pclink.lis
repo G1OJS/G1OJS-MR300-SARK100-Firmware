@@ -1,0 +1,616 @@
+ 0000                   cpu LMM
+                        .module pclink.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./pclink.c
+                        .area lit(rom, con, rel)
+ 0000           _bufCmdOn:
+ 0000 6F6E00            .byte 'o,'n,0
+ 0003                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\pclink.c
+ 0003                   .dbsym s bufCmdOn _bufCmdOn A[3:3]kc
+ 0003           _bufCmdOff:
+ 0003 6F666600          .byte 'o,'f,'f,0
+ 0007                   .dbsym s bufCmdOff _bufCmdOff A[4:4]kc
+ 0007           _bufCmdFreq:
+ 0007 6672657100        .byte 'f,'r,'e,'q,0
+ 000C                   .dbsym s bufCmdFreq _bufCmdFreq A[5:5]kc
+ 000C           _bufCmdMeasImp:
+ 000C 696D7000          .byte 'i,'m,'p,0
+ 0010                   .dbsym s bufCmdMeasImp _bufCmdMeasImp A[4:4]kc
+ 0010           _bufCmdMeasRaw:
+ 0010 72617700          .byte 'r,'a,'w,0
+ 0014                   .dbsym s bufCmdMeasRaw _bufCmdMeasRaw A[4:4]kc
+ 0014           _bufCmdScan:
+ 0014 7363616E00        .byte 's,'c,'a,'n,0
+ 0019                   .dbsym s bufCmdScan _bufCmdScan A[5:5]kc
+ 0019           _bufCmdScanRaw:
+ 0019 7363616E7200      .byte 's,'c,'a,'n,'r,0
+ 001F                   .dbsym s bufCmdScanRaw _bufCmdScanRaw A[6:6]kc
+ 001F           _bufCmdScanBR:
+ 001F 7363616E627200    .byte 's,'c,'a,'n,'b,'r,0
+ 0026                   .dbsym s bufCmdScanBR _bufCmdScanBR A[7:7]kc
+ 0026           _bufCmdScanV:
+ 0026 7363616E7600      .byte 's,'c,'a,'n,'v,0
+ 002C                   .dbsym s bufCmdScanV _bufCmdScanV A[6:6]kc
+ 002C           _bufCmdSweep:
+ 002C 737765657000      .byte 's,'w,'e,'e,'p,0
+ 0032                   .dbsym s bufCmdSweep _bufCmdSweep A[6:6]kc
+ 0032           _bufWelcome:
+ 0032 0D0A5341524B3130302053575220416E  .byte 13,10,'S,'A,'R,'K,49,48,48,32,'S,'W,'R,32,'A,'n
+ 0042 616C797A65722056312E340D0A00      .byte 'a,'l,'y,'z,'e,'r,32,'V,49,46,52,13,10,0
+ 0050                   .dbsym s bufWelcome _bufWelcome A[30:30]kc
+ 0050           _bufCmdPrompt:
+ 0050 0D0A3E3E00        .byte 13,10,62,62,0
+ 0055                   .dbsym s bufCmdPrompt _bufCmdPrompt A[5:5]kc
+ 0055           _bufWaitLink:
+ 0055 57616974696E67204C696E6B00        .byte 'W,'a,'i,'t,'i,'n,'g,32,'L,'i,'n,'k,0
+ 0062                   .dbsym s bufWaitLink _bufWaitLink A[13:13]kc
+ 0062           _bufErrCmdNotFound1:
+ 0062 0D0A436F6D6D616E64203C00  .byte 13,10,'C,'o,'m,'m,'a,'n,'d,32,60,0
+ 006E                   .dbsym s bufErrCmdNotFound1 _bufErrCmdNotFound1 A[12:12]kc
+ 006E           _bufErrCmdNotFound2:
+ 006E 3E206E6F7420666F756E640D0A00      .byte 62,32,'n,'o,'t,32,'f,'o,'u,'n,'d,13,10,0
+ 007C                   .dbsym s bufErrCmdNotFound2 _bufErrCmdNotFound2 A[14:14]kc
+                        .area text(rom, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\pclink.c
+ 0000                   .dbfunc e PcLink _PcLink fV
+ 0000           ;         strPtr -> X+0
+ 0000           _PcLink::
+ 0000                   .dbline -1
+ 0000 10                push X
+ 0001 4F                mov X,SP
+ 0002 3802              add SP,2
+ 0004                   .dbline 86
+ 0004           ; //*****************************************************************************/
+ 0004           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0004           ; //
+ 0004           ; //  Copyright © 2010 Melchor Varela - EA4FRB.  All rights reserved.
+ 0004           ; //  Melchor Varela, Madrid, Spain.
+ 0004           ; //  melchor.varela@gmail.com
+ 0004           ; //
+ 0004           ; //  Modifications Copyright © 2024,2025 Alan Robinson G1OJS 
+ 0004           ; //    Alan Robinson, Hampshire England G1OJS@yahoo.com 
+ 0004           ; //
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0004           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0004           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0004           ; //  or (at your option) any later version.
+ 0004           ; //
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0004           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0004           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0004           ; //  GNU General Public License for more details.
+ 0004           ; //
+ 0004           ; //  You should have received a copy of the GNU General Public License
+ 0004           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0004           ; //  see <http://www.gnu.org/licenses/>.
+ 0004           ; //*****************************************************************************/
+ 0004           ; //*****************************************************************************/
+ 0004           ; //
+ 0004           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0004           ; //    FILE NAME:      PCLINK.C
+ 0004           ; //    AUTHOR:         EA4FRB - Melchor Varela
+ 0004           ; //
+ 0004           ; //    DESCRIPTION
+ 0004           ; //
+ 0004           ; //    PC link routines for update measurements
+ 0004           ; //
+ 0004           ; //    HISTORY
+ 0004           ; //
+ 0004           ; //    NAME            DATE            REMARKS
+ 0004           ; //
+ 0004           ; //    MVM                     DEC 2009        Creation
+ 0004           ; //  AJR                       JAN 2025        Align with refactoring and functional changes   
+ 0004           ; //*****************************************************************************/
+ 0004           ; #include "pclink.h"
+ 0004           ; #include "pclink_cmds.h"
+ 0004           ; 
+ 0004           ; #include <stdlib.h>
+ 0004           ; #include <string.h>
+ 0004           ; #include "control.h"
+ 0004           ; #include "UART.h"
+ 0004           ; #include "screens.h"
+ 0004           ; 
+ 0004           ; 
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; //  Private data:
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; static BYTE const bufCmdOn            [] = "on";
+ 0004           ; static BYTE const bufCmdOff           [] = "off";
+ 0004           ; static BYTE const bufCmdFreq  [] = "freq";
+ 0004           ; static BYTE const bufCmdMeasImp       [] = "imp";
+ 0004           ; static BYTE const bufCmdMeasRaw       [] = "raw";
+ 0004           ; static BYTE const bufCmdScan  [] = "scan";
+ 0004           ; static BYTE const bufCmdScanRaw       [] = "scanr";
+ 0004           ; static BYTE const bufCmdScanBR        [] = "scanbr";
+ 0004           ; static BYTE const bufCmdScanV [] = "scanv";
+ 0004           ; static BYTE const bufCmdSweep [] = "sweep";
+ 0004           ; 
+ 0004           ; static BYTE const bufWelcome  [] = "\r\n" PRODUCT_NAME_STR " SWR Analyzer " VERSION_STR "\r\n";
+ 0004           ; static BYTE const bufCmdPrompt        [] = "\r\n>>";
+ 0004           ; static BYTE const bufWaitLink [] = "Waiting Link";
+ 0004           ; static BYTE const bufErrCmdNotFound1[] = "\r\nCommand <";
+ 0004           ; static BYTE const bufErrCmdNotFound2[] = "> not found\r\n";
+ 0004           ; 
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; //  Prototypes
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; 
+ 0004           ; 
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; //  FUNCTION NAME:    PcLink
+ 0004           ; //    DESCRIPTION:    PC link routines for update measurements
+ 0004           ; //                                    UART Speed is VC3 / 8, e.g.
+ 0004           ; //                                    24MHz SysClk / 52 / 8 = 57692 (57700)
+ 0004           ; //  ARGUMENTS:                none.
+ 0004           ; //  RETURNS:          none.
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; void PcLink (void)
+ 0004           ; {
+ 0004                   .dbline 88
+ 0004           ;       char * strPtr;                                          // Parameter pointer
+ 0004           ;       UART_CmdReset();                                        // Initialize receiver/cmd buffer
+ 0004 10                push X
+ 0005 7C0000            xcall _UART_CmdReset
+ 0008 20                pop X
+ 0009                   .dbline 89
+ 0009           ;       UART_IntCntl(UART_ENABLE_RX_INT);       // Enable RX interrupts
+ 0009 10                push X
+ 000A 5001              mov A,1
+ 000C 7C0000            xcall _UART_IntCntl
+ 000F 20                pop X
+ 0010                   .dbline 90
+ 0010           ;       UART_Start(UART_PARITY_NONE);           // Enable UART
+ 0010 10                push X
+ 0011 5000              mov A,0
+ 0013 7C0000            xcall _UART_Start
+ 0016 20                pop X
+ 0017                   .dbline 91
+ 0017           ;       M8C_EnableGInt ;
+ 0017 7101                      or  F, 01h
+ 0019           
+ 0019                   .dbline 94
+ 0019           ; 
+ 0019           ;       // Clear the terminal screen & display welcome message
+ 0019           ;     UART_PutChar(12); UART_CPutString(bufWelcome); UART_CPutString(bufCmdPrompt);
+ 0019 10                push X
+ 001A 500C              mov A,12
+ 001C 7C0000            xcall _UART_PutChar
+ 001F 20                pop X
+ 0020                   .dbline 94
+ 0020 10                push X
+ 0021 5032              mov A,>_bufWelcome
+ 0023 08                push A
+ 0024 5032              mov A,<_bufWelcome
+ 0026 5C                mov X,A
+ 0027 18                pop A
+ 0028 7C0000            xcall _UART_CPutString
+ 002B 20                pop X
+ 002C                   .dbline 94
+ 002C 10                push X
+ 002D 5050              mov A,>_bufCmdPrompt
+ 002F 08                push A
+ 0030 5050              mov A,<_bufCmdPrompt
+ 0032 5C                mov X,A
+ 0033 18                pop A
+ 0034 7C0000            xcall _UART_CPutString
+ 0037 20                pop X
+ 0038                   .dbline 97
+ 0038           ; 
+ 0038           ;       // Brief message for LCD then main loop
+ 0038           ;       Screen_CStrAtRowCol(1,0, bufWaitLink);
+ 0038 5055              mov A,>_bufWaitLink
+ 003A 08                push A
+ 003B 5055              mov A,<_bufWaitLink
+ 003D 08                push A
+ 003E 5000              mov A,0
+ 0040 08                push A
+ 0041 5001              mov A,1
+ 0043 08                push A
+ 0044 7C0000            xcall _Screen_CStrAtRowCol
+ 0047 38FC              add SP,-4
+ 0049 81FA              xjmp L14
+ 004B           L13:
+ 004B                   .dbline 98
+ 004B           ;       while(TRUE) {
+ 004B                   .dbline 99
+ 004B           ;               if (KEYPAD_Get() == KBD_UP) break;
+ 004B 7C0000            xcall _KEYPAD_Get
+ 004E 62D000            mov REG[0xd0],>__r0
+ 0051 3905              cmp A,5
+ 0053 B003              jnz L16
+ 0055                   .dbline 99
+ 0055 81F0              xjmp L15
+ 0057           L16:
+ 0057                   .dbline 100
+ 0057           ;               if(UART_bCmdCheck())                                                    // Wait for command
+ 0057 10                push X
+ 0058 7C0000            xcall _UART_bCmdCheck
+ 005B 62D000            mov REG[0xd0],>__r0
+ 005E 20                pop X
+ 005F 3900              cmp A,0
+ 0061 A1D1              jz L18
+ 0063                   .dbline 101
+ 0063           ;               {                                                       
+ 0063                   .dbline 102
+ 0063           ;                       if(strPtr = UART_szGetParam())
+ 0063 10                push X
+ 0064 7C0000            xcall _UART_szGetParam
+ 0067 62D000            mov REG[0xd0],>__r0
+ 006A 5300              mov [__r0],A
+ 006C 5A00              mov [__r1],X
+ 006E 20                pop X
+ 006F 5100              mov A,[__r1]
+ 0071 5401              mov [X+1],A
+ 0073 5100              mov A,[__r0]
+ 0075 5400              mov [X+0],A
+ 0077 3C0000            cmp [__r0],0
+ 007A B006              jnz X0
+ 007C 3C0000            cmp [__r1],0
+ 007F A1A2              jz L20
+ 0081           X0:
+ 0081                   .dbline 103
+ 0081           ;                       {
+ 0081                   .dbline 104
+ 0081           ;                               Screen_CStrAtRowCol(1,0, gBlankStr_16);
+ 0081 5000              mov A,>_gBlankStr_16
+ 0083 08                push A
+ 0084 5000              mov A,<_gBlankStr_16
+ 0086 08                push A
+ 0087 5000              mov A,0
+ 0089 08                push A
+ 008A 5001              mov A,1
+ 008C 08                push A
+ 008D 7C0000            xcall _Screen_CStrAtRowCol
+ 0090 38FC              add SP,-4
+ 0092                   .dbline 105
+ 0092           ;                               Screen_StrAtRowCol(1,0, strPtr);
+ 0092 5200              mov A,[X+0]
+ 0094 08                push A
+ 0095 5201              mov A,[X+1]
+ 0097 08                push A
+ 0098 5000              mov A,0
+ 009A 08                push A
+ 009B 5001              mov A,1
+ 009D 08                push A
+ 009E 7C0000            xcall _Screen_StrAtRowCol
+ 00A1                   .dbline 107
+ 00A1           ;                       
+ 00A1           ;                               if(!cstrcmp((const char*)bufCmdOn,(char*)strPtr))                               {Cmd_On();}
+ 00A1 5200              mov A,[X+0]
+ 00A3 08                push A
+ 00A4 5201              mov A,[X+1]
+ 00A6 08                push A
+ 00A7 5000              mov A,>_bufCmdOn
+ 00A9 08                push A
+ 00AA 5000              mov A,<_bufCmdOn
+ 00AC 08                push A
+ 00AD 7C0000            xcall _cstrcmpLMM
+ 00B0 38F8              add SP,-8
+ 00B2 62D000            mov REG[0xd0],>__r0
+ 00B5 3C0000            cmp [__r0],0
+ 00B8 B00B              jnz L22
+ 00BA 3C0000            cmp [__r1],0
+ 00BD B006              jnz L22
+ 00BF           X1:
+ 00BF                   .dbline 107
+ 00BF                   .dbline 107
+ 00BF 7C0000            xcall _Cmd_On
+ 00C2                   .dbline 107
+ 00C2 815F              xjmp L23
+ 00C4           L22:
+ 00C4                   .dbline 108
+ 00C4           ;                       else if(!cstrcmp((const char*)bufCmdOff,(char*)strPtr))                 {Cmd_Off();}
+ 00C4 5200              mov A,[X+0]
+ 00C6 08                push A
+ 00C7 5201              mov A,[X+1]
+ 00C9 08                push A
+ 00CA 5003              mov A,>_bufCmdOff
+ 00CC 08                push A
+ 00CD 5003              mov A,<_bufCmdOff
+ 00CF 08                push A
+ 00D0 7C0000            xcall _cstrcmpLMM
+ 00D3 38FC              add SP,-4
+ 00D5 62D000            mov REG[0xd0],>__r0
+ 00D8 3C0000            cmp [__r0],0
+ 00DB B00B              jnz L24
+ 00DD 3C0000            cmp [__r1],0
+ 00E0 B006              jnz L24
+ 00E2           X2:
+ 00E2                   .dbline 108
+ 00E2                   .dbline 108
+ 00E2 7C0000            xcall _Cmd_Off
+ 00E5                   .dbline 108
+ 00E5 813C              xjmp L25
+ 00E7           L24:
+ 00E7                   .dbline 109
+ 00E7           ;                       else if(!cstrcmp((const char*)bufCmdFreq,(char*)strPtr))                {Cmd_Freq();}
+ 00E7 5200              mov A,[X+0]
+ 00E9 08                push A
+ 00EA 5201              mov A,[X+1]
+ 00EC 08                push A
+ 00ED 5007              mov A,>_bufCmdFreq
+ 00EF 08                push A
+ 00F0 5007              mov A,<_bufCmdFreq
+ 00F2 08                push A
+ 00F3 7C0000            xcall _cstrcmpLMM
+ 00F6 38FC              add SP,-4
+ 00F8 62D000            mov REG[0xd0],>__r0
+ 00FB 3C0000            cmp [__r0],0
+ 00FE B00B              jnz L26
+ 0100 3C0000            cmp [__r1],0
+ 0103 B006              jnz L26
+ 0105           X3:
+ 0105                   .dbline 109
+ 0105                   .dbline 109
+ 0105 7C0000            xcall _Cmd_Freq
+ 0108                   .dbline 109
+ 0108 8119              xjmp L27
+ 010A           L26:
+ 010A                   .dbline 110
+ 010A           ;                       else if(!cstrcmp((const char*)bufCmdMeasImp,(char*)strPtr))             {pcLinkPrintToSerial(CMD, SRXZ);}
+ 010A 5200              mov A,[X+0]
+ 010C 08                push A
+ 010D 5201              mov A,[X+1]
+ 010F 08                push A
+ 0110 500C              mov A,>_bufCmdMeasImp
+ 0112 08                push A
+ 0113 500C              mov A,<_bufCmdMeasImp
+ 0115 08                push A
+ 0116 7C0000            xcall _cstrcmpLMM
+ 0119 38FC              add SP,-4
+ 011B 62D000            mov REG[0xd0],>__r0
+ 011E 3C0000            cmp [__r0],0
+ 0121 B011              jnz L28
+ 0123 3C0000            cmp [__r1],0
+ 0126 B00C              jnz L28
+ 0128           X4:
+ 0128                   .dbline 110
+ 0128                   .dbline 110
+ 0128 5000              mov A,0
+ 012A 08                push A
+ 012B 08                push A
+ 012C 7C0000            xcall _pcLinkPrintToSerial
+ 012F 38FE              add SP,-2
+ 0131                   .dbline 110
+ 0131 80F0              xjmp L29
+ 0133           L28:
+ 0133                   .dbline 111
+ 0133           ;                       else if(!cstrcmp((const char*)bufCmdMeasRaw,(char*)strPtr))             {pcLinkPrintToSerial(CMD, VFVRVZVA);}
+ 0133 5200              mov A,[X+0]
+ 0135 08                push A
+ 0136 5201              mov A,[X+1]
+ 0138 08                push A
+ 0139 5010              mov A,>_bufCmdMeasRaw
+ 013B 08                push A
+ 013C 5010              mov A,<_bufCmdMeasRaw
+ 013E 08                push A
+ 013F 7C0000            xcall _cstrcmpLMM
+ 0142 38FC              add SP,-4
+ 0144 62D000            mov REG[0xd0],>__r0
+ 0147 3C0000            cmp [__r0],0
+ 014A B013              jnz L30
+ 014C 3C0000            cmp [__r1],0
+ 014F B00E              jnz L30
+ 0151           X5:
+ 0151                   .dbline 111
+ 0151                   .dbline 111
+ 0151 5001              mov A,1
+ 0153 08                push A
+ 0154 5000              mov A,0
+ 0156 08                push A
+ 0157 7C0000            xcall _pcLinkPrintToSerial
+ 015A 38FE              add SP,-2
+ 015C                   .dbline 111
+ 015C 80C5              xjmp L31
+ 015E           L30:
+ 015E                   .dbline 112
+ 015E           ;                               else if(!cstrcmp((const char*)bufCmdScan,(char*)strPtr))                {pcLinkFreqScan(SCAN);}
+ 015E 5200              mov A,[X+0]
+ 0160 08                push A
+ 0161 5201              mov A,[X+1]
+ 0163 08                push A
+ 0164 5014              mov A,>_bufCmdScan
+ 0166 08                push A
+ 0167 5014              mov A,<_bufCmdScan
+ 0169 08                push A
+ 016A 7C0000            xcall _cstrcmpLMM
+ 016D 38FC              add SP,-4
+ 016F 62D000            mov REG[0xd0],>__r0
+ 0172 3C0000            cmp [__r0],0
+ 0175 B010              jnz L32
+ 0177 3C0000            cmp [__r1],0
+ 017A B00B              jnz L32
+ 017C           X6:
+ 017C                   .dbline 112
+ 017C                   .dbline 112
+ 017C 5001              mov A,1
+ 017E 08                push A
+ 017F 7C0000            xcall _pcLinkFreqScan
+ 0182 38FF              add SP,-1
+ 0184                   .dbline 112
+ 0184 809D              xjmp L33
+ 0186           L32:
+ 0186                   .dbline 113
+ 0186           ;                       else if(!cstrcmp((const char*)bufCmdScanRaw,(char*)strPtr))             {pcLinkFreqScan(SCANR);}
+ 0186 5200              mov A,[X+0]
+ 0188 08                push A
+ 0189 5201              mov A,[X+1]
+ 018B 08                push A
+ 018C 5019              mov A,>_bufCmdScanRaw
+ 018E 08                push A
+ 018F 5019              mov A,<_bufCmdScanRaw
+ 0191 08                push A
+ 0192 7C0000            xcall _cstrcmpLMM
+ 0195 38FC              add SP,-4
+ 0197 62D000            mov REG[0xd0],>__r0
+ 019A 3C0000            cmp [__r0],0
+ 019D B010              jnz L34
+ 019F 3C0000            cmp [__r1],0
+ 01A2 B00B              jnz L34
+ 01A4           X7:
+ 01A4                   .dbline 113
+ 01A4                   .dbline 113
+ 01A4 5002              mov A,2
+ 01A6 08                push A
+ 01A7 7C0000            xcall _pcLinkFreqScan
+ 01AA 38FF              add SP,-1
+ 01AC                   .dbline 113
+ 01AC 8075              xjmp L35
+ 01AE           L34:
+ 01AE                   .dbline 114
+ 01AE           ;                               else if(!cstrcmp((const char*)bufCmdScanBR,(char*)strPtr))              {pcLinkFreqScan(SCANBR);}                                       
+ 01AE 5200              mov A,[X+0]
+ 01B0 08                push A
+ 01B1 5201              mov A,[X+1]
+ 01B3 08                push A
+ 01B4 501F              mov A,>_bufCmdScanBR
+ 01B6 08                push A
+ 01B7 501F              mov A,<_bufCmdScanBR
+ 01B9 08                push A
+ 01BA 7C0000            xcall _cstrcmpLMM
+ 01BD 38FC              add SP,-4
+ 01BF 62D000            mov REG[0xd0],>__r0
+ 01C2 3C0000            cmp [__r0],0
+ 01C5 B010              jnz L36
+ 01C7 3C0000            cmp [__r1],0
+ 01CA B00B              jnz L36
+ 01CC           X8:
+ 01CC                   .dbline 114
+ 01CC                   .dbline 114
+ 01CC 5003              mov A,3
+ 01CE 08                push A
+ 01CF 7C0000            xcall _pcLinkFreqScan
+ 01D2 38FF              add SP,-1
+ 01D4                   .dbline 114
+ 01D4 804D              xjmp L37
+ 01D6           L36:
+ 01D6                   .dbline 115
+ 01D6           ;                               else if(!cstrcmp((const char*)bufCmdScanV,(char*)strPtr))               {pcLinkFreqScan(SCANV);}                                        
+ 01D6 5200              mov A,[X+0]
+ 01D8 08                push A
+ 01D9 5201              mov A,[X+1]
+ 01DB 08                push A
+ 01DC 5026              mov A,>_bufCmdScanV
+ 01DE 08                push A
+ 01DF 5026              mov A,<_bufCmdScanV
+ 01E1 08                push A
+ 01E2 7C0000            xcall _cstrcmpLMM
+ 01E5 38FC              add SP,-4
+ 01E7 62D000            mov REG[0xd0],>__r0
+ 01EA 3C0000            cmp [__r0],0
+ 01ED B010              jnz L38
+ 01EF 3C0000            cmp [__r1],0
+ 01F2 B00B              jnz L38
+ 01F4           X9:
+ 01F4                   .dbline 115
+ 01F4                   .dbline 115
+ 01F4 5004              mov A,4
+ 01F6 08                push A
+ 01F7 7C0000            xcall _pcLinkFreqScan
+ 01FA 38FF              add SP,-1
+ 01FC                   .dbline 115
+ 01FC 8025              xjmp L39
+ 01FE           L38:
+ 01FE                   .dbline 116
+ 01FE           ;                               else{ UART_CPutString(bufErrCmdNotFound1); UART_PutString(strPtr); UART_CPutString(bufErrCmdNotFound2);}
+ 01FE                   .dbline 116
+ 01FE 10                push X
+ 01FF 5062              mov A,>_bufErrCmdNotFound1
+ 0201 08                push A
+ 0202 5062              mov A,<_bufErrCmdNotFound1
+ 0204 5C                mov X,A
+ 0205 18                pop A
+ 0206 7C0000            xcall _UART_CPutString
+ 0209 20                pop X
+ 020A                   .dbline 116
+ 020A 10                push X
+ 020B 5200              mov A,[X+0]
+ 020D 08                push A
+ 020E 5201              mov A,[X+1]
+ 0210 5C                mov X,A
+ 0211 18                pop A
+ 0212 7C0000            xcall _UART_PutString
+ 0215 20                pop X
+ 0216                   .dbline 116
+ 0216 10                push X
+ 0217 506E              mov A,>_bufErrCmdNotFound2
+ 0219 08                push A
+ 021A 506E              mov A,<_bufErrCmdNotFound2
+ 021C 5C                mov X,A
+ 021D 18                pop A
+ 021E 7C0000            xcall _UART_CPutString
+ 0221 20                pop X
+ 0222                   .dbline 116
+ 0222           L39:
+ 0222           L37:
+ 0222           L35:
+ 0222           L33:
+ 0222           L31:
+ 0222           L29:
+ 0222           L27:
+ 0222           L25:
+ 0222           L23:
+ 0222                   .dbline 117
+ 0222           ;                       }
+ 0222           L20:
+ 0222                   .dbline 118
+ 0222           ;                       UART_CmdReset(); // Reset command buffer
+ 0222 10                push X
+ 0223 7C0000            xcall _UART_CmdReset
+ 0226 20                pop X
+ 0227                   .dbline 119
+ 0227           ;                       UART_CPutString(bufCmdPrompt);
+ 0227 10                push X
+ 0228 5050              mov A,>_bufCmdPrompt
+ 022A 08                push A
+ 022B 5050              mov A,<_bufCmdPrompt
+ 022D 5C                mov X,A
+ 022E 18                pop A
+ 022F 7C0000            xcall _UART_CPutString
+ 0232 20                pop X
+ 0233                   .dbline 120
+ 0233           ;               }
+ 0233           L18:
+ 0233                   .dbline 121
+ 0233           ;               Screen_CStrAtRowCol(0,11, "     ");
+ 0233 507C              mov A,>L40
+ 0235 08                push A
+ 0236 507C              mov A,<L40
+ 0238 08                push A
+ 0239 500B              mov A,11
+ 023B 08                push A
+ 023C 5000              mov A,0
+ 023E 08                push A
+ 023F 7C0000            xcall _Screen_CStrAtRowCol
+ 0242 38FC              add SP,-4
+ 0244                   .dbline 122
+ 0244           ;       }
+ 0244           L14:
+ 0244                   .dbline 98
+ 0244 8E06              xjmp L13
+ 0246           L15:
+ 0246                   .dbline 123
+ 0246           ;       Set_DDS(0);
+ 0246 5000              mov A,0
+ 0248 08                push A
+ 0249 08                push A
+ 024A 08                push A
+ 024B 08                push A
+ 024C 7C0000            xcall _Set_DDS
+ 024F 38FC              add SP,-4
+ 0251                   .dbline 124
+ 0251           ;       UART_Stop();
+ 0251 10                push X
+ 0252 7C0000            xcall _UART_Stop
+ 0255 20                pop X
+ 0256                   .dbline -2
+ 0256           L12:
+ 0256 38FE              add SP,-2
+ 0258 20                pop X
+ 0259                   .dbline 0 ; func end
+ 0259 7F                ret
+ 025A                   .dbsym l strPtr 0 pc
+ 025A                   .dbend
+                        .area lit(rom, con, rel)
+ 007C           L40:
+ 007C 202020202000      .byte 32,32,32,32,32,0

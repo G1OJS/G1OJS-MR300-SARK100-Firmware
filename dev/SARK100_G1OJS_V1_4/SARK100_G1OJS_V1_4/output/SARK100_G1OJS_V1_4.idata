@@ -1,0 +1,22 @@
+flash 658A SRAM    B:
+ 00 88 bytes
+flash 658E SRAM   83:
+ 00 16 bytes
+flash 6592 SRAM   93:
+ <size at next line>   3 8A  3 92  3 A0  3 AE  3 BB  3 CA  3 DA  3 E4
+  [size:] 16 bytes
+flash 65A5 SRAM   B2:
+ <size at next line>   2 6E  2 7A  2 86  2 93  2 A0  3 F3  3 F7  3 FF  4  7  4 18  4 60  4 67  4 6F  4 77  4 7F  4 29  4 2D  4 32  4 37  4 3C  4 40  4 46  4 4D  4 54  4 58  4 5C
+  [size:] 52 bytes
+flash 65DC SRAM   E6:
+ 00 18 bytes
+flash 65E0 SRAM  100:
+ 00 6 bytes
+flash 65E4 SRAM  106:
+ <size at next line>   1
+  [size:] 1 bytes
+flash 65E8 SRAM  108:
+ 00 7 bytes
+flash 65EC SRAM  10F:
+ <size at next line>   8 3F  0  0  0  5  0  0  0  1
+  [size:] 10 bytes

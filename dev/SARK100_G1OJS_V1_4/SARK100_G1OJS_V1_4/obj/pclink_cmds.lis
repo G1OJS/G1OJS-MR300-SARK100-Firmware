@@ -1,0 +1,1944 @@
+ 0000                   cpu LMM
+                        .module pclink_cmds.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./pclink_cmds.c
+                        .area lit(rom, con, rel)
+ 0000           _bufOk:
+ 0000 0D0A4F4B0D0A00    .byte 13,10,'O,'K,13,10,0
+ 0007                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\pclink_cmds.c
+ 0007                   .dbsym s bufOk _bufOk A[7:7]kc
+ 0007           _bufStart:
+ 0007 0D0A53746172740D0A00      .byte 13,10,'S,'t,'a,'r,'t,13,10,0
+ 0011                   .dbsym s bufStart _bufStart A[10:10]kc
+ 0011           _bufEnd:
+ 0011 456E640D0A00      .byte 'E,'n,'d,13,10,0
+ 0017                   .dbsym s bufEnd _bufEnd A[6:6]kc
+ 0017           _bufErrFreqNotSet:
+ 0017 0D0A4572726F723A2066726571206E6F  .byte 13,10,'E,'r,'r,'o,'r,58,32,'f,'r,'e,'q,32,'n,'o
+ 0027 74207365740D0A00  .byte 't,32,'s,'e,'t,13,10,0
+ 002F                   .dbsym s bufErrFreqNotSet _bufErrFreqNotSet A[24:24]kc
+ 002F           _bufErrExpectFreq:
+ 002F 0D0A4572726F723A2065787065637465  .byte 13,10,'E,'r,'r,'o,'r,58,32,'e,'x,'p,'e,'c,'t,'e
+ 003F 6420667265712076616C0D0A00        .byte 'd,32,'f,'r,'e,'q,32,'v,'a,'l,13,10,0
+ 004C                   .dbsym s bufErrExpectFreq _bufErrExpectFreq A[29:29]kc
+ 004C           _bufErrExpectStep:
+ 004C 0D0A4572726F723A2065787065637465  .byte 13,10,'E,'r,'r,'o,'r,58,32,'e,'x,'p,'e,'c,'t,'e
+ 005C 6420737465702076616C0D0A00        .byte 'd,32,'s,'t,'e,'p,32,'v,'a,'l,13,10,0
+ 0069                   .dbsym s bufErrExpectStep _bufErrExpectStep A[29:29]kc
+ 0069           _bufErrInvalidFreq:
+ 0069 0D0A4572726F723A20696E76616C6964  .byte 13,10,'E,'r,'r,'o,'r,58,32,'i,'n,'v,'a,'l,'i,'d
+ 0079 20667265710D0A00  .byte 32,'f,'r,'e,'q,13,10,0
+ 0081                   .dbsym s bufErrInvalidFreq _bufErrInvalidFreq A[24:24]kc
+ 0081           _bThousandCommaStr:
+ 0081 3030302C00        .byte 48,48,48,44,0
+ 0086                   .dbsym s bThousandCommaStr _bThousandCommaStr A[5:5]kc
+ 0086           _bThousandStr:
+ 0086 30303000          .byte 48,48,48,0
+ 008A                   .dbsym s bThousandStr _bThousandStr A[4:4]kc
+ 008A           _bCommaStr:
+ 008A 2C00              .byte 44,0
+ 008C                   .dbsym s bCommaStr _bCommaStr A[2:2]kc
+                        .area text(rom, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\pclink_cmds.c
+ 0000                   .dbfunc e Cmd_On _Cmd_On fV
+ 0000           _Cmd_On::
+ 0000                   .dbline -1
+ 0000                   .dbline 73
+ 0000           ; //*****************************************************************************/
+ 0000           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0000           ; //
+ 0000           ; //    Copyright © 2025 Alan Robinson G1OJS Hampshire England G1OJS@yahoo.com with 
+ 0000           ; //  acknowledgement & thanks to Melchor Varela © 2010, EA4FRB Madrid, Spain 
+ 0000           ; //    (melchor.varela@gmail.com) for the overall software and ideas.
+ 0000           ; //  
+ 0000           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0000           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0000           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0000           ; //  or (at your option) any later version.
+ 0000           ; //
+ 0000           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0000           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0000           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0000           ; //  GNU General Public License for more details.
+ 0000           ; //
+ 0000           ; //  You should have received a copy of the GNU General Public License
+ 0000           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0000           ; //  see <http://www.gnu.org/licenses/>.
+ 0000           ; //*****************************************************************************/
+ 0000           ; //*****************************************************************************/
+ 0000           ; //
+ 0000           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0000           ; //    FILE NAME:      pclink_cmds.c
+ 0000           ; //    AUTHOR:         G1OJS - Alan Robinson
+ 0000           ; //    DESCRIPTION     Refactored (to save memory) commands from original pclink plus new commands
+ 0000           ; //    HISTORY
+ 0000           ; //    NAME            DATE            REMARKS 
+ 0000           ; //    AJR                     FEB 2025        G1OJS  - creation 
+ 0000           ; //*****************************************************************************/
+ 0000           ; #include "pclink_cmds.h"
+ 0000           ; #include <stdlib.h>
+ 0000           ; #include "control.h"
+ 0000           ; #include "UART.h"
+ 0000           ; #include "glb_data.h"
+ 0000           ; #include "bridge.h"
+ 0000           ; #include "derive.h"
+ 0000           ; #include "dds.h"
+ 0000           ; #include "screens.h"
+ 0000           ; #include "correctionmodel.h"
+ 0000           ; 
+ 0000           ; static BYTE const bufOk                               [] = "\r\nOK\r\n";
+ 0000           ; static BYTE const bufStart                    [] = "\r\nStart\r\n";
+ 0000           ; static BYTE const bufEnd                      [] = "End\r\n";
+ 0000           ; static BYTE const bufErrFreqNotSet    [] = "\r\nError: freq not set\r\n";
+ 0000           ; static BYTE const bufErrExpectFreq    [] = "\r\nError: expected freq val\r\n";
+ 0000           ; static BYTE const bufErrExpectStep    [] = "\r\nError: expected step val\r\n";
+ 0000           ; static BYTE const bufErrInvalidFreq   [] = "\r\nError: invalid freq\r\n";
+ 0000           ; static BYTE const bThousandCommaStr   [] = "000,";
+ 0000           ; static BYTE const bThousandStr                [] = "000";
+ 0000           ; static BYTE const bCommaStr           [] = ",";
+ 0000           ; 
+ 0000           ; #define NFILTERS 2
+ 0000           ; static WORD wVals[NFILTERS];
+ 0000           ; 
+ 0000           ; BYTE bWeight;
+ 0000           ; 
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; //  Prototypes
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; void MeasureCorrectCalc(void);
+ 0000           ; char FormatNumberRJ(unsigned long dwVal, unsigned char bFieldLen, unsigned char bDP);
+ 0000           ; WORD filter(WORD wVal, RATIO_TYPE rRatio);
+ 0000           ; 
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; //  FUNCTION NAME:    Cmd_On
+ 0000           ; //  DESCRIPTION:      Process on (enable DDS) command
+ 0000           ; //    ARGUMENTS:              none. 
+ 0000           ; //    RETURNS:                none.
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; void Cmd_On (void)
+ 0000           ; {
+ 0000                   .dbline 74
+ 0000           ;       Set_DDS(g_dwCurrHz);
+ 0000 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0003 5100              mov A,[_g_dwCurrHz]
+ 0005 08                push A
+ 0006 5101              mov A,[_g_dwCurrHz+1]
+ 0008 08                push A
+ 0009 5102              mov A,[_g_dwCurrHz+2]
+ 000B 08                push A
+ 000C 5103              mov A,[_g_dwCurrHz+3]
+ 000E 08                push A
+ 000F 7C0000            xcall _Set_DDS
+ 0012 38FC              add SP,-4
+ 0014                   .dbline 75
+ 0014           ;       UART_CPutString(bufOk);
+ 0014 10                push X
+ 0015 5000              mov A,>_bufOk
+ 0017 08                push A
+ 0018 5000              mov A,<_bufOk
+ 001A 5C                mov X,A
+ 001B 18                pop A
+ 001C 7C0000            xcall _UART_CPutString
+ 001F 20                pop X
+ 0020                   .dbline -2
+ 0020           L12:
+ 0020                   .dbline 0 ; func end
+ 0020 7F                ret
+ 0021                   .dbend
+ 0021                   .dbfunc e Cmd_Off _Cmd_Off fV
+ 0021           _Cmd_Off::
+ 0021                   .dbline -1
+ 0021                   .dbline 84
+ 0021           ; }
+ 0021           ; //-----------------------------------------------------------------------------
+ 0021           ; //  FUNCTION NAME:    Cmd_Off
+ 0021           ; //  DESCRIPTION:      Process on command
+ 0021           ; //  ARGUMENTS:                none.
+ 0021           ; //  RETURNS:                  none.
+ 0021           ; //-----------------------------------------------------------------------------
+ 0021           ; void Cmd_Off (void)
+ 0021           ; {
+ 0021                   .dbline 85
+ 0021           ;       Set_DDS(0);
+ 0021 5000              mov A,0
+ 0023 08                push A
+ 0024 08                push A
+ 0025 08                push A
+ 0026 08                push A
+ 0027 7C0000            xcall _Set_DDS
+ 002A 38FC              add SP,-4
+ 002C                   .dbline 86
+ 002C           ;       UART_CPutString(bufOk);
+ 002C 10                push X
+ 002D 5000              mov A,>_bufOk
+ 002F 08                push A
+ 0030 5000              mov A,<_bufOk
+ 0032 5C                mov X,A
+ 0033 18                pop A
+ 0034 7C0000            xcall _UART_CPutString
+ 0037 20                pop X
+ 0038                   .dbline -2
+ 0038           L13:
+ 0038                   .dbline 0 ; func end
+ 0038 7F                ret
+ 0039                   .dbend
+ 0039                   .dbfunc e Cmd_Freq _Cmd_Freq fV
+ 0039           ;  dwfreqRequest -> X+0
+ 0039           _Cmd_Freq::
+ 0039                   .dbline -1
+ 0039 10                push X
+ 003A 4F                mov X,SP
+ 003B 3804              add SP,4
+ 003D                   .dbline 95
+ 003D           ; }
+ 003D           ; //-----------------------------------------------------------------------------
+ 003D           ; //  FUNCTION NAME:    Cmd_Freq
+ 003D           ; //  DESCRIPTION:      Process freq (set frequency) command
+ 003D           ; //  ARGUMENTS:                none.
+ 003D           ; //  RETURNS:          none.
+ 003D           ; //-----------------------------------------------------------------------------
+ 003D           ; void Cmd_Freq (void)
+ 003D           ; {
+ 003D                   .dbline 96
+ 003D           ;       DWORD dwfreqRequest = getFreqArg(); 
+ 003D 97E7              xcall _getFreqArg
+ 003F 62D000            mov REG[0xd0],>__r0
+ 0042 5100              mov A,[__r0]
+ 0044 5400              mov [X+0],A
+ 0046 5100              mov A,[__r1]
+ 0048 5401              mov [X+1],A
+ 004A 5100              mov A,[__r2]
+ 004C 5402              mov [X+2],A
+ 004E 5100              mov A,[__r3]
+ 0050 5403              mov [X+3],A
+ 0052                   .dbline 97
+ 0052           ;       if (dwfreqRequest >= FREQ_MIN_Hz && dwfreqRequest <= FREQ_MAX_Hz) { 
+ 0052 5203              mov A,[X+3]
+ 0054 1140              sub A,64
+ 0056 5202              mov A,[X+2]
+ 0058 1942              sbb A,66
+ 005A 5201              mov A,[X+1]
+ 005C 190F              sbb A,15
+ 005E 5200              mov A,[X+0]
+ 0060 1900              sbb A,0
+ 0062 C034              jc L15
+ 0064           X0:
+ 0064 5000              mov A,0
+ 0066 1303              sub A,[X+3]
+ 0068 5087              mov A,-121
+ 006A 1B02              sbb A,[X+2]
+ 006C 5093              mov A,-109
+ 006E 1B01              sbb A,[X+1]
+ 0070 5003              mov A,3
+ 0072 1B00              sbb A,[X+0]
+ 0074 C022              jc L15
+ 0076           X1:
+ 0076                   .dbline 97
+ 0076                   .dbline 98
+ 0076           ;               g_dwCurrHz=dwfreqRequest;
+ 0076 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0079 5200              mov A,[X+0]
+ 007B 5300              mov [_g_dwCurrHz],A
+ 007D 5201              mov A,[X+1]
+ 007F 5301              mov [_g_dwCurrHz+1],A
+ 0081 5202              mov A,[X+2]
+ 0083 5302              mov [_g_dwCurrHz+2],A
+ 0085 5203              mov A,[X+3]
+ 0087 5303              mov [_g_dwCurrHz+3],A
+ 0089                   .dbline 99
+ 0089           ;               UART_CPutString(bufOk);
+ 0089 10                push X
+ 008A 5000              mov A,>_bufOk
+ 008C 08                push A
+ 008D 5000              mov A,<_bufOk
+ 008F 5C                mov X,A
+ 0090 18                pop A
+ 0091 7C0000            xcall _UART_CPutString
+ 0094 20                pop X
+ 0095                   .dbline 100
+ 0095           ;       } else {
+ 0095 800D              xjmp L16
+ 0097           L15:
+ 0097                   .dbline 100
+ 0097                   .dbline 101
+ 0097           ;               UART_CPutString(bufErrInvalidFreq);
+ 0097 10                push X
+ 0098 5069              mov A,>_bufErrInvalidFreq
+ 009A 08                push A
+ 009B 5069              mov A,<_bufErrInvalidFreq
+ 009D 5C                mov X,A
+ 009E 18                pop A
+ 009F 7C0000            xcall _UART_CPutString
+ 00A2 20                pop X
+ 00A3                   .dbline 102
+ 00A3           ;       }
+ 00A3           L16:
+ 00A3                   .dbline -2
+ 00A3           L14:
+ 00A3 38FC              add SP,-4
+ 00A5 20                pop X
+ 00A6                   .dbline 0 ; func end
+ 00A6 7F                ret
+ 00A7                   .dbsym l dwfreqRequest 0 l
+ 00A7                   .dbend
+ 00A7                   .dbfunc e pcLinkPrintToSerial _pcLinkPrintToSerial fV
+ 00A7           ;            wVa -> X+2
+ 00A7           ;            wVf -> X+0
+ 00A7           ;    pwPrintWhat -> X-5
+ 00A7           ;          mMode -> X-4
+ 00A7           _pcLinkPrintToSerial::
+ 00A7                   .dbline -1
+ 00A7 10                push X
+ 00A8 4F                mov X,SP
+ 00A9 3810              add SP,16
+ 00AB                   .dbline 136
+ 00AB           ; }
+ 00AB           ; //-----------------------------------------------------------------------------
+ 00AB           ; //  FUNCTION NAME:    pcLinkPrintToSerial
+ 00AB           ; //  DESCRIPTION:      Print out all four bridge voltages and/or SWR,R,X,Z
+ 00AB           ; //                                    depending on PRINT_WHAT
+ 00AB           ; //                                    NOTE that individual voltages are no longer used in the bulk
+ 00AB           ; //                                    of the calculations (converted to ratios just after measurement)
+ 00AB           ; //                                    but 4 values need to be provided for compatibility with 
+ 00AB           ; //                                    companion software that expects them via Cmd_Raw
+ 00AB           ; //                                    Hence, measure Vf and Vr again (uncorrected) and print out
+ 00AB           ; //                                    Vf_uncorrected, Vf_uncorrected x (Vr/Vf)_corrected, 
+ 00AB           ; //                                    Va_uncorrected x (Vz/Va)_corrected, Va_uncorrected
+ 00AB           ; //  ARGUMENTS:                MEASMODE = CMD | SCANNING
+ 00AB           ; //                                            CMD - called directly from pclink, likely 3rd party software
+ 00AB           ; //                                            SCANNING - called from pcLinkFreqScan & using averaging
+ 00AB           ; //                                    PRINT_WHAT = VRVFVZVA | SRXZ | COMBI
+ 00AB           ; //
+ 00AB           ; //    RETURNS:         
+ 00AB           ; //
+ 00AB           ; //    - if PRINT_WHAT == VRVFVZVA             (this emulates the old Cmd_Raw)
+ 00AB           ; //            Response: corrected voltages  Vf, 'Vr' = (Vr/Vf)*Vf, 
+ 00AB           ; //                                                                      'Vz'     = (Vz/Va)*Va, Va
+ 00AB           ; //
+ 00AB           ; //    Example: 4000000,165000,31800,1000000 
+ 00AB           ; //
+ 00AB           ; //    - if PRINT_WHAT == SRXZ                 (this emulates the old Cmd_Imp)
+ 00AB           ; //            Response: corrected parameters {SWR},{R},{X},{Z}
+ 00AB           ; //    Example: 1.05,52,10,51 
+ 00AB           ; //
+ 00AB           ; //  NOTE: used by some third party software. The expected format is as the example above
+ 00AB           ; //-----------------------------------------------------------------------------
+ 00AB           ; 
+ 00AB           ; void pcLinkPrintToSerial (MEASMODE mMode, PRINT_WHAT pwPrintWhat)
+ 00AB           ; {
+ 00AB                   .dbline 144
+ 00AB           ;       WORD wVf;
+ 00AB           ;       WORD wVa;
+ 00AB           ;       // TODO is it important to respect the original DDS condition on entry? 
+ 00AB           ;       // if so, how to detect DDS on or off easily ...
+ 00AB           ;       
+ 00AB           ;       // if scanning, use ratios set by scan routine
+ 00AB           ;       // if not, get new ones now & note CMD measurement is always corrected
+ 00AB           ;       if(mMode == CMD) MeasureCorrectCalc(); 
+ 00AB 3DFC00            cmp [X-4],0
+ 00AE B004              jnz L18
+ 00B0                   .dbline 144
+ 00B0 7C0000            xcall _MeasureCorrectCalc
+ 00B3           L18:
+ 00B3                   .dbline 146
+ 00B3           ; 
+ 00B3           ;       if(pwPrintWhat == VFVRVZVA){    
+ 00B3 3DFB01            cmp [X-5],1
+ 00B6 B13F              jnz L20
+ 00B8                   .dbline 146
+ 00B8                   .dbline 147
+ 00B8           ;               wVf=wRead_ADC_DDSON(VfPort);
+ 00B8 5000              mov A,0
+ 00BA 08                push A
+ 00BB 7C0000            xcall _wRead_ADC_DDSON
+ 00BE 38FF              add SP,-1
+ 00C0 62D000            mov REG[0xd0],>__r0
+ 00C3 5100              mov A,[__r1]
+ 00C5 5401              mov [X+1],A
+ 00C7 5100              mov A,[__r0]
+ 00C9 5400              mov [X+0],A
+ 00CB                   .dbline 148
+ 00CB           ;               wVa=wRead_ADC_DDSON(VaPort);
+ 00CB 5003              mov A,3
+ 00CD 08                push A
+ 00CE 7C0000            xcall _wRead_ADC_DDSON
+ 00D1 62D000            mov REG[0xd0],>__r0
+ 00D4 5100              mov A,[__r1]
+ 00D6 5403              mov [X+3],A
+ 00D8 5100              mov A,[__r0]
+ 00DA 5402              mov [X+2],A
+ 00DC                   .dbline 149
+ 00DC           ;               PrintWdToSerial(wVf ,0, bThousandCommaStr);  
+ 00DC 5081              mov A,>_bThousandCommaStr
+ 00DE 08                push A
+ 00DF 5081              mov A,<_bThousandCommaStr
+ 00E1 08                push A
+ 00E2 5000              mov A,0
+ 00E4 08                push A
+ 00E5 5200              mov A,[X+0]
+ 00E7 08                push A
+ 00E8 5201              mov A,[X+1]
+ 00EA 08                push A
+ 00EB 9787              xcall _PrintWdToSerial
+ 00ED 38FA              add SP,-6
+ 00EF                   .dbline 150
+ 00EF           ;               PrintWdToSerial(  ((DWORD)wVf*(DWORD)g_wBrgRts[MODGAMMA]) / wUNITY ,0, bThousandCommaStr);
+ 00EF 5081              mov A,>_bThousandCommaStr
+ 00F1 08                push A
+ 00F2 5081              mov A,<_bThousandCommaStr
+ 00F4 08                push A
+ 00F5 5000              mov A,0
+ 00F7 08                push A
+ 00F8 62D000            mov REG[0xd0],>_g_wBrgRts
+ 00FB 5103              mov A,[_g_wBrgRts+2+1]
+ 00FD 62D000            mov REG[0xd0],>__r0
+ 0100 5300              mov [__r3],A
+ 0102 62D000            mov REG[0xd0],>_g_wBrgRts
+ 0105 5102              mov A,[_g_wBrgRts+2]
+ 0107 62D000            mov REG[0xd0],>__r0
+ 010A 5300              mov [__r2],A
+ 010C 5201              mov A,[X+1]
+ 010E 5300              mov [__r7],A
+ 0110 5200              mov A,[X+0]
+ 0112 5300              mov [__r6],A
+ 0114 5000              mov A,0
+ 0116 08                push A
+ 0117 08                push A
+ 0118 5100              mov A,[__r2]
+ 011A 08                push A
+ 011B 5100              mov A,[__r3]
+ 011D 08                push A
+ 011E 5000              mov A,0
+ 0120 08                push A
+ 0121 08                push A
+ 0122 5100              mov A,[__r6]
+ 0124 08                push A
+ 0125 5100              mov A,[__r7]
+ 0127 08                push A
+ 0128 7C0000            xcall __mul_32X32_32
+ 012B 38FC              add SP,-4
+ 012D 18                pop A
+ 012E 5300              mov [__r3],A
+ 0130 18                pop A
+ 0131 5300              mov [__r2],A
+ 0133 18                pop A
+ 0134 5300              mov [__r1],A
+ 0136 18                pop A
+ 0137 5300              mov [__r0],A
+ 0139 5000              mov A,0
+ 013B 08                push A
+ 013C 08                push A
+ 013D 5003              mov A,3
+ 013F 08                push A
+ 0140 50E8              mov A,-24
+ 0142 08                push A
+ 0143 5100              mov A,[__r0]
+ 0145 08                push A
+ 0146 5100              mov A,[__r1]
+ 0148 08                push A
+ 0149 5100              mov A,[__r2]
+ 014B 08                push A
+ 014C 5100              mov A,[__r3]
+ 014E 08                push A
+ 014F 7C0000            xcall __divmodu_32X32_32
+ 0152 18                pop A
+ 0153 5300              mov [__r3],A
+ 0155 18                pop A
+ 0156 5300              mov [__r2],A
+ 0158 18                pop A
+ 0159 18                pop A
+ 015A 38FC              add SP,-4
+ 015C 5100              mov A,[__r3]
+ 015E 5300              mov [__r1],A
+ 0160 5100              mov A,[__r2]
+ 0162 08                push A
+ 0163 5100              mov A,[__r1]
+ 0165 08                push A
+ 0166 970C              xcall _PrintWdToSerial
+ 0168 38FB              add SP,-5
+ 016A                   .dbline 151
+ 016A           ;               PrintWdToSerial(  ((DWORD)wVa*(DWORD)g_wBrgRts[MODZ])     / wUNITY ,0, bThousandCommaStr);
+ 016A 5081              mov A,>_bThousandCommaStr
+ 016C 08                push A
+ 016D 5081              mov A,<_bThousandCommaStr
+ 016F 08                push A
+ 0170 5000              mov A,0
+ 0172 08                push A
+ 0173 62D000            mov REG[0xd0],>_g_wBrgRts
+ 0176 5101              mov A,[_g_wBrgRts+1]
+ 0178 62D000            mov REG[0xd0],>__r0
+ 017B 5300              mov [__r3],A
+ 017D 62D000            mov REG[0xd0],>_g_wBrgRts
+ 0180 5100              mov A,[_g_wBrgRts]
+ 0182 62D000            mov REG[0xd0],>__r0
+ 0185 5300              mov [__r2],A
+ 0187 5203              mov A,[X+3]
+ 0189 5300              mov [__r7],A
+ 018B 5202              mov A,[X+2]
+ 018D 5300              mov [__r6],A
+ 018F 5000              mov A,0
+ 0191 08                push A
+ 0192 08                push A
+ 0193 5100              mov A,[__r2]
+ 0195 08                push A
+ 0196 5100              mov A,[__r3]
+ 0198 08                push A
+ 0199 5000              mov A,0
+ 019B 08                push A
+ 019C 08                push A
+ 019D 5100              mov A,[__r6]
+ 019F 08                push A
+ 01A0 5100              mov A,[__r7]
+ 01A2 08                push A
+ 01A3 7C0000            xcall __mul_32X32_32
+ 01A6 38FC              add SP,-4
+ 01A8 18                pop A
+ 01A9 5300              mov [__r3],A
+ 01AB 18                pop A
+ 01AC 5300              mov [__r2],A
+ 01AE 18                pop A
+ 01AF 5300              mov [__r1],A
+ 01B1 18                pop A
+ 01B2 5300              mov [__r0],A
+ 01B4 5000              mov A,0
+ 01B6 08                push A
+ 01B7 08                push A
+ 01B8 5003              mov A,3
+ 01BA 08                push A
+ 01BB 50E8              mov A,-24
+ 01BD 08                push A
+ 01BE 5100              mov A,[__r0]
+ 01C0 08                push A
+ 01C1 5100              mov A,[__r1]
+ 01C3 08                push A
+ 01C4 5100              mov A,[__r2]
+ 01C6 08                push A
+ 01C7 5100              mov A,[__r3]
+ 01C9 08                push A
+ 01CA 7C0000            xcall __divmodu_32X32_32
+ 01CD 18                pop A
+ 01CE 5300              mov [__r3],A
+ 01D0 18                pop A
+ 01D1 5300              mov [__r2],A
+ 01D3 18                pop A
+ 01D4 18                pop A
+ 01D5 38FC              add SP,-4
+ 01D7 5100              mov A,[__r3]
+ 01D9 5300              mov [__r1],A
+ 01DB 5100              mov A,[__r2]
+ 01DD 08                push A
+ 01DE 5100              mov A,[__r1]
+ 01E0 08                push A
+ 01E1 9691              xcall _PrintWdToSerial
+ 01E3                   .dbline 152
+ 01E3           ;               PrintWdToSerial(wVa ,0, bThousandStr);
+ 01E3 5086              mov A,>_bThousandStr
+ 01E5 08                push A
+ 01E6 5086              mov A,<_bThousandStr
+ 01E8 08                push A
+ 01E9 5000              mov A,0
+ 01EB 08                push A
+ 01EC 5202              mov A,[X+2]
+ 01EE 08                push A
+ 01EF 5203              mov A,[X+3]
+ 01F1 08                push A
+ 01F2 9680              xcall _PrintWdToSerial
+ 01F4 38F6              add SP,-10
+ 01F6                   .dbline 153
+ 01F6           ;       }
+ 01F6           L20:
+ 01F6                   .dbline 155
+ 01F6           ;               
+ 01F6           ;       if(pwPrintWhat == SRXZ){        
+ 01F6 3DFB00            cmp [X-5],0
+ 01F9 B14C              jnz L23
+ 01FB                   .dbline 155
+ 01FB                   .dbline 157
+ 01FB           ;               // Use 1 Ohm resolution on R,X,Z unless mMode=SCANBR, then use 0.1 Ohm resolution 
+ 01FB           ;               PrintWdToSerial(g_wSwr100,                                                                                            2,        bCommaStr);     
+ 01FB 508A              mov A,>_bCommaStr
+ 01FD 08                push A
+ 01FE 508A              mov A,<_bCommaStr
+ 0200 08                push A
+ 0201 5002              mov A,2
+ 0203 08                push A
+ 0204 62D000            mov REG[0xd0],>_g_wSwr100
+ 0207 5100              mov A,[_g_wSwr100]
+ 0209 08                push A
+ 020A 5101              mov A,[_g_wSwr100+1]
+ 020C 08                push A
+ 020D 9665              xcall _PrintWdToSerial
+ 020F 38FB              add SP,-5
+ 0211                   .dbline 158
+ 0211           ;               PrintWdToSerial((mMode==SCANBR)? g_wR10:((g_wR10+5)/10), (mMode==SCANBR)? 1:0,  bCommaStr);
+ 0211 508A              mov A,>_bCommaStr
+ 0213 08                push A
+ 0214 508A              mov A,<_bCommaStr
+ 0216 08                push A
+ 0217 3DFC03            cmp [X-4],3
+ 021A B009              jnz L27
+ 021C 560501            mov [X+5],1
+ 021F 560400            mov [X+4],0
+ 0222 8007              xjmp L28
+ 0224           L27:
+ 0224 560500            mov [X+5],0
+ 0227 560400            mov [X+4],0
+ 022A           L28:
+ 022A 5205              mov A,[X+5]
+ 022C 08                push A
+ 022D 3DFC03            cmp [X-4],3
+ 0230 B00E              jnz L29
+ 0232 62D000            mov REG[0xd0],>_g_wR10
+ 0235 5101              mov A,[_g_wR10+1]
+ 0237 5407              mov [X+7],A
+ 0239 5100              mov A,[_g_wR10]
+ 023B 5406              mov [X+6],A
+ 023D 8030              xjmp L30
+ 023F           L29:
+ 023F 62D000            mov REG[0xd0],>_g_wR10
+ 0242 5101              mov A,[_g_wR10+1]
+ 0244 0105              add A,5
+ 0246 62D000            mov REG[0xd0],>__r0
+ 0249 5300              mov [__r1],A
+ 024B 62D000            mov REG[0xd0],>_g_wR10
+ 024E 5100              mov A,[_g_wR10]
+ 0250 0900              adc A,0
+ 0252 62D000            mov REG[0xd0],>__r0
+ 0255 5300              mov [__r0],A
+ 0257 5000              mov A,0
+ 0259 08                push A
+ 025A 500A              mov A,10
+ 025C 08                push A
+ 025D 5100              mov A,[__r0]
+ 025F 08                push A
+ 0260 5100              mov A,[__r1]
+ 0262 08                push A
+ 0263 7C0000            xcall __divmodu_16X16_16
+ 0266 18                pop A
+ 0267 5407              mov [X+7],A
+ 0269 18                pop A
+ 026A 5406              mov [X+6],A
+ 026C 38FE              add SP,-2
+ 026E           L30:
+ 026E 5206              mov A,[X+6]
+ 0270 08                push A
+ 0271 5207              mov A,[X+7]
+ 0273 08                push A
+ 0274 95FE              xcall _PrintWdToSerial
+ 0276 38FB              add SP,-5
+ 0278                   .dbline 159
+ 0278           ;               PrintWdToSerial((mMode==SCANBR)? g_wX10:((g_wX10+5)/10), (mMode==SCANBR)? 1:0,  bCommaStr);
+ 0278 508A              mov A,>_bCommaStr
+ 027A 08                push A
+ 027B 508A              mov A,<_bCommaStr
+ 027D 08                push A
+ 027E 3DFC03            cmp [X-4],3
+ 0281 B009              jnz L33
+ 0283 560901            mov [X+9],1
+ 0286 560800            mov [X+8],0
+ 0289 8007              xjmp L34
+ 028B           L33:
+ 028B 560900            mov [X+9],0
+ 028E 560800            mov [X+8],0
+ 0291           L34:
+ 0291 5209              mov A,[X+9]
+ 0293 08                push A
+ 0294 3DFC03            cmp [X-4],3
+ 0297 B00E              jnz L35
+ 0299 62D000            mov REG[0xd0],>_g_wX10
+ 029C 5101              mov A,[_g_wX10+1]
+ 029E 540B              mov [X+11],A
+ 02A0 5100              mov A,[_g_wX10]
+ 02A2 540A              mov [X+10],A
+ 02A4 8030              xjmp L36
+ 02A6           L35:
+ 02A6 62D000            mov REG[0xd0],>_g_wX10
+ 02A9 5101              mov A,[_g_wX10+1]
+ 02AB 0105              add A,5
+ 02AD 62D000            mov REG[0xd0],>__r0
+ 02B0 5300              mov [__r1],A
+ 02B2 62D000            mov REG[0xd0],>_g_wX10
+ 02B5 5100              mov A,[_g_wX10]
+ 02B7 0900              adc A,0
+ 02B9 62D000            mov REG[0xd0],>__r0
+ 02BC 5300              mov [__r0],A
+ 02BE 5000              mov A,0
+ 02C0 08                push A
+ 02C1 500A              mov A,10
+ 02C3 08                push A
+ 02C4 5100              mov A,[__r0]
+ 02C6 08                push A
+ 02C7 5100              mov A,[__r1]
+ 02C9 08                push A
+ 02CA 7C0000            xcall __divmodu_16X16_16
+ 02CD 18                pop A
+ 02CE 540B              mov [X+11],A
+ 02D0 18                pop A
+ 02D1 540A              mov [X+10],A
+ 02D3 38FE              add SP,-2
+ 02D5           L36:
+ 02D5 520A              mov A,[X+10]
+ 02D7 08                push A
+ 02D8 520B              mov A,[X+11]
+ 02DA 08                push A
+ 02DB 9597              xcall _PrintWdToSerial
+ 02DD 38FB              add SP,-5
+ 02DF                   .dbline 160
+ 02DF           ;               PrintWdToSerial((mMode==SCANBR)? g_wZ10:((g_wZ10+5)/10), (mMode==SCANBR)? 1:0,  "");
+ 02DF 508F              mov A,>L39
+ 02E1 08                push A
+ 02E2 508F              mov A,<L39
+ 02E4 08                push A
+ 02E5 3DFC03            cmp [X-4],3
+ 02E8 B009              jnz L40
+ 02EA 560D01            mov [X+13],1
+ 02ED 560C00            mov [X+12],0
+ 02F0 8007              xjmp L41
+ 02F2           L40:
+ 02F2 560D00            mov [X+13],0
+ 02F5 560C00            mov [X+12],0
+ 02F8           L41:
+ 02F8 520D              mov A,[X+13]
+ 02FA 08                push A
+ 02FB 3DFC03            cmp [X-4],3
+ 02FE B00E              jnz L42
+ 0300 62D000            mov REG[0xd0],>_g_wZ10
+ 0303 5101              mov A,[_g_wZ10+1]
+ 0305 540F              mov [X+15],A
+ 0307 5100              mov A,[_g_wZ10]
+ 0309 540E              mov [X+14],A
+ 030B 8030              xjmp L43
+ 030D           L42:
+ 030D 62D000            mov REG[0xd0],>_g_wZ10
+ 0310 5101              mov A,[_g_wZ10+1]
+ 0312 0105              add A,5
+ 0314 62D000            mov REG[0xd0],>__r0
+ 0317 5300              mov [__r1],A
+ 0319 62D000            mov REG[0xd0],>_g_wZ10
+ 031C 5100              mov A,[_g_wZ10]
+ 031E 0900              adc A,0
+ 0320 62D000            mov REG[0xd0],>__r0
+ 0323 5300              mov [__r0],A
+ 0325 5000              mov A,0
+ 0327 08                push A
+ 0328 500A              mov A,10
+ 032A 08                push A
+ 032B 5100              mov A,[__r0]
+ 032D 08                push A
+ 032E 5100              mov A,[__r1]
+ 0330 08                push A
+ 0331 7C0000            xcall __divmodu_16X16_16
+ 0334 18                pop A
+ 0335 540F              mov [X+15],A
+ 0337 18                pop A
+ 0338 540E              mov [X+14],A
+ 033A 38FE              add SP,-2
+ 033C           L43:
+ 033C 520E              mov A,[X+14]
+ 033E 08                push A
+ 033F 520F              mov A,[X+15]
+ 0341 08                push A
+ 0342 9530              xcall _PrintWdToSerial
+ 0344 38FB              add SP,-5
+ 0346                   .dbline 161
+ 0346           ;       }
+ 0346           L23:
+ 0346                   .dbline -2
+ 0346           L17:
+ 0346 38F0              add SP,-16
+ 0348 20                pop X
+ 0349                   .dbline 0 ; func end
+ 0349 7F                ret
+ 034A                   .dbsym l wVa 2 i
+ 034A                   .dbsym l wVf 0 i
+ 034A                   .dbsym l pwPrintWhat -5 c
+ 034A                   .dbsym l mMode -4 c
+ 034A                   .dbend
+ 034A                   .dbfunc e pcLinkFreqScan _pcLinkFreqScan fV
+ 034A           ;    dwEndFreqHz -> X+16
+ 034A           ;  dwStartFreqHz -> X+12
+ 034A           ;   dwStepFreqHz -> X+8
+ 034A           ;     dwOffsetHz -> X+4
+ 034A           ;  dwCurrHz_scan -> X+0
+ 034A           ;          mMode -> X-4
+ 034A           _pcLinkFreqScan::
+ 034A                   .dbline -1
+ 034A 10                push X
+ 034B 4F                mov X,SP
+ 034C 381C              add SP,28
+ 034E                   .dbline 172
+ 034E           ;       
+ 034E           ; }
+ 034E           ; //-----------------------------------------------------------------------------
+ 034E           ; //  FUNCTION NAME:    pcLinkFreqScan
+ 034E           ; //  DESCRIPTION:      Scan through frequencies specified and call appropriate 
+ 034E           ; //                                    Print_XXX routine to display requested outputs
+ 034E           ; //  ARGUMENTS:        PRINT_WHAT = SRXZ | VRVFVZVA | COMBI
+ 034E           ; //  RETURNS:          none.
+ 034E           ; //-----------------------------------------------------------------------------
+ 034E           ; void pcLinkFreqScan(MEASMODE mMode)
+ 034E           ; {
+ 034E           L45:
+ 034E                   .dbline 180
+ 034E           ;       DWORD dwStartFreqHz;
+ 034E           ;       DWORD dwEndFreqHz;
+ 034E           ;       DWORD dwStepFreqHz;
+ 034E           ;       DWORD dwOffsetHz;
+ 034E           ;       DWORD dwCurrHz_scan;
+ 034E           ;       
+ 034E           ;       do
+ 034E           ;       {
+ 034E                   .dbline 182
+ 034E           ;               // Get start, end and step frequencies
+ 034E           ;               dwStartFreqHz = getFreqArg(); if(dwStartFreqHz == -1) break;
+ 034E 94D6              xcall _getFreqArg
+ 0350 62D000            mov REG[0xd0],>__r0
+ 0353 5100              mov A,[__r0]
+ 0355 540C              mov [X+12],A
+ 0357 5100              mov A,[__r1]
+ 0359 540D              mov [X+13],A
+ 035B 5100              mov A,[__r2]
+ 035D 540E              mov [X+14],A
+ 035F 5100              mov A,[__r3]
+ 0361 540F              mov [X+15],A
+ 0363                   .dbline 182
+ 0363 3D0CFF            cmp [X+12],-1
+ 0366 B012              jnz L48
+ 0368 3D0DFF            cmp [X+13],-1
+ 036B B00D              jnz L48
+ 036D 3D0EFF            cmp [X+14],-1
+ 0370 B008              jnz L48
+ 0372 3D0FFF            cmp [X+15],-1
+ 0375 B003              jnz L48
+ 0377           X2:
+ 0377                   .dbline 182
+ 0377 849B              xjmp L47
+ 0379           L48:
+ 0379                   .dbline 183
+ 0379           ;               dwEndFreqHz     = getFreqArg(); if(dwEndFreqHz   == -1) break;
+ 0379 94AB              xcall _getFreqArg
+ 037B 62D000            mov REG[0xd0],>__r0
+ 037E 5100              mov A,[__r0]
+ 0380 5410              mov [X+16],A
+ 0382 5100              mov A,[__r1]
+ 0384 5411              mov [X+17],A
+ 0386 5100              mov A,[__r2]
+ 0388 5412              mov [X+18],A
+ 038A 5100              mov A,[__r3]
+ 038C 5413              mov [X+19],A
+ 038E                   .dbline 183
+ 038E 3D10FF            cmp [X+16],-1
+ 0391 B012              jnz L50
+ 0393 3D11FF            cmp [X+17],-1
+ 0396 B00D              jnz L50
+ 0398 3D12FF            cmp [X+18],-1
+ 039B B008              jnz L50
+ 039D 3D13FF            cmp [X+19],-1
+ 03A0 B003              jnz L50
+ 03A2           X3:
+ 03A2                   .dbline 183
+ 03A2 8470              xjmp L47
+ 03A4           L50:
+ 03A4                   .dbline 184
+ 03A4           ;               dwStepFreqHz    = getFreqArg(); if(dwStepFreqHz  == -1) break;                  
+ 03A4 9480              xcall _getFreqArg
+ 03A6 62D000            mov REG[0xd0],>__r0
+ 03A9 5100              mov A,[__r0]
+ 03AB 5408              mov [X+8],A
+ 03AD 5100              mov A,[__r1]
+ 03AF 5409              mov [X+9],A
+ 03B1 5100              mov A,[__r2]
+ 03B3 540A              mov [X+10],A
+ 03B5 5100              mov A,[__r3]
+ 03B7 540B              mov [X+11],A
+ 03B9                   .dbline 184
+ 03B9 3D08FF            cmp [X+8],-1
+ 03BC B012              jnz L52
+ 03BE 3D09FF            cmp [X+9],-1
+ 03C1 B00D              jnz L52
+ 03C3 3D0AFF            cmp [X+10],-1
+ 03C6 B008              jnz L52
+ 03C8 3D0BFF            cmp [X+11],-1
+ 03CB B003              jnz L52
+ 03CD           X4:
+ 03CD                   .dbline 184
+ 03CD 8445              xjmp L47
+ 03CF           L52:
+ 03CF                   .dbline 188
+ 03CF           ; 
+ 03CF           ;               // Get filter settings. Let weight range from 1 to 255.
+ 03CF           ;               #define min(a,b) ((a)>(b))? (b):(a)
+ 03CF           ;               bWeight  = min(255, ((DWORD)100000*g_bFltWd100kHz[g_xConf.bFltWt])/dwStepFreqHz);
+ 03CF 62D000            mov REG[0xd0],>_g_xConf
+ 03D2 5103              mov A,[_g_xConf+3]
+ 03D4 62D000            mov REG[0xd0],>__r0
+ 03D7 5300              mov [__r1],A
+ 03D9 550000            mov [__r0],0
+ 03DC 060000            add [__r1],<_g_bFltWd100kHz
+ 03DF 0E0000            adc [__r0],>_g_bFltWd100kHz
+ 03E2 5100              mov A,[__r0]
+ 03E4 10                push X
+ 03E5 5800              mov X,[__r1]
+ 03E7 28                romx
+ 03E8 20                pop X
+ 03E9 5300              mov [__r3],A
+ 03EB 5000              mov A,0
+ 03ED 08                push A
+ 03EE 08                push A
+ 03EF 08                push A
+ 03F0 5100              mov A,[__r3]
+ 03F2 08                push A
+ 03F3 5000              mov A,0
+ 03F5 08                push A
+ 03F6 5001              mov A,1
+ 03F8 08                push A
+ 03F9 5086              mov A,-122
+ 03FB 08                push A
+ 03FC 50A0              mov A,-96
+ 03FE 08                push A
+ 03FF 7C0000            xcall __mul_32X32_32
+ 0402 38FC              add SP,-4
+ 0404 18                pop A
+ 0405 5300              mov [__r3],A
+ 0407 18                pop A
+ 0408 5300              mov [__r2],A
+ 040A 18                pop A
+ 040B 5300              mov [__r1],A
+ 040D 18                pop A
+ 040E 5300              mov [__r0],A
+ 0410 5208              mov A,[X+8]
+ 0412 08                push A
+ 0413 5209              mov A,[X+9]
+ 0415 08                push A
+ 0416 520A              mov A,[X+10]
+ 0418 08                push A
+ 0419 520B              mov A,[X+11]
+ 041B 08                push A
+ 041C 5100              mov A,[__r0]
+ 041E 08                push A
+ 041F 5100              mov A,[__r1]
+ 0421 08                push A
+ 0422 5100              mov A,[__r2]
+ 0424 08                push A
+ 0425 5100              mov A,[__r3]
+ 0427 08                push A
+ 0428 7C0000            xcall __divmodu_32X32_32
+ 042B 18                pop A
+ 042C 5300              mov [__r3],A
+ 042E 18                pop A
+ 042F 5300              mov [__r2],A
+ 0431 18                pop A
+ 0432 5300              mov [__r1],A
+ 0434 18                pop A
+ 0435 5300              mov [__r0],A
+ 0437 38FC              add SP,-4
+ 0439 5100              mov A,[__r3]
+ 043B 11FF              sub A,-1
+ 043D 5100              mov A,[__r2]
+ 043F 1900              sbb A,0
+ 0441 5100              mov A,[__r1]
+ 0443 1900              sbb A,0
+ 0445 5100              mov A,[__r0]
+ 0447 1900              sbb A,0
+ 0449 D06D              jnc L57
+ 044B           X5:
+ 044B 62D000            mov REG[0xd0],>_g_xConf
+ 044E 5103              mov A,[_g_xConf+3]
+ 0450 62D000            mov REG[0xd0],>__r0
+ 0453 5300              mov [__r1],A
+ 0455 550000            mov [__r0],0
+ 0458 060000            add [__r1],<_g_bFltWd100kHz
+ 045B 0E0000            adc [__r0],>_g_bFltWd100kHz
+ 045E 5100              mov A,[__r0]
+ 0460 10                push X
+ 0461 5800              mov X,[__r1]
+ 0463 28                romx
+ 0464 20                pop X
+ 0465 5300              mov [__r3],A
+ 0467 5000              mov A,0
+ 0469 08                push A
+ 046A 08                push A
+ 046B 08                push A
+ 046C 5100              mov A,[__r3]
+ 046E 08                push A
+ 046F 5000              mov A,0
+ 0471 08                push A
+ 0472 5001              mov A,1
+ 0474 08                push A
+ 0475 5086              mov A,-122
+ 0477 08                push A
+ 0478 50A0              mov A,-96
+ 047A 08                push A
+ 047B 7C0000            xcall __mul_32X32_32
+ 047E 38FC              add SP,-4
+ 0480 18                pop A
+ 0481 5300              mov [__r3],A
+ 0483 18                pop A
+ 0484 5300              mov [__r2],A
+ 0486 18                pop A
+ 0487 5300              mov [__r1],A
+ 0489 18                pop A
+ 048A 5300              mov [__r0],A
+ 048C 5208              mov A,[X+8]
+ 048E 08                push A
+ 048F 5209              mov A,[X+9]
+ 0491 08                push A
+ 0492 520A              mov A,[X+10]
+ 0494 08                push A
+ 0495 520B              mov A,[X+11]
+ 0497 08                push A
+ 0498 5100              mov A,[__r0]
+ 049A 08                push A
+ 049B 5100              mov A,[__r1]
+ 049D 08                push A
+ 049E 5100              mov A,[__r2]
+ 04A0 08                push A
+ 04A1 5100              mov A,[__r3]
+ 04A3 08                push A
+ 04A4 7C0000            xcall __divmodu_32X32_32
+ 04A7 18                pop A
+ 04A8 5417              mov [X+23],A
+ 04AA 18                pop A
+ 04AB 5416              mov [X+22],A
+ 04AD 18                pop A
+ 04AE 5415              mov [X+21],A
+ 04B0 18                pop A
+ 04B1 5414              mov [X+20],A
+ 04B3 38FC              add SP,-4
+ 04B5 800D              xjmp L58
+ 04B7           L57:
+ 04B7 561400            mov [X+20],0
+ 04BA 561500            mov [X+21],0
+ 04BD 561600            mov [X+22],0
+ 04C0 5617FF            mov [X+23],-1
+ 04C3           L58:
+ 04C3 5217              mov A,[X+23]
+ 04C5 62D000            mov REG[0xd0],>_bWeight
+ 04C8 5300              mov [_bWeight],A
+ 04CA                   .dbline 189
+ 04CA           ;               if((g_xConf.bFltWt>0) &&  (bWeight==0)) bWeight=1;
+ 04CA 62D000            mov REG[0xd0],>_g_xConf
+ 04CD 5000              mov A,0
+ 04CF 3A03              cmp A,[_g_xConf+3]
+ 04D1 D00C              jnc L59
+ 04D3           X6:
+ 04D3 62D000            mov REG[0xd0],>_bWeight
+ 04D6 3C0000            cmp [_bWeight],0
+ 04D9 B004              jnz L59
+ 04DB                   .dbline 189
+ 04DB 550001            mov [_bWeight],1
+ 04DE           L59:
+ 04DE                   .dbline 190
+ 04DE           ;               dwOffsetHz = dwStepFreqHz*(DWORD)bWeight;       // slightlty inaccurate for b<~5 but error is less than one step, and at least offset = int x step
+ 04DE 62D000            mov REG[0xd0],>_bWeight
+ 04E1 5100              mov A,[_bWeight]
+ 04E3 62D000            mov REG[0xd0],>__r0
+ 04E6 5300              mov [__r3],A
+ 04E8 5000              mov A,0
+ 04EA 08                push A
+ 04EB 08                push A
+ 04EC 08                push A
+ 04ED 5100              mov A,[__r3]
+ 04EF 08                push A
+ 04F0 5208              mov A,[X+8]
+ 04F2 08                push A
+ 04F3 5209              mov A,[X+9]
+ 04F5 08                push A
+ 04F6 520A              mov A,[X+10]
+ 04F8 08                push A
+ 04F9 520B              mov A,[X+11]
+ 04FB 08                push A
+ 04FC 7C0000            xcall __mul_32X32_32
+ 04FF 38FC              add SP,-4
+ 0501 18                pop A
+ 0502 5407              mov [X+7],A
+ 0504 18                pop A
+ 0505 5406              mov [X+6],A
+ 0507 18                pop A
+ 0508 5405              mov [X+5],A
+ 050A 18                pop A
+ 050B 5404              mov [X+4],A
+ 050D                   .dbline 191
+ 050D           ;               UART_CPutString(bufStart);
+ 050D 10                push X
+ 050E 5007              mov A,>_bufStart
+ 0510 08                push A
+ 0511 5007              mov A,<_bufStart
+ 0513 5C                mov X,A
+ 0514 18                pop A
+ 0515 7C0000            xcall _UART_CPutString
+ 0518 20                pop X
+ 0519                   .dbline 194
+ 0519           ; 
+ 0519           ;               // now step through frequencies 
+ 0519           ;               dwCurrHz_scan = dwStartFreqHz;  
+ 0519 520C              mov A,[X+12]
+ 051B 5400              mov [X+0],A
+ 051D 520D              mov A,[X+13]
+ 051F 5401              mov [X+1],A
+ 0521 520E              mov A,[X+14]
+ 0523 5402              mov [X+2],A
+ 0525 520F              mov A,[X+15]
+ 0527 5403              mov [X+3],A
+ 0529           L62:
+ 0529                   .dbline 197
+ 0529           ; 
+ 0529           ;               do
+ 0529           ;               {
+ 0529                   .dbline 200
+ 0529           ;                       // need to separate g_dwCurrHz from the scan loop variable so we can cap g_dwCurrHz at FREQ_MAX_Hz
+ 0529           ;                       // so that we don't go beyond cal max freq when using filters and needing to scan ahead
+ 0529           ;                       g_dwCurrHz=(dwCurrHz_scan<FREQ_MAX_Hz)? dwCurrHz_scan:FREQ_MAX_Hz;
+ 0529 5203              mov A,[X+3]
+ 052B 1100              sub A,0
+ 052D 5202              mov A,[X+2]
+ 052F 1987              sbb A,-121
+ 0531 5201              mov A,[X+1]
+ 0533 1993              sbb A,-109
+ 0535 5200              mov A,[X+0]
+ 0537 1903              sbb A,3
+ 0539 D013              jnc L66
+ 053B           X7:
+ 053B 5200              mov A,[X+0]
+ 053D 5418              mov [X+24],A
+ 053F 5201              mov A,[X+1]
+ 0541 5419              mov [X+25],A
+ 0543 5202              mov A,[X+2]
+ 0545 541A              mov [X+26],A
+ 0547 5203              mov A,[X+3]
+ 0549 541B              mov [X+27],A
+ 054B 800D              xjmp L67
+ 054D           L66:
+ 054D 561803            mov [X+24],3
+ 0550 561993            mov [X+25],-109
+ 0553 561A87            mov [X+26],-121
+ 0556 561B00            mov [X+27],0
+ 0559           L67:
+ 0559 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 055C 5218              mov A,[X+24]
+ 055E 5300              mov [_g_dwCurrHz],A
+ 0560 5219              mov A,[X+25]
+ 0562 5301              mov [_g_dwCurrHz+1],A
+ 0564 521A              mov A,[X+26]
+ 0566 5302              mov [_g_dwCurrHz+2],A
+ 0568 521B              mov A,[X+27]
+ 056A 5303              mov [_g_dwCurrHz+3],A
+ 056C                   .dbline 202
+ 056C           ;                       
+ 056C           ;                       Screen_Frequency(Display_kHz);          // might be better to replace this with a % complete indicator
+ 056C 5001              mov A,1
+ 056E 08                push A
+ 056F 7C0000            xcall _Screen_Frequency
+ 0572                   .dbline 206
+ 0572           ;                       
+ 0572           ;                       // measure bridge ratios and reconstruct voltages using filter
+ 0572           ;                       // then reconstruct g_wBrgRts so all 6 params are based on filtered values                      
+ 0572           ;                       MeasureBrgRts();        
+ 0572 7C0000            xcall _MeasureBrgRts
+ 0575                   .dbline 207
+ 0575           ;                       g_wBrgRts[MODGAMMA] = filter(g_wBrgRts[MODGAMMA],MODGAMMA);
+ 0575 5001              mov A,1
+ 0577 08                push A
+ 0578 62D000            mov REG[0xd0],>_g_wBrgRts
+ 057B 5102              mov A,[_g_wBrgRts+2]
+ 057D 08                push A
+ 057E 5103              mov A,[_g_wBrgRts+2+1]
+ 0580 08                push A
+ 0581 9330              xcall _filter
+ 0583 38FC              add SP,-4
+ 0585 62D000            mov REG[0xd0],>__r0
+ 0588 5100              mov A,[__r1]
+ 058A 08                push A
+ 058B 5100              mov A,[__r0]
+ 058D 62D000            mov REG[0xd0],>_g_wBrgRts
+ 0590 5302              mov [_g_wBrgRts+2],A
+ 0592 18                pop A
+ 0593 5303              mov [_g_wBrgRts+2+1],A
+ 0595                   .dbline 208
+ 0595           ;                       g_wBrgRts[MODZ] = filter(g_wBrgRts[MODZ],MODZ);
+ 0595 5000              mov A,0
+ 0597 08                push A
+ 0598 5100              mov A,[_g_wBrgRts]
+ 059A 08                push A
+ 059B 5101              mov A,[_g_wBrgRts+1]
+ 059D 08                push A
+ 059E 9313              xcall _filter
+ 05A0 38FD              add SP,-3
+ 05A2 62D000            mov REG[0xd0],>__r0
+ 05A5 5100              mov A,[__r1]
+ 05A7 08                push A
+ 05A8 5100              mov A,[__r0]
+ 05AA 62D000            mov REG[0xd0],>_g_wBrgRts
+ 05AD 5300              mov [_g_wBrgRts],A
+ 05AF 18                pop A
+ 05B0 5301              mov [_g_wBrgRts+1],A
+ 05B2                   .dbline 210
+ 05B2           ;                                       
+ 05B2           ;                       if (dwCurrHz_scan >= (dwStartFreqHz + dwOffsetHz))      // if scanning ahead for filters, wait until we 'catch up'
+ 05B2 62D000            mov REG[0xd0],>__r0
+ 05B5 520F              mov A,[X+15]
+ 05B7 0307              add A,[X+7]
+ 05B9 5300              mov [__r3],A
+ 05BB 520E              mov A,[X+14]
+ 05BD 0B06              adc A,[X+6]
+ 05BF 5300              mov [__r2],A
+ 05C1 520D              mov A,[X+13]
+ 05C3 0B05              adc A,[X+5]
+ 05C5 5300              mov [__r1],A
+ 05C7 520C              mov A,[X+12]
+ 05C9 0B04              adc A,[X+4]
+ 05CB 5300              mov [__r0],A
+ 05CD 5203              mov A,[X+3]
+ 05CF 1200              sub A,[__r3]
+ 05D1 5202              mov A,[X+2]
+ 05D3 1A00              sbb A,[__r2]
+ 05D5 5201              mov A,[X+1]
+ 05D7 1A00              sbb A,[__r1]
+ 05D9 5200              mov A,[X+0]
+ 05DB 1A00              sbb A,[__r0]
+ 05DD C1F8              jc L70
+ 05DF           X8:
+ 05DF                   .dbline 211
+ 05DF           ;                       {
+ 05DF                   .dbline 212
+ 05DF           ;                               if (mMode==SCANV)  {
+ 05DF 3DFC04            cmp [X-4],4
+ 05E2 B0FC              jnz L72
+ 05E4                   .dbline 212
+ 05E4                   .dbline 213
+ 05E4           ;                                       PrintWdToSerial(g_dwCurrHz/1000 - dwOffsetHz/1000,0, ", ");
+ 05E4 508C              mov A,>L74
+ 05E6 08                push A
+ 05E7 508C              mov A,<L74
+ 05E9 08                push A
+ 05EA 5000              mov A,0
+ 05EC 08                push A
+ 05ED 62D000            mov REG[0xd0],>__r0
+ 05F0 08                push A
+ 05F1 08                push A
+ 05F2 5003              mov A,3
+ 05F4 08                push A
+ 05F5 50E8              mov A,-24
+ 05F7 08                push A
+ 05F8 5204              mov A,[X+4]
+ 05FA 08                push A
+ 05FB 5205              mov A,[X+5]
+ 05FD 08                push A
+ 05FE 5206              mov A,[X+6]
+ 0600 08                push A
+ 0601 5207              mov A,[X+7]
+ 0603 08                push A
+ 0604 7C0000            xcall __divmodu_32X32_32
+ 0607 18                pop A
+ 0608 5300              mov [__r3],A
+ 060A 18                pop A
+ 060B 5300              mov [__r2],A
+ 060D 18                pop A
+ 060E 18                pop A
+ 060F 38FC              add SP,-4
+ 0611 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0614 5000              mov A,0
+ 0616 08                push A
+ 0617 08                push A
+ 0618 5003              mov A,3
+ 061A 08                push A
+ 061B 50E8              mov A,-24
+ 061D 08                push A
+ 061E 5100              mov A,[_g_dwCurrHz]
+ 0620 08                push A
+ 0621 5101              mov A,[_g_dwCurrHz+1]
+ 0623 08                push A
+ 0624 5102              mov A,[_g_dwCurrHz+2]
+ 0626 08                push A
+ 0627 5103              mov A,[_g_dwCurrHz+3]
+ 0629 08                push A
+ 062A 62D000            mov REG[0xd0],>__r0
+ 062D 7C0000            xcall __divmodu_32X32_32
+ 0630 18                pop A
+ 0631 5300              mov [__r7],A
+ 0633 18                pop A
+ 0634 5300              mov [__r6],A
+ 0636 18                pop A
+ 0637 18                pop A
+ 0638 38FC              add SP,-4
+ 063A 5100              mov A,[__r7]
+ 063C 1200              sub A,[__r3]
+ 063E 5300              mov [__r3],A
+ 0640 5100              mov A,[__r6]
+ 0642 1A00              sbb A,[__r2]
+ 0644 5300              mov [__r2],A
+ 0646 5100              mov A,[__r3]
+ 0648 5300              mov [__r1],A
+ 064A 5100              mov A,[__r2]
+ 064C 08                push A
+ 064D 5100              mov A,[__r1]
+ 064F 08                push A
+ 0650 9222              xcall _PrintWdToSerial
+ 0652                   .dbline 214
+ 0652           ;                                       PrintWdToSerial(wRead_ADC_DDSON(VfPort),3, ", ");
+ 0652 5000              mov A,0
+ 0654 08                push A
+ 0655 7C0000            xcall _wRead_ADC_DDSON
+ 0658 38FA              add SP,-6
+ 065A 508C              mov A,>L74
+ 065C 08                push A
+ 065D 508C              mov A,<L74
+ 065F 08                push A
+ 0660 5003              mov A,3
+ 0662 08                push A
+ 0663 62D000            mov REG[0xd0],>__r0
+ 0666 5100              mov A,[__r0]
+ 0668 08                push A
+ 0669 5100              mov A,[__r1]
+ 066B 08                push A
+ 066C 9206              xcall _PrintWdToSerial
+ 066E                   .dbline 215
+ 066E           ;                                       PrintWdToSerial(wRead_ADC_DDSON(VrPort),3, ", ");                               
+ 066E 5001              mov A,1
+ 0670 08                push A
+ 0671 7C0000            xcall _wRead_ADC_DDSON
+ 0674 38FA              add SP,-6
+ 0676 508C              mov A,>L74
+ 0678 08                push A
+ 0679 508C              mov A,<L74
+ 067B 08                push A
+ 067C 5003              mov A,3
+ 067E 08                push A
+ 067F 62D000            mov REG[0xd0],>__r0
+ 0682 5100              mov A,[__r0]
+ 0684 08                push A
+ 0685 5100              mov A,[__r1]
+ 0687 08                push A
+ 0688 91EA              xcall _PrintWdToSerial
+ 068A                   .dbline 216
+ 068A           ;                                       PrintWdToSerial(wRead_ADC_DDSON(VzPort),3, ", ");
+ 068A 5002              mov A,2
+ 068C 08                push A
+ 068D 7C0000            xcall _wRead_ADC_DDSON
+ 0690 38FA              add SP,-6
+ 0692 508C              mov A,>L74
+ 0694 08                push A
+ 0695 508C              mov A,<L74
+ 0697 08                push A
+ 0698 5003              mov A,3
+ 069A 08                push A
+ 069B 62D000            mov REG[0xd0],>__r0
+ 069E 5100              mov A,[__r0]
+ 06A0 08                push A
+ 06A1 5100              mov A,[__r1]
+ 06A3 08                push A
+ 06A4 91CE              xcall _PrintWdToSerial
+ 06A6                   .dbline 217
+ 06A6           ;                                       PrintWdToSerial(wRead_ADC_DDSON(VaPort),3, ", ");
+ 06A6 5003              mov A,3
+ 06A8 08                push A
+ 06A9 7C0000            xcall _wRead_ADC_DDSON
+ 06AC 38FA              add SP,-6
+ 06AE 508C              mov A,>L74
+ 06B0 08                push A
+ 06B1 508C              mov A,<L74
+ 06B3 08                push A
+ 06B4 5003              mov A,3
+ 06B6 08                push A
+ 06B7 62D000            mov REG[0xd0],>__r0
+ 06BA 5100              mov A,[__r0]
+ 06BC 08                push A
+ 06BD 5100              mov A,[__r1]
+ 06BF 08                push A
+ 06C0 91B2              xcall _PrintWdToSerial
+ 06C2                   .dbline 218
+ 06C2           ;                                       PrintWdToSerial(g_bDDS_GainStep,0, "");
+ 06C2 508F              mov A,>L39
+ 06C4 08                push A
+ 06C5 508F              mov A,<L39
+ 06C7 08                push A
+ 06C8 5000              mov A,0
+ 06CA 08                push A
+ 06CB 62D000            mov REG[0xd0],>_g_bDDS_GainStep
+ 06CE 5100              mov A,[_g_bDDS_GainStep]
+ 06D0 62D000            mov REG[0xd0],>__r0
+ 06D3 5300              mov [__r1],A
+ 06D5 5000              mov A,0
+ 06D7 08                push A
+ 06D8 5100              mov A,[__r1]
+ 06DA 08                push A
+ 06DB 9197              xcall _PrintWdToSerial
+ 06DD 38F6              add SP,-10
+ 06DF                   .dbline 221
+ 06DF           ; //                                    PrintWdToSerial(g_xGainDds[g_bDDS_GainStep].bGain1,0, "");
+ 06DF           ; //                                    PrintWdToSerial(g_xGainDds[g_bDDS_GainStep].bGain2,0, "");                                      
+ 06DF           ;                               }
+ 06DF           L72:
+ 06DF                   .dbline 222
+ 06DF           ;                               if (mMode==SCANBR) {
+ 06DF 3DFC03            cmp [X-4],3
+ 06E2 B09B              jnz L75
+ 06E4                   .dbline 222
+ 06E4                   .dbline 223
+ 06E4           ;                                       PrintWdToSerial(g_dwCurrHz/1000 - dwOffsetHz/1000,0, ", ");
+ 06E4 508C              mov A,>L74
+ 06E6 08                push A
+ 06E7 508C              mov A,<L74
+ 06E9 08                push A
+ 06EA 5000              mov A,0
+ 06EC 08                push A
+ 06ED 62D000            mov REG[0xd0],>__r0
+ 06F0 08                push A
+ 06F1 08                push A
+ 06F2 5003              mov A,3
+ 06F4 08                push A
+ 06F5 50E8              mov A,-24
+ 06F7 08                push A
+ 06F8 5204              mov A,[X+4]
+ 06FA 08                push A
+ 06FB 5205              mov A,[X+5]
+ 06FD 08                push A
+ 06FE 5206              mov A,[X+6]
+ 0700 08                push A
+ 0701 5207              mov A,[X+7]
+ 0703 08                push A
+ 0704 7C0000            xcall __divmodu_32X32_32
+ 0707 18                pop A
+ 0708 5300              mov [__r3],A
+ 070A 18                pop A
+ 070B 5300              mov [__r2],A
+ 070D 18                pop A
+ 070E 18                pop A
+ 070F 38FC              add SP,-4
+ 0711 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0714 5000              mov A,0
+ 0716 08                push A
+ 0717 08                push A
+ 0718 5003              mov A,3
+ 071A 08                push A
+ 071B 50E8              mov A,-24
+ 071D 08                push A
+ 071E 5100              mov A,[_g_dwCurrHz]
+ 0720 08                push A
+ 0721 5101              mov A,[_g_dwCurrHz+1]
+ 0723 08                push A
+ 0724 5102              mov A,[_g_dwCurrHz+2]
+ 0726 08                push A
+ 0727 5103              mov A,[_g_dwCurrHz+3]
+ 0729 08                push A
+ 072A 62D000            mov REG[0xd0],>__r0
+ 072D 7C0000            xcall __divmodu_32X32_32
+ 0730 18                pop A
+ 0731 5300              mov [__r7],A
+ 0733 18                pop A
+ 0734 5300              mov [__r6],A
+ 0736 18                pop A
+ 0737 18                pop A
+ 0738 38FC              add SP,-4
+ 073A 5100              mov A,[__r7]
+ 073C 1200              sub A,[__r3]
+ 073E 5300              mov [__r3],A
+ 0740 5100              mov A,[__r6]
+ 0742 1A00              sbb A,[__r2]
+ 0744 5300              mov [__r2],A
+ 0746 5100              mov A,[__r3]
+ 0748 5300              mov [__r1],A
+ 074A 5100              mov A,[__r2]
+ 074C 08                push A
+ 074D 5100              mov A,[__r1]
+ 074F 08                push A
+ 0750 9122              xcall _PrintWdToSerial
+ 0752 38FB              add SP,-5
+ 0754                   .dbline 224
+ 0754           ;                     PrintWdToSerial(g_wBrgRts[MODZ],3, ", ");
+ 0754 508C              mov A,>L74
+ 0756 08                push A
+ 0757 508C              mov A,<L74
+ 0759 08                push A
+ 075A 5003              mov A,3
+ 075C 08                push A
+ 075D 62D000            mov REG[0xd0],>_g_wBrgRts
+ 0760 5100              mov A,[_g_wBrgRts]
+ 0762 08                push A
+ 0763 5101              mov A,[_g_wBrgRts+1]
+ 0765 08                push A
+ 0766 910C              xcall _PrintWdToSerial
+ 0768                   .dbline 225
+ 0768           ;                     PrintWdToSerial(g_wBrgRts[MODGAMMA],3, ", ");
+ 0768 508C              mov A,>L74
+ 076A 08                push A
+ 076B 508C              mov A,<L74
+ 076D 08                push A
+ 076E 5003              mov A,3
+ 0770 08                push A
+ 0771 62D000            mov REG[0xd0],>_g_wBrgRts
+ 0774 5102              mov A,[_g_wBrgRts+2]
+ 0776 08                push A
+ 0777 5103              mov A,[_g_wBrgRts+2+1]
+ 0779 08                push A
+ 077A 90F8              xcall _PrintWdToSerial
+ 077C 38F6              add SP,-10
+ 077E                   .dbline 226
+ 077E           ;                               }
+ 077E           L75:
+ 077E                   .dbline 228
+ 077E           ;                               // now with corrected bridge ratios
+ 077E           ;                               CorrectBrgRts(); 
+ 077E 7C0000            xcall _CorrectBrgRts
+ 0781                   .dbline 229
+ 0781           ;                               if (mMode==SCANBR) {
+ 0781 3DFC03            cmp [X-4],3
+ 0784 B02B              jnz L78
+ 0786                   .dbline 229
+ 0786                   .dbline 230
+ 0786           ;                     PrintWdToSerial(g_wBrgRts[MODZ],3, ", ");
+ 0786 508C              mov A,>L74
+ 0788 08                push A
+ 0789 508C              mov A,<L74
+ 078B 08                push A
+ 078C 5003              mov A,3
+ 078E 08                push A
+ 078F 62D000            mov REG[0xd0],>_g_wBrgRts
+ 0792 5100              mov A,[_g_wBrgRts]
+ 0794 08                push A
+ 0795 5101              mov A,[_g_wBrgRts+1]
+ 0797 08                push A
+ 0798 90DA              xcall _PrintWdToSerial
+ 079A                   .dbline 231
+ 079A           ;                     PrintWdToSerial(g_wBrgRts[MODGAMMA],3, "");
+ 079A 508F              mov A,>L39
+ 079C 08                push A
+ 079D 508F              mov A,<L39
+ 079F 08                push A
+ 07A0 5003              mov A,3
+ 07A2 08                push A
+ 07A3 62D000            mov REG[0xd0],>_g_wBrgRts
+ 07A6 5102              mov A,[_g_wBrgRts+2]
+ 07A8 08                push A
+ 07A9 5103              mov A,[_g_wBrgRts+2+1]
+ 07AB 08                push A
+ 07AC 90C6              xcall _PrintWdToSerial
+ 07AE 38F6              add SP,-10
+ 07B0                   .dbline 232
+ 07B0           ;                               }
+ 07B0           L78:
+ 07B0                   .dbline 233
+ 07B0           ;                               if (mMode==SCAN) {
+ 07B0 3DFC01            cmp [X-4],1
+ 07B3 B00E              jnz L81
+ 07B5                   .dbline 233
+ 07B5                   .dbline 234
+ 07B5           ;                                       Do_SZRX_Calcs();
+ 07B5 7C0000            xcall _Do_SZRX_Calcs
+ 07B8                   .dbline 235
+ 07B8           ;                                       pcLinkPrintToSerial(mMode, SRXZ);
+ 07B8 5000              mov A,0
+ 07BA 08                push A
+ 07BB 52FC              mov A,[X-4]
+ 07BD 08                push A
+ 07BE 98E7              xcall _pcLinkPrintToSerial
+ 07C0 38FE              add SP,-2
+ 07C2                   .dbline 236
+ 07C2           ;                               }
+ 07C2           L81:
+ 07C2                   .dbline 237
+ 07C2           ;                               if (mMode==SCANR) {
+ 07C2 3DFC02            cmp [X-4],2
+ 07C5 B00B              jnz L83
+ 07C7                   .dbline 237
+ 07C7                   .dbline 238
+ 07C7           ;                                       pcLinkPrintToSerial(mMode, VFVRVZVA);
+ 07C7 5001              mov A,1
+ 07C9 08                push A
+ 07CA 52FC              mov A,[X-4]
+ 07CC 08                push A
+ 07CD 98D8              xcall _pcLinkPrintToSerial
+ 07CF 38FE              add SP,-2
+ 07D1                   .dbline 239
+ 07D1           ;                               }
+ 07D1           L83:
+ 07D1                   .dbline 240
+ 07D1           ;                               UART_PutCRLF();
+ 07D1 10                push X
+ 07D2 7C0000            xcall _UART_PutCRLF
+ 07D5 20                pop X
+ 07D6                   .dbline 241
+ 07D6           ;                       }
+ 07D6           L70:
+ 07D6                   .dbline 242
+ 07D6           ;                       dwCurrHz_scan += dwStepFreqHz;
+ 07D6 520B              mov A,[X+11]
+ 07D8 0503              add [X+3],A
+ 07DA 520A              mov A,[X+10]
+ 07DC 0D02              adc [X+2],A
+ 07DE 5209              mov A,[X+9]
+ 07E0 0D01              adc [X+1],A
+ 07E2 5208              mov A,[X+8]
+ 07E4 0D00              adc [X+0],A
+ 07E6                   .dbline 243
+ 07E6           ;               } while ( dwCurrHz_scan <= (dwEndFreqHz + dwOffsetHz) );
+ 07E6           L63:
+ 07E6                   .dbline 243
+ 07E6 62D000            mov REG[0xd0],>__r0
+ 07E9 5213              mov A,[X+19]
+ 07EB 0307              add A,[X+7]
+ 07ED 5300              mov [__r3],A
+ 07EF 5212              mov A,[X+18]
+ 07F1 0B06              adc A,[X+6]
+ 07F3 5300              mov [__r2],A
+ 07F5 5211              mov A,[X+17]
+ 07F7 0B05              adc A,[X+5]
+ 07F9 5300              mov [__r1],A
+ 07FB 5210              mov A,[X+16]
+ 07FD 0B04              adc A,[X+4]
+ 07FF 5300              mov [__r0],A
+ 0801 5100              mov A,[__r3]
+ 0803 1303              sub A,[X+3]
+ 0805 5100              mov A,[__r2]
+ 0807 1B02              sbb A,[X+2]
+ 0809 5100              mov A,[__r1]
+ 080B 1B01              sbb A,[X+1]
+ 080D 5100              mov A,[__r0]
+ 080F 1B00              sbb A,[X+0]
+ 0811 DD17              jnc L62
+ 0813           X9:
+ 0813                   .dbline 245
+ 0813           ; 
+ 0813           ;       } while (FALSE);
+ 0813           L46:
+ 0813                   .dbline 245
+ 0813           L47:
+ 0813                   .dbline 247
+ 0813           ; 
+ 0813           ;       UART_CPutString(bufEnd);
+ 0813 10                push X
+ 0814 5011              mov A,>_bufEnd
+ 0816 08                push A
+ 0817 5011              mov A,<_bufEnd
+ 0819 5C                mov X,A
+ 081A 18                pop A
+ 081B 7C0000            xcall _UART_CPutString
+ 081E 20                pop X
+ 081F                   .dbline 249
+ 081F           ; 
+ 081F           ;       Morse_End();
+ 081F 7C0000            xcall _Morse_End
+ 0822                   .dbline -2
+ 0822           L44:
+ 0822 38E4              add SP,-28
+ 0824 20                pop X
+ 0825                   .dbline 0 ; func end
+ 0825 7F                ret
+ 0826                   .dbsym l dwEndFreqHz 16 l
+ 0826                   .dbsym l dwStartFreqHz 12 l
+ 0826                   .dbsym l dwStepFreqHz 8 l
+ 0826                   .dbsym l dwOffsetHz 4 l
+ 0826                   .dbsym l dwCurrHz_scan 0 l
+ 0826                   .dbsym l mMode -4 c
+ 0826                   .dbend
+ 0826                   .dbfunc e getFreqArg _getFreqArg fl
+ 0826           ;         strPtr -> X+0
+ 0826           _getFreqArg::
+ 0826                   .dbline -1
+ 0826 10                push X
+ 0827 4F                mov X,SP
+ 0828 3802              add SP,2
+ 082A                   .dbline 258
+ 082A           ; }
+ 082A           ; //-----------------------------------------------------------------------------
+ 082A           ; //  FUNCTION NAME:    getFreqArg
+ 082A           ; //  DESCRIPTION:      Get frequency argument from command line
+ 082A           ; //  ARGUMENTS:                none
+ 082A           ; //    RETURNS:                DWORD freq in Hz
+ 082A           ; //-----------------------------------------------------------------------------
+ 082A           ; DWORD getFreqArg(void)
+ 082A           ; {
+ 082A                   .dbline 260
+ 082A           ;       char * strPtr;                                          // Parameter pointer
+ 082A           ;       strPtr = UART_szGetParam();
+ 082A 10                push X
+ 082B 7C0000            xcall _UART_szGetParam
+ 082E 62D000            mov REG[0xd0],>__r0
+ 0831 5300              mov [__r0],A
+ 0833 5A00              mov [__r1],X
+ 0835 20                pop X
+ 0836 5100              mov A,[__r1]
+ 0838 5401              mov [X+1],A
+ 083A 5100              mov A,[__r0]
+ 083C 5400              mov [X+0],A
+ 083E                   .dbline 261
+ 083E           ;       if (strPtr==NULL) {                                     // missing argument
+ 083E 3D0000            cmp [X+0],0
+ 0841 B023              jnz L86
+ 0843 3D0100            cmp [X+1],0
+ 0846 B01E              jnz L86
+ 0848           X10:
+ 0848                   .dbline 261
+ 0848                   .dbline 262
+ 0848           ;               UART_CPutString(bufErrExpectFreq);
+ 0848 10                push X
+ 0849 502F              mov A,>_bufErrExpectFreq
+ 084B 08                push A
+ 084C 502F              mov A,<_bufErrExpectFreq
+ 084E 5C                mov X,A
+ 084F 18                pop A
+ 0850 7C0000            xcall _UART_CPutString
+ 0853 20                pop X
+ 0854                   .dbline 263
+ 0854           ;               return -1;
+ 0854 62D000            mov REG[0xd0],>__r0
+ 0857 5500FF            mov [__r0],-1
+ 085A 5500FF            mov [__r1],-1
+ 085D 5500FF            mov [__r2],-1
+ 0860 5500FF            mov [__r3],-1
+ 0863 800C              xjmp L85
+ 0865           L86:
+ 0865                   .dbline 265
+ 0865           ;       }
+ 0865           ;       return atol(strPtr);    // good frequency
+ 0865 5200              mov A,[X+0]
+ 0867 08                push A
+ 0868 5201              mov A,[X+1]
+ 086A 08                push A
+ 086B 7C0000            xcall _atol
+ 086E 38FE              add SP,-2
+ 0870                   .dbline -2
+ 0870           L85:
+ 0870 38FE              add SP,-2
+ 0872 20                pop X
+ 0873                   .dbline 0 ; func end
+ 0873 7F                ret
+ 0874                   .dbsym l strPtr 0 pc
+ 0874                   .dbend
+ 0874                   .dbfunc e PrintWdToSerial _PrintWdToSerial fV
+ 0874           ;        termStr -> X-8
+ 0874           ;      bDecimals -> X-6
+ 0874           ;           wVal -> X-5
+ 0874           _PrintWdToSerial::
+ 0874                   .dbline -1
+ 0874 10                push X
+ 0875 4F                mov X,SP
+ 0876                   .dbline 276
+ 0876           ; }
+ 0876           ; //-----------------------------------------------------------------------------
+ 0876           ; //  FUNCTION NAME:    PrintWORDtoSerial
+ 0876           ; //  DESCRIPTION:      Given a number dwVal x wDivisor, prints to serial with appropriate 
+ 0876           ; //                                    decimal point 
+ 0876           ; //  ARGUMENTS:                WORD wVal = Number x wDivisor to print
+ 0876           ; //                                    BYTE bDecimals - number of dps
+ 0876           ; //  RETURNS:          none.
+ 0876           ; //-----------------------------------------------------------------------------
+ 0876           ; void PrintWdToSerial(WORD wVal, BYTE bDecimals, const BYTE * termStr)
+ 0876           ; {
+ 0876                   .dbline 277
+ 0876           ;       FormatNumberRJ(wVal , 6, bDecimals);    
+ 0876 52FA              mov A,[X-6]
+ 0878 08                push A
+ 0879 5006              mov A,6
+ 087B 08                push A
+ 087C 62D000            mov REG[0xd0],>__r0
+ 087F 52FC              mov A,[X-4]
+ 0881 5300              mov [__r3],A
+ 0883 52FB              mov A,[X-5]
+ 0885 5300              mov [__r2],A
+ 0887 5000              mov A,0
+ 0889 08                push A
+ 088A 08                push A
+ 088B 5100              mov A,[__r2]
+ 088D 08                push A
+ 088E 5100              mov A,[__r3]
+ 0890 08                push A
+ 0891 7C0000            xcall _FormatNumberRJ
+ 0894 38FA              add SP,-6
+ 0896 62D000            mov REG[0xd0],>__r0
+ 0899                   .dbline 278
+ 0899           ;       UART_PutString(g_buffer16);
+ 0899 10                push X
+ 089A 5000              mov A,>_g_buffer16
+ 089C 08                push A
+ 089D 5000              mov A,<_g_buffer16
+ 089F 5C                mov X,A
+ 08A0 18                pop A
+ 08A1 7C0000            xcall _UART_PutString
+ 08A4 20                pop X
+ 08A5                   .dbline 279
+ 08A5           ;       UART_CPutString(termStr);
+ 08A5 10                push X
+ 08A6 52F8              mov A,[X-8]
+ 08A8 08                push A
+ 08A9 52F9              mov A,[X-7]
+ 08AB 5C                mov X,A
+ 08AC 18                pop A
+ 08AD 7C0000            xcall _UART_CPutString
+ 08B0 20                pop X
+ 08B1                   .dbline -2
+ 08B1           L88:
+ 08B1 20                pop X
+ 08B2                   .dbline 0 ; func end
+ 08B2 7F                ret
+ 08B3                   .dbsym l termStr -8 pkc
+ 08B3                   .dbsym l bDecimals -6 c
+ 08B3                   .dbsym l wVal -5 i
+ 08B3                   .dbend
+ 08B3                   .dbfunc e filter _filter fi
+ 08B3           ;        rFilter -> X-6
+ 08B3           ;           wVal -> X-5
+ 08B3           _filter::
+ 08B3                   .dbline -1
+ 08B3 10                push X
+ 08B4 4F                mov X,SP
+ 08B5                   .dbline 288
+ 08B5           ; }
+ 08B5           ; //-----------------------------------------------------------------------------
+ 08B5           ; //  FUNCTION NAME:    filter
+ 08B5           ; //  DESCRIPTION:      Implements exponential-type filters for MODZ and MODGAMMA
+ 08B5           ; //  ARGUMENTS:                WORD wVal = value to filter
+ 08B5           ; //                                    RATIO_TYPE rFilter = which 'channel' of the filters to use
+ 08B5           ; //  RETURNS:          filtered value for channel rFilter
+ 08B5           ; //-----------------------------------------------------------------------------
+ 08B5           ; WORD filter(WORD wVal, RATIO_TYPE rFilter){
+ 08B5                   .dbline 289
+ 08B5           ;       wVals[rFilter] = (DWORD)((DWORD)bWeight * wVals[rFilter] + (DWORD)wVal) / (1+bWeight);
+ 08B5 62D000            mov REG[0xd0],>__r0
+ 08B8 52FA              mov A,[X-6]
+ 08BA 5300              mov [__r1],A
+ 08BC 550000            mov [__r0],0
+ 08BF 6500              asl [__r1]
+ 08C1 6B00              rlc [__r0]
+ 08C3 060000            add [__r1],<_wVals
+ 08C6 0E0000            adc [__r0],>_wVals
+ 08C9 5100              mov A,[__r0]
+ 08CB 60D4              mov REG[0xd4],A
+ 08CD 3E00              mvi A,[__r1]
+ 08CF 5300              mov [__r2],A
+ 08D1 3E00              mvi A,[__r1]
+ 08D3 160002            sub [__r1],2
+ 08D6 5300              mov [__r7],A
+ 08D8 5100              mov A,[__r2]
+ 08DA 5300              mov [__r6],A
+ 08DC 62D000            mov REG[0xd0],>_bWeight
+ 08DF 5100              mov A,[_bWeight]
+ 08E1 62D000            mov REG[0xd0],>__r0
+ 08E4 5300              mov [__r11],A
+ 08E6 5000              mov A,0
+ 08E8 08                push A
+ 08E9 08                push A
+ 08EA 5100              mov A,[__r6]
+ 08EC 08                push A
+ 08ED 5100              mov A,[__r7]
+ 08EF 08                push A
+ 08F0 5000              mov A,0
+ 08F2 08                push A
+ 08F3 08                push A
+ 08F4 08                push A
+ 08F5 5100              mov A,[__r11]
+ 08F7 08                push A
+ 08F8 7C0000            xcall __mul_32X32_32
+ 08FB 38FC              add SP,-4
+ 08FD 18                pop A
+ 08FE 5300              mov [__r7],A
+ 0900 18                pop A
+ 0901 5300              mov [__r6],A
+ 0903 18                pop A
+ 0904 5300              mov [__r5],A
+ 0906 18                pop A
+ 0907 5300              mov [__r4],A
+ 0909 52FC              mov A,[X-4]
+ 090B 5300              mov [__r11],A
+ 090D 52FB              mov A,[X-5]
+ 090F 5300              mov [__r10],A
+ 0911 5100              mov A,[__r11]
+ 0913 0400              add [__r7],A
+ 0915 5100              mov A,[__r10]
+ 0917 0C00              adc [__r6],A
+ 0919 0E0000            adc [__r5],0
+ 091C 0E0000            adc [__r4],0
+ 091F 62D000            mov REG[0xd0],>_bWeight
+ 0922 5100              mov A,[_bWeight]
+ 0924 62D000            mov REG[0xd0],>__r0
+ 0927 5300              mov [__r3],A
+ 0929 550000            mov [__r2],0
+ 092C 060001            add [__r3],1
+ 092F 0E0000            adc [__r2],0
+ 0932 5100              mov A,[__r3]
+ 0934 5300              mov [__r11],A
+ 0936 5100              mov A,[__r2]
+ 0938 5300              mov [__r10],A
+ 093A 470080            tst [__r10],-128
+ 093D A009              jz X11
+ 093F 5500FF            mov [__r9],-1
+ 0942 5500FF            mov [__r8],-1
+ 0945 800A              jmp X12
+ 0947           X11:
+ 0947 62D000            mov REG[0xd0],>__r0
+ 094A 550000            mov [__r9],0
+ 094D 550000            mov [__r8],0
+ 0950           X12:
+ 0950 62D000            mov REG[0xd0],>__r0
+ 0953 5100              mov A,[__r8]
+ 0955 08                push A
+ 0956 5100              mov A,[__r9]
+ 0958 08                push A
+ 0959 5100              mov A,[__r10]
+ 095B 08                push A
+ 095C 5100              mov A,[__r11]
+ 095E 08                push A
+ 095F 5100              mov A,[__r4]
+ 0961 08                push A
+ 0962 5100              mov A,[__r5]
+ 0964 08                push A
+ 0965 5100              mov A,[__r6]
+ 0967 08                push A
+ 0968 5100              mov A,[__r7]
+ 096A 08                push A
+ 096B 7C0000            xcall __divmodu_32X32_32
+ 096E 18                pop A
+ 096F 5300              mov [__r7],A
+ 0971 18                pop A
+ 0972 5300              mov [__r6],A
+ 0974 18                pop A
+ 0975 18                pop A
+ 0976 38FC              add SP,-4
+ 0978 5100              mov A,[__r7]
+ 097A 5300              mov [__r3],A
+ 097C 5100              mov A,[__r6]
+ 097E 5300              mov [__r2],A
+ 0980 5100              mov A,[__r0]
+ 0982 60D5              mov REG[0xd5],A
+ 0984 5100              mov A,[__r2]
+ 0986 3F00              mvi [__r1],A
+ 0988 5100              mov A,[__r3]
+ 098A 3F00              mvi [__r1],A
+ 098C                   .dbline 290
+ 098C           ;       return wVals[rFilter];
+ 098C 52FA              mov A,[X-6]
+ 098E 5300              mov [__r1],A
+ 0990 550000            mov [__r0],0
+ 0993 6500              asl [__r1]
+ 0995 6B00              rlc [__r0]
+ 0997 060000            add [__r1],<_wVals
+ 099A 0E0000            adc [__r0],>_wVals
+ 099D 5100              mov A,[__r0]
+ 099F 60D4              mov REG[0xd4],A
+ 09A1 3E00              mvi A,[__r1]
+ 09A3 5300              mov [__r0],A
+ 09A5 3E00              mvi A,[__r1]
+ 09A7 5300              mov [__r1],A
+ 09A9                   .dbline -2
+ 09A9           L89:
+ 09A9 20                pop X
+ 09AA                   .dbline 0 ; func end
+ 09AA 7F                ret
+ 09AB                   .dbsym l rFilter -6 c
+ 09AB                   .dbsym l wVal -5 i
+ 09AB                   .dbend
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\pclink_cmds.c
+ 0000           _bWeight::
+ 0000 00                .byte 0
+ 0001                   .dbsym e bWeight _bWeight c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\pclink_cmds.c
+ 0000           _wVals:
+ 0000 00000000          .byte 0,0,0,0
+ 0004                   .dbsym s wVals _wVals A[4:2]i
+                        .area lit(rom, con, rel)
+ 008C           L74:
+ 008C 2C2000            .byte 44,32,0
+ 008F           L39:
+ 008F 00                .byte 0

@@ -1,0 +1,278 @@
+ 0000                   cpu LMM
+                        .module glb_data.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile ./glb_data.c
+ 0000           _g_bIdleCounter::
+ 0000 00                .byte 0
+ 0001                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0001                   .dbsym e g_bIdleCounter _g_bIdleCounter c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bMeasureCounter::
+ 0000 00                .byte 0
+ 0001                   .dbsym e g_bMeasureCounter _g_bMeasureCounter c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bDebounceCounter::
+ 0000 00                .byte 0
+ 0001                   .dbsym e g_bDebounceCounter _g_bDebounceCounter c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bLongPressKeyCounter::
+ 0000 00                .byte 0
+ 0001                   .dbsym e g_bLongPressKeyCounter _g_bLongPressKeyCounter c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bSixtyFourthSecondCounter::
+ 0000 00                .byte 0
+ 0001                   .dbsym e g_bSixtyFourthSecondCounter _g_bSixtyFourthSecondCounter c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bMode::
+ 0000 00                .byte 0
+ 0001                   .dbsym e g_bMode _g_bMode c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_scCalTable::
+ 0000 00                .byte 0
+ 0001 00                .byte 0
+ 0002 000000000000      .byte 0,0,0,0,0,0
+ 0008 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000  .word 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ 0044 00000000000000000000      .word 0,0,0,0,0
+ 004E 00000000000000000000      .byte 0,0,0,0,0,0,0,0,0,0
+ 0058                   .dbsym e g_scCalTable _g_scCalTable A[88:11:4:2]C
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bIsCalibrated::
+ 0000 00                .byte 0
+ 0001                   .dbsym e g_bIsCalibrated _g_bIsCalibrated c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bDDS_GainStep::
+ 0000 08                .byte 8
+ 0001                   .dbsym e g_bDDS_GainStep _g_bDDS_GainStep c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bSgnX::
+ 0000 3F                .byte 63
+ 0001                   .dbsym e g_bSgnX _g_bSgnX c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area lit(rom, con, rel)
+ 0000           _g_bUserIdle::
+ 0000 001E              .byte 0,30
+ 0002 3C5A              .byte 60,'Z
+ 0004                   .dbsym e g_bUserIdle _g_bUserIdle A[4:4]kc
+ 0004           _g_bCWPitches::
+ 0004 060A              .byte 6,10
+ 0006 0C14              .byte 12,20
+ 0008 18                .byte 24
+ 0009                   .dbsym e g_bCWPitches _g_bCWPitches A[5:5]kc
+ 0009           _g_bVF::
+ 0009 6351              .byte 'c,'Q
+ 000B 42                .byte 'B
+ 000C                   .dbsym e g_bVF _g_bVF A[3:3]kc
+ 000C           _g_bFltWd100kHz::
+ 000C 0002              .byte 0,2
+ 000E 0A28              .byte 10,40
+ 0010                   .dbsym e g_bFltWd100kHz _g_bFltWd100kHz A[4:4]kc
+ 0010           _g_wBandBoundaries::
+ 0010 0009              .word 9
+ 0012 0014              .word 20
+ 0014 0028              .word 40
+ 0016 003C              .word 60
+ 0018 0050              .word 80
+ 001A 006E              .word 110
+ 001C 0082              .word 130
+ 001E 00AA              .word 170
+ 0020 00BE              .word 190
+ 0022 00E6              .word 230
+ 0024 0104              .word 260
+ 0026 0118              .word 280
+ 0028 0136              .word 310
+ 002A 0190              .word 400
+ 002C 01EA              .word 490
+ 002E 0226              .word 550
+ 0030 028A              .word 650
+ 0032                   .dbsym e g_wBandBoundaries _g_wBandBoundaries A[34:17]ki
+ 0032           _g_wBandInitialFreq::
+ 0032 0012              .word 18
+ 0034 0025              .word 37
+ 0036 0035              .word 53
+ 0038 0047              .word 71
+ 003A 0065              .word 101
+ 003C 0078              .word 120
+ 003E 008D              .word 141
+ 0040 00B5              .word 181
+ 0042 00D3              .word 211
+ 0044 00F9              .word 249
+ 0046 010E              .word 270
+ 0048 011A              .word 282
+ 004A 0163              .word 355
+ 004C 01BD              .word 445
+ 004E 01F7              .word 503
+ 0050 023A              .word 570
+ 0052                   .dbsym e g_wBandInitialFreq _g_wBandInitialFreq A[32:16]ki
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bLongPress::
+ 0000 00                .byte 0
+ 0001                   .dbsym e g_bLongPress _g_bLongPress c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bUP_DOWN_SelectsIncDigit::
+ 0000 00                .byte 0
+ 0001                   .dbsym e g_bUP_DOWN_SelectsIncDigit _g_bUP_DOWN_SelectsIncDigit c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bUP_DOWN_SelectsVFOPower::
+ 0000 00                .byte 0
+ 0001                   .dbsym e g_bUP_DOWN_SelectsVFOPower _g_bUP_DOWN_SelectsVFOPower c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bIncDigit::
+ 0000 05                .byte 5
+ 0001                   .dbsym e g_bIncDigit _g_bIncDigit c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+                        .area lit(rom, con, rel)
+ 0052           _g_xIncCtrl::
+ 0052 0F                .byte 15
+ 0053 00000001          .word 0,1
+ 0057 0E                .byte 14
+ 0058 0000000A          .word 0,10
+ 005C 0D                .byte 13
+ 005D 00000064          .word 0,100
+ 0061 0B                .byte 11
+ 0062 000003E8          .word 0,1000
+ 0066 0A                .byte 10
+ 0067 00002710          .word 0,10000
+ 006B 09                .byte 9
+ 006C 000186A0          .word 1,34464
+ 0070 08                .byte 8
+ 0071 000F4240          .word 15,16960
+ 0075 07                .byte 7
+ 0076 00989680          .word 152,38528
+ 007A                   .dbstruct 0 5 .5
+ 007A                   .dbfield 0 bCol c
+ 007A                   .dbfield 1 dwInc l
+ 007A                   .dbend
+ 007A                   .dbsym e g_xIncCtrl _g_xIncCtrl A[40:8]kS[.5]
+ 007A           _g_xGainDds::
+ 007A B8                .byte 184
+ 007B 30                .byte 48
+ 007C 88                .byte 136
+ 007D 20                .byte 32
+ 007E 70                .byte 112
+ 007F 90                .byte 144
+ 0080 C0                .byte 192
+ 0081 50                .byte 80
+ 0082 D8                .byte 216
+ 0083 30                .byte 48
+ 0084 60                .byte 96
+ 0085 90                .byte 144
+ 0086 70                .byte 112
+ 0087 70                .byte 112
+ 0088 B0                .byte 176
+ 0089 40                .byte 64
+ 008A 88                .byte 136
+ 008B 10                .byte 16
+ 008C 98                .byte 152
+ 008D 10                .byte 16
+ 008E A0                .byte 160
+ 008F 30                .byte 48
+ 0090 C8                .byte 200
+ 0091 10                .byte 16
+ 0092 A0                .byte 160
+ 0093 20                .byte 32
+ 0094 98                .byte 152
+ 0095 00                .byte 0
+ 0096 80                .byte 128
+ 0097 10                .byte 16
+ 0098 90                .byte 144
+ 0099 00                .byte 0
+ 009A 60                .byte 96
+ 009B 00                .byte 0
+ 009C                   .dbstruct 0 2 .6
+ 009C                   .dbfield 0 bGain1 c
+ 009C                   .dbfield 1 bGain2 c
+ 009C                   .dbend
+ 009C                   .dbsym e g_xGainDds _g_xGainDds A[34:17]kS[.6]
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_dwCurrHz::
+ 0000 00000000          .byte 0,0,0,0
+ 0004                   .dbsym e g_dwCurrHz _g_dwCurrHz l
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_bBandIndex::
+ 0000 00                .byte 0
+ 0001                   .dbsym e g_bBandIndex _g_bBandIndex c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_xConf::
+ 0000 00000000          .byte 0,0,0,0
+ 0004                   .dbstruct 0 4 .1
+ 0004                   .dbfield 0 bUserIdle c
+ 0004                   .dbfield 1 bCWPitch c
+ 0004                   .dbfield 2 bVF c
+ 0004                   .dbfield 3 bFltWt c
+ 0004                   .dbend
+ 0004                   .dbsym e g_xConf _g_xConf S[.1]
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_wR10::
+ 0000 0000              .byte 0,0
+ 0002                   .dbsym e g_wR10 _g_wR10 i
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_wX10::
+ 0000 0000              .byte 0,0
+ 0002                   .dbsym e g_wX10 _g_wX10 i
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_wZ10::
+ 0000 0000              .byte 0,0
+ 0002                   .dbsym e g_wZ10 _g_wZ10 i
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_wSwr100::
+ 0000 0000              .byte 0,0
+ 0002                   .dbsym e g_wSwr100 _g_wSwr100 i
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_wBrgRts::
+ 0000 00000000          .byte 0,0,0,0
+ 0004                   .dbsym e g_wBrgRts _g_wBrgRts A[4:2]i
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+ 0000           _g_buffer16::
+ 0000 00000000000000000000      .word 0,0,0,0,0
+ 000A 000000000000      .byte 0,0,0,0,0,0
+ 0010                   .dbsym e g_buffer16 _g_buffer16 A[16:16]c

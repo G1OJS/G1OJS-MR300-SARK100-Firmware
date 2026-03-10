@@ -1,0 +1,262 @@
+ 0000                   cpu LMM
+                        .module msg_eng.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./msg_eng.c
+                        .area lit(rom, con, rel)
+ 0000           _gBlankStr_16::
+ 0000 20202020202020202020202020202020  .byte 32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32
+ 0010 00                .byte 0
+ 0011                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+ 0011                   .dbsym e gBlankStr_16 _gBlankStr_16 A[17:17]kc
+ 0011           _gBlankStr_4::
+ 0011 2020202000        .byte 32,32,32,32,0
+ 0016                   .dbsym e gBlankStr_4 _gBlankStr_4 A[5:5]kc
+ 0016           _g_welcome1Str::
+ 0016 5341524B31303020414E414C595A4552  .byte 'S,'A,'R,'K,49,48,48,32,'A,'N,'A,'L,'Y,'Z,'E,'R
+ 0026 00                .byte 0
+ 0027                   .dbsym e g_welcome1Str _g_welcome1Str A[17:17]kc
+ 0027           _g_welcome2Str::
+ 0027 47314F4A532056312E3400    .byte 'G,49,'O,'J,'S,32,'V,49,46,52,0
+ 0032                   .dbsym e g_welcome2Str _g_welcome2Str A[11:11]kc
+ 0032           _gLoad1Str::
+ 0032 436F6E6E656374203130F400  .byte 'C,'o,'n,'n,'e,'c,'t,32,49,48,244,0
+ 003E                   .dbsym e gLoad1Str _gLoad1Str A[12:12]kc
+ 003E           _gLoad2Str::
+ 003E 436F6E6E656374203530F400  .byte 'C,'o,'n,'n,'e,'c,'t,32,53,48,244,0
+ 004A                   .dbsym e gLoad2Str _gLoad2Str A[12:12]kc
+ 004A           _gLoad3Str::
+ 004A 436F6E6E65637420313530F400        .byte 'C,'o,'n,'n,'e,'c,'t,32,49,53,48,244,0
+ 0057                   .dbsym e gLoad3Str _gLoad3Str A[13:13]kc
+ 0057           _gLoad4Str::
+ 0057 436F6E6E65637420323230F400        .byte 'C,'o,'n,'n,'e,'c,'t,32,50,50,48,244,0
+ 0064                   .dbsym e gLoad4Str _gLoad4Str A[13:13]kc
+ 0064           _gLoad5Str::
+ 0064 436F6E6E65637420343730F400        .byte 'C,'o,'n,'n,'e,'c,'t,32,52,55,48,244,0
+ 0071                   .dbsym e gLoad5Str _gLoad5Str A[13:13]kc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+ 0000           _gCalLoadStr::
+ 0000 0032              .word _gLoad1Str
+ 0002 003E              .word _gLoad2Str
+ 0004 004A              .word _gLoad3Str
+ 0006 0057              .word _gLoad4Str
+ 0008 0064              .word _gLoad5Str
+ 000A                   .dbsym e gCalLoadStr _gCalLoadStr A[10:5]pkc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+                        .area lit(rom, con, rel)
+ 0071           _gDisconnectLoadStr::
+ 0071 446973636F6E6E656374206C6F616420  .byte 'D,'i,'s,'c,'o,'n,'n,'e,'c,'t,32,'l,'o,'a,'d,32
+ 0081 00                .byte 0
+ 0082                   .dbsym e gDisconnectLoadStr _gDisconnectLoadStr A[17:17]kc
+ 0082           _gSettingGainStr::
+ 0082 53657474696E67206761696E00        .byte 'S,'e,'t,'t,'i,'n,'g,32,'g,'a,'i,'n,0
+ 008F                   .dbsym e gSettingGainStr _gSettingGainStr A[13:13]kc
+ 008F           _gCalibratingStr::
+ 008F 43616C6962726174696E672E2E2E00    .byte 'C,'a,'l,'i,'b,'r,'a,'t,'i,'n,'g,46,46,46,0
+ 009E                   .dbsym e gCalibratingStr _gCalibratingStr A[15:15]kc
+ 009E           _gDoneRestartingStr::
+ 009E 446F6E653A2072657374617274696E67  .byte 'D,'o,'n,'e,58,32,'r,'e,'s,'t,'a,'r,'t,'i,'n,'g
+ 00AE 00                .byte 0
+ 00AF                   .dbsym e gDoneRestartingStr _gDoneRestartingStr A[17:17]kc
+ 00AF           _gZeroReactanceStr::
+ 00AF 5265616374616E6365203D2030F400    .byte 'R,'e,'a,'c,'t,'a,'n,'c,'e,32,61,32,48,244,0
+ 00BE                   .dbsym e gZeroReactanceStr _gZeroReactanceStr A[15:15]kc
+ 00BE           _gCableLabels1Str::
+ 00BE 4C696E65206C656E6774683A20202020  .byte 'L,'i,'n,'e,32,'l,'e,'n,'g,'t,'h,58,32,32,32,32
+ 00CE 00                .byte 0
+ 00CF                   .dbsym e gCableLabels1Str _gCableLabels1Str A[17:17]kc
+ 00CF           _gErrorAdjustVfStr::
+ 00CF 4572726F72205666204C6576656C00    .byte 'E,'r,'r,'o,'r,32,'V,'f,32,'L,'e,'v,'e,'l,0
+ 00DE                   .dbsym e gErrorAdjustVfStr _gErrorAdjustVfStr A[15:15]kc
+ 00DE           _gErrorUncalibratedStr::
+ 00DE 556E63616C696272617465642100      .byte 'U,'n,'c,'a,'l,'i,'b,'r,'a,'t,'e,'d,33,0
+ 00EC                   .dbsym e gErrorUncalibratedStr _gErrorUncalibratedStr A[14:14]kc
+ 00EC           _gPressAnyKeyStr::
+ 00EC 507265737320616E79206B6579202020  .byte 'P,'r,'e,'s,'s,32,'a,'n,'y,32,'k,'e,'y,32,32,32
+ 00FC 00                .byte 0
+ 00FD                   .dbsym e gPressAnyKeyStr _gPressAnyKeyStr A[17:17]kc
+ 00FD           _gConfirmStr::
+ 00FD 436F6E6669726D3F00        .byte 'C,'o,'n,'f,'i,'r,'m,63,0
+ 0106                   .dbsym e gConfirmStr _gConfirmStr A[9:9]kc
+ 0106           _gSwLoadingStr::
+ 0106 4657204C6F6164696E6700    .byte 'F,'W,32,'L,'o,'a,'d,'i,'n,'g,0
+ 0111                   .dbsym e gSwLoadingStr _gSwLoadingStr A[11:11]kc
+ 0111           _gScanCoarseStr::
+ 0111 436F617273653A00  .byte 'C,'o,'a,'r,'s,'e,58,0
+ 0119                   .dbsym e gScanCoarseStr _gScanCoarseStr A[8:8]kc
+ 0119           _gScanFineStr::
+ 0119 46696E653A202000  .byte 'F,'i,'n,'e,58,32,32,0
+ 0121                   .dbsym e gScanFineStr _gScanFineStr A[8:8]kc
+ 0121           _gScanThreshStr::
+ 0121 5468726573683A00  .byte 'T,'h,'r,'e,'s,'h,58,0
+ 0129                   .dbsym e gScanThreshStr _gScanThreshStr A[8:8]kc
+ 0129           _gMinimaStr::
+ 0129 7C5A7C6D696E2F6D61782000  .byte 124,'Z,124,'m,'i,'n,47,'m,'a,'x,32,0
+ 0135                   .dbsym e gMinimaStr _gMinimaStr A[12:12]kc
+ 0135           _gValueSavedStr::
+ 0135 3C2D736176656400  .byte 60,45,'s,'a,'v,'e,'d,0
+ 013D                   .dbsym e gValueSavedStr _gValueSavedStr A[8:8]kc
+ 013D           _gNothingChangedStr::
+ 013D 4E6F7468696E67206368616E67656420  .byte 'N,'o,'t,'h,'i,'n,'g,32,'c,'h,'a,'n,'g,'e,'d,32
+ 014D 00                .byte 0
+ 014E                   .dbsym e gNothingChangedStr _gNothingChangedStr A[17:17]kc
+ 014E           _gConfigPcLinkStr::
+ 014E 5043204C696E6B00  .byte 'P,'C,32,'L,'i,'n,'k,0
+ 0156                   .dbsym e gConfigPcLinkStr _gConfigPcLinkStr A[8:8]kc
+ 0156           _gConfigIdleStr::
+ 0156 5365742049646C652054696D6500      .byte 'S,'e,'t,32,'I,'d,'l,'e,32,'T,'i,'m,'e,0
+ 0164                   .dbsym e gConfigIdleStr _gConfigIdleStr A[14:14]kc
+ 0164           _gConfigFltWtStr::
+ 0164 5365742046696C74657220577400      .byte 'S,'e,'t,32,'F,'i,'l,'t,'e,'r,32,'W,'t,0
+ 0172                   .dbsym e gConfigFltWtStr _gConfigFltWtStr A[14:14]kc
+ 0172           _gConfigCWPitchStr::
+ 0172 53657420435720506974636800        .byte 'S,'e,'t,32,'C,'W,32,'P,'i,'t,'c,'h,0
+ 017F                   .dbsym e gConfigCWPitchStr _gConfigCWPitchStr A[13:13]kc
+ 017F           _gConfigVFStr::
+ 017F 5365742056656C20666163746F7200    .byte 'S,'e,'t,32,'V,'e,'l,32,'f,'a,'c,'t,'o,'r,0
+ 018E                   .dbsym e gConfigVFStr _gConfigVFStr A[15:15]kc
+ 018E           _gConfigCableLengthStr::
+ 018E 4D656173206C696E65206C656E746800  .byte 'M,'e,'a,'s,32,'l,'i,'n,'e,32,'l,'e,'n,'t,'h,0
+ 019E                   .dbsym e gConfigCableLengthStr _gConfigCableLengthStr A[16:16]kc
+ 019E           _gConfigDoCalStr::
+ 019E 43616C69627261746500      .byte 'C,'a,'l,'i,'b,'r,'a,'t,'e,0
+ 01A8                   .dbsym e gConfigDoCalStr _gConfigDoCalStr A[10:10]kc
+ 01A8           _gConfigSwLoadStr::
+ 01A8 4C6F6164204669726D776172652000    .byte 'L,'o,'a,'d,32,'F,'i,'r,'m,'w,'a,'r,'e,32,0
+ 01B7                   .dbsym e gConfigSwLoadStr _gConfigSwLoadStr A[15:15]kc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+ 0000           _gConfigStr::
+ 0000 014E              .word _gConfigPcLinkStr
+ 0002 0156              .word _gConfigIdleStr
+ 0004 0164              .word _gConfigFltWtStr
+ 0006 0172              .word _gConfigCWPitchStr
+ 0008 017F              .word _gConfigVFStr
+ 000A 018E              .word _gConfigCableLengthStr
+ 000C 019E              .word _gConfigDoCalStr
+ 000E 01A8              .word _gConfigSwLoadStr
+ 0010                   .dbsym e gConfigStr _gConfigStr A[16:8]pkc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+                        .area lit(rom, con, rel)
+ 01B7           _gModeImpStr::
+ 01B7 53575200          .byte 'S,'W,'R,0
+ 01BB                   .dbsym e gModeImpStr _gModeImpStr A[4:4]kc
+ 01BB           _gModeCapStr::
+ 01BB 4341502020202000  .byte 'C,'A,'P,32,32,32,32,0
+ 01C3                   .dbsym e gModeCapStr _gModeCapStr A[8:8]kc
+ 01C3           _gModeIndStr::
+ 01C3 494E442020202000  .byte 'I,'N,'D,32,32,32,32,0
+ 01CB                   .dbsym e gModeIndStr _gModeIndStr A[8:8]kc
+ 01CB           _gModeSigStr::
+ 01CB 506F776572206C766C2028524D532920  .byte 'P,'o,'w,'e,'r,32,'l,'v,'l,32,40,'R,'M,'S,41,32
+ 01DB 00                .byte 0
+ 01DC                   .dbsym e gModeSigStr _gModeSigStr A[17:17]kc
+ 01DC           _gModeVfoStr::
+ 01DC 56464F20202020202020202020202020  .byte 'V,'F,'O,32,32,32,32,32,32,32,32,32,32,32,32,32
+ 01EC 00                .byte 0
+ 01ED                   .dbsym e gModeVfoStr _gModeVfoStr A[17:17]kc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+ 0000           _gModeStr::
+ 0000 01B7              .word _gModeImpStr
+ 0002 01BB              .word _gModeCapStr
+ 0004 01C3              .word _gModeIndStr
+ 0006 01CB              .word _gModeSigStr
+ 0008 01DC              .word _gModeVfoStr
+ 000A                   .dbsym e gModeStr _gModeStr A[10:5]pkc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+                        .area lit(rom, con, rel)
+ 01ED           _gIdleOffStr::
+ 01ED 4F666600          .byte 'O,'f,'f,0
+ 01F1                   .dbsym e gIdleOffStr _gIdleOffStr A[4:4]kc
+ 01F1           _gIdle30SStr::
+ 01F1 3330205300        .byte 51,48,32,'S,0
+ 01F6                   .dbsym e gIdle30SStr _gIdle30SStr A[5:5]kc
+ 01F6           _gIdle60SStr::
+ 01F6 3630205300        .byte 54,48,32,'S,0
+ 01FB                   .dbsym e gIdle60SStr _gIdle60SStr A[5:5]kc
+ 01FB           _gIdle90SStr::
+ 01FB 3930205300        .byte 57,48,32,'S,0
+ 0200                   .dbsym e gIdle90SStr _gIdle90SStr A[5:5]kc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+ 0000           _gIdleStr::
+ 0000 01ED              .word _gIdleOffStr
+ 0002 01F1              .word _gIdle30SStr
+ 0004 01F6              .word _gIdle60SStr
+ 0006 01FB              .word _gIdle90SStr
+ 0008                   .dbsym e gIdleStr _gIdleStr A[8:4]pkc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+                        .area lit(rom, con, rel)
+ 0200           _gFlt0Str::
+ 0200 4F666600          .byte 'O,'f,'f,0
+ 0204                   .dbsym e gFlt0Str _gFlt0Str A[4:4]kc
+ 0204           _gFlt1Str::
+ 0204 4C6967687400      .byte 'L,'i,'g,'h,'t,0
+ 020A                   .dbsym e gFlt1Str _gFlt1Str A[6:6]kc
+ 020A           _gFlt2Str::
+ 020A 4D656469756D00    .byte 'M,'e,'d,'i,'u,'m,0
+ 0211                   .dbsym e gFlt2Str _gFlt2Str A[7:7]kc
+ 0211           _gFlt3Str::
+ 0211 5374726F6E6700    .byte 'S,'t,'r,'o,'n,'g,0
+ 0218                   .dbsym e gFlt3Str _gFlt3Str A[7:7]kc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+ 0000           _gFltWtStr::
+ 0000 0200              .word _gFlt0Str
+ 0002 0204              .word _gFlt1Str
+ 0004 020A              .word _gFlt2Str
+ 0006 0211              .word _gFlt3Str
+ 0008                   .dbsym e gFltWtStr _gFltWtStr A[8:4]pkc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+                        .area lit(rom, con, rel)
+ 0218           _gVF99Str::
+ 0218 39392500          .byte 57,57,37,0
+ 021C                   .dbsym e gVF99Str _gVF99Str A[4:4]kc
+ 021C           _gVF81Str::
+ 021C 38312500          .byte 56,49,37,0
+ 0220                   .dbsym e gVF81Str _gVF81Str A[4:4]kc
+ 0220           _gVF66Str::
+ 0220 36362500          .byte 54,54,37,0
+ 0224                   .dbsym e gVF66Str _gVF66Str A[4:4]kc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+ 0000           _gVFStr::
+ 0000 0218              .word _gVF99Str
+ 0002 021C              .word _gVF81Str
+ 0004 0220              .word _gVF66Str
+ 0006                   .dbsym e gVFStr _gVFStr A[6:3]pkc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+                        .area lit(rom, con, rel)
+ 0224           _gCWPitch600Str::
+ 0224 36303020487A00    .byte 54,48,48,32,'H,'z,0
+ 022B                   .dbsym e gCWPitch600Str _gCWPitch600Str A[7:7]kc
+ 022B           _gCWPitch1000Str::
+ 022B 3130303020487A00  .byte 49,48,48,48,32,'H,'z,0
+ 0233                   .dbsym e gCWPitch1000Str _gCWPitch1000Str A[8:8]kc
+ 0233           _gCWPitch1200Str::
+ 0233 3132303020487A00  .byte 49,50,48,48,32,'H,'z,0
+ 023B                   .dbsym e gCWPitch1200Str _gCWPitch1200Str A[8:8]kc
+ 023B           _gCWPitch2000Str::
+ 023B 3230303020487A00  .byte 50,48,48,48,32,'H,'z,0
+ 0243                   .dbsym e gCWPitch2000Str _gCWPitch2000Str A[8:8]kc
+ 0243           _gCWPitch2400Str::
+ 0243 3234303020487A00  .byte 50,52,48,48,32,'H,'z,0
+ 024B                   .dbsym e gCWPitch2400Str _gCWPitch2400Str A[8:8]kc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+ 0000           _gCWPitchStr::
+ 0000 0224              .word _gCWPitch600Str
+ 0002 022B              .word _gCWPitch1000Str
+ 0004 0233              .word _gCWPitch1200Str
+ 0006 023B              .word _gCWPitch2000Str
+ 0008 0243              .word _gCWPitch2400Str
+ 000A                   .dbsym e gCWPitchStr _gCWPitchStr A[10:5]pkc
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c

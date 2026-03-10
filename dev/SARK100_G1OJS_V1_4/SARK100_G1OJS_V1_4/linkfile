@@ -1,0 +1,8 @@
+-F0x30 -g -blit:0x1a0.0x7fff 
+ -bdata:0.0x6ff -bSSCParmBlk:0x00F7.0x00FF -BInterruptRAM:0 -Bvirtual_registers  
+ -Bsark100_g1ojs_v1_4_RAM 
+-bBootCheckSum:0x7200.0x73ff
+-bBootLoaderArea:0x7400.0x7fff
+ -o"output/SARK100_G1OJS_V1_4" 
+ ./obj/bootloader.o ./obj/bootloaderconfig.o ./obj/bridge.o ./obj/control.o ./obj/correctionmodel.o ./obj/dds.o ./obj/derive.o ./obj/flashapi.o ./obj/glb_data.o ./obj/keypad.o ./obj/main.o ./obj/morse.o ./obj/msg_eng.o ./obj/pclink.o ./obj/pclink_cmds.o ./obj/scans.o ./obj/screens.o ./obj/storage.o ./obj/timers.o   
+ C:/Users/drala/DOCUME~1/Radio_tools/SARK100/SARK10~2/SARK10~1/lib/libPSoc.a -LC:/PROGRA~2/Cypress/Common/CYPRES~3/tools/lib/LMM/eightpages C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/lib/CY8C29000/cms.a C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/lib/LMM/UASW/MAC/arith.a  

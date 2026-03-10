@@ -1,0 +1,2 @@
+python fscan.py
+pause

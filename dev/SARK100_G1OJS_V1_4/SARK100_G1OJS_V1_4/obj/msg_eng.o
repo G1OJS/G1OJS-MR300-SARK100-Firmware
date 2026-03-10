@@ -1,0 +1,283 @@
+XH
+H 10 areas 3E global symbols
+M msg_eng.c
+A text size 0 flags 0
+dbfile ./msg_eng.c
+A lit size 24B flags 0
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gBlankStr_16 0 A[17:17]kc
+dbsym e gBlankStr_4 11 A[5:5]kc
+dbsym e g_welcome1Str 16 A[17:17]kc
+dbsym e g_welcome2Str 27 A[11:11]kc
+dbsym e gLoad1Str 32 A[12:12]kc
+dbsym e gLoad2Str 3E A[12:12]kc
+dbsym e gLoad3Str 4A A[13:13]kc
+dbsym e gLoad4Str 57 A[13:13]kc
+dbsym e gLoad5Str 64 A[13:13]kc
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gDisconnectLoadStr 71 A[17:17]kc
+dbsym e gSettingGainStr 82 A[13:13]kc
+dbsym e gCalibratingStr 8F A[15:15]kc
+dbsym e gDoneRestartingStr 9E A[17:17]kc
+dbsym e gZeroReactanceStr AF A[15:15]kc
+dbsym e gCableLabels1Str BE A[17:17]kc
+dbsym e gErrorAdjustVfStr CF A[15:15]kc
+dbsym e gErrorUncalibratedStr DE A[14:14]kc
+dbsym e gPressAnyKeyStr EC A[17:17]kc
+dbsym e gConfirmStr FD A[9:9]kc
+dbsym e gSwLoadingStr 106 A[11:11]kc
+dbsym e gScanCoarseStr 111 A[8:8]kc
+dbsym e gScanFineStr 119 A[8:8]kc
+dbsym e gScanThreshStr 121 A[8:8]kc
+dbsym e gMinimaStr 129 A[12:12]kc
+dbsym e gValueSavedStr 135 A[8:8]kc
+dbsym e gNothingChangedStr 13D A[17:17]kc
+dbsym e gConfigPcLinkStr 14E A[8:8]kc
+dbsym e gConfigIdleStr 156 A[14:14]kc
+dbsym e gConfigFltWtStr 164 A[14:14]kc
+dbsym e gConfigCWPitchStr 172 A[13:13]kc
+dbsym e gConfigVFStr 17F A[15:15]kc
+dbsym e gConfigCableLengthStr 18E A[16:16]kc
+dbsym e gConfigDoCalStr 19E A[10:10]kc
+dbsym e gConfigSwLoadStr 1A8 A[15:15]kc
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gModeImpStr 1B7 A[4:4]kc
+dbsym e gModeCapStr 1BB A[8:8]kc
+dbsym e gModeIndStr 1C3 A[8:8]kc
+dbsym e gModeSigStr 1CB A[17:17]kc
+dbsym e gModeVfoStr 1DC A[17:17]kc
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gIdleOffStr 1ED A[4:4]kc
+dbsym e gIdle30SStr 1F1 A[5:5]kc
+dbsym e gIdle60SStr 1F6 A[5:5]kc
+dbsym e gIdle90SStr 1FB A[5:5]kc
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gFlt0Str 200 A[4:4]kc
+dbsym e gFlt1Str 204 A[6:6]kc
+dbsym e gFlt2Str 20A A[7:7]kc
+dbsym e gFlt3Str 211 A[7:7]kc
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gVF99Str 218 A[4:4]kc
+dbsym e gVF81Str 21C A[4:4]kc
+dbsym e gVF66Str 220 A[4:4]kc
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gCWPitch600Str 224 A[7:7]kc
+dbsym e gCWPitch1000Str 22B A[8:8]kc
+dbsym e gCWPitch1200Str 233 A[8:8]kc
+dbsym e gCWPitch2000Str 23B A[8:8]kc
+dbsym e gCWPitch2400Str 243 A[8:8]kc
+S _gVF81Str Def021C
+S _gScanFineStr Def0119
+S _gVF66Str Def0220
+S _gVF99Str Def0218
+S _gConfigDoCalStr Def019E
+S _gZeroReactanceStr Def00AF
+S _gCWPitch600Str Def0224
+S _gErrorAdjustVfStr Def00CF
+S _gIdle30SStr Def01F1
+S _gIdle60SStr Def01F6
+S _gIdle90SStr Def01FB
+S _gConfigFltWtStr Def0164
+S _gCWPitch1000Str Def022B
+S _gCWPitch2000Str Def023B
+S _gCWPitch1200Str Def0233
+S _gFlt0Str Def0200
+S _gFlt1Str Def0204
+S _gCWPitch2400Str Def0243
+S _gFlt2Str Def020A
+S _gFlt3Str Def0211
+S _gMinimaStr Def0129
+S _gCableLabels1Str Def00BE
+S _gSettingGainStr Def0082
+S _gPressAnyKeyStr Def00EC
+S _gCalibratingStr Def008F
+S _gBlankStr_4 Def0011
+S _g_welcome1Str Def0016
+S _g_welcome2Str Def0027
+S _gNothingChangedStr Def013D
+S _gSwLoadingStr Def0106
+S _gDisconnectLoadStr Def0071
+S _gConfigCableLengthStr Def018E
+S _gConfigPcLinkStr Def014E
+S _gIdleOffStr Def01ED
+S _gModeCapStr Def01BB
+S _gModeIndStr Def01C3
+S _gConfigSwLoadStr Def01A8
+S _gModeSigStr Def01CB
+S _gDoneRestartingStr Def009E
+S _gModeImpStr Def01B7
+S _gBlankStr_16 Def0000
+S _gModeVfoStr Def01DC
+S _gLoad1Str Def0032
+S _gLoad2Str Def003E
+S _gLoad3Str Def004A
+S _gLoad4Str Def0057
+S _gLoad5Str Def0064
+S _gConfirmStr Def00FD
+S _gConfigIdleStr Def0156
+S _gErrorUncalibratedStr Def00DE
+S _gScanCoarseStr Def0111
+S _gConfigCWPitchStr Def0172
+S _gValueSavedStr Def0135
+S _gConfigVFStr Def017F
+S _gScanThreshStr Def0121
+A data size A flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gCalLoadStr 0 A[10:5]pkc
+S _gCalLoadStr Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+A data size 10 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gConfigStr 0 A[16:8]pkc
+S _gConfigStr Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+A data size A flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gModeStr 0 A[10:5]pkc
+S _gModeStr Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+A data size 8 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gIdleStr 0 A[8:4]pkc
+S _gIdleStr Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+A data size 8 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gFltWtStr 0 A[8:4]pkc
+S _gFltWtStr Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+A data size 6 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gVFStr 0 A[6:3]pkc
+S _gVFStr Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+A data size A flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+dbsym e gCWPitchStr 0 A[10:5]pkc
+S _gCWPitchStr Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\msg_eng.c
+T 00 00 20 20 20 20 20 20 20 20 20 20 20 20 20 20
+R 00 00 00 01
+T 00 0E 20 20 00 20 20 20 20 00 53 41 52 4B 31 30
+R 00 00 00 01
+T 00 1C 30 20 41 4E 41 4C 59 5A 45 52 00 47 31 4F
+R 00 00 00 01
+T 00 2A 4A 53 20 56 31 2E 34 00 43 6F 6E 6E 65 63
+R 00 00 00 01
+T 00 38 74 20 31 30 F4 00 43 6F 6E 6E 65 63 74 20
+R 00 00 00 01
+T 00 46 35 30 F4 00 43 6F 6E 6E 65 63 74 20 31 35
+R 00 00 00 01
+T 00 54 30 F4 00 43 6F 6E 6E 65 63 74 20 32 32 30
+R 00 00 00 01
+T 00 62 F4 00 43 6F 6E 6E 65 63 74 20 34 37 30 F4
+R 00 00 00 01
+T 00 70 00
+R 00 00 00 01
+T 00 00 00 32 00 3E 00 4A
+R 00 00 00 02 00 02 00 01 00 04 00 01 00 06 00 01
+T 00 06 00 57 00 64
+R 00 00 00 02 00 02 00 01 00 04 00 01
+T 00 71 44 69 73 63 6F 6E 6E 65 63 74 20 6C 6F 61
+R 00 00 00 01
+T 00 7F 64 20 00 53 65 74 74 69 6E 67 20 67 61 69
+R 00 00 00 01
+T 00 8D 6E 00 43 61 6C 69 62 72 61 74 69 6E 67 2E
+R 00 00 00 01
+T 00 9B 2E 2E 00 44 6F 6E 65 3A 20 72 65 73 74 61
+R 00 00 00 01
+T 00 A9 72 74 69 6E 67 00 52 65 61 63 74 61 6E 63
+R 00 00 00 01
+T 00 B7 65 20 3D 20 30 F4 00 4C 69 6E 65 20 6C 65
+R 00 00 00 01
+T 00 C5 6E 67 74 68 3A 20 20 20 20 00 45 72 72 6F
+R 00 00 00 01
+T 00 D3 72 20 56 66 20 4C 65 76 65 6C 00 55 6E 63
+R 00 00 00 01
+T 00 E1 61 6C 69 62 72 61 74 65 64 21 00 50 72 65
+R 00 00 00 01
+T 00 EF 73 73 20 61 6E 79 20 6B 65 79 20 20 20 00
+R 00 00 00 01
+T 00 FD 43 6F 6E 66 69 72 6D 3F 00 46 57 20 4C 6F
+R 00 00 00 01
+T 01 0B 61 64 69 6E 67 00 43 6F 61 72 73 65 3A 00
+R 00 00 00 01
+T 01 19 46 69 6E 65 3A 20 20 00 54 68 72 65 73 68
+R 00 00 00 01
+T 01 27 3A 00 7C 5A 7C 6D 69 6E 2F 6D 61 78 20 00
+R 00 00 00 01
+T 01 35 3C 2D 73 61 76 65 64 00 4E 6F 74 68 69 6E
+R 00 00 00 01
+T 01 43 67 20 63 68 61 6E 67 65 64 20 00 50 43 20
+R 00 00 00 01
+T 01 51 4C 69 6E 6B 00 53 65 74 20 49 64 6C 65 20
+R 00 00 00 01
+T 01 5F 54 69 6D 65 00 53 65 74 20 46 69 6C 74 65
+R 00 00 00 01
+T 01 6D 72 20 57 74 00 53 65 74 20 43 57 20 50 69
+R 00 00 00 01
+T 01 7B 74 63 68 00 53 65 74 20 56 65 6C 20 66 61
+R 00 00 00 01
+T 01 89 63 74 6F 72 00 4D 65 61 73 20 6C 69 6E 65
+R 00 00 00 01
+T 01 97 20 6C 65 6E 74 68 00 43 61 6C 69 62 72 61
+R 00 00 00 01
+T 01 A5 74 65 00 4C 6F 61 64 20 46 69 72 6D 77 61
+R 00 00 00 01
+T 01 B3 72 65 20 00
+R 00 00 00 01
+T 00 00 01 4E 01 56 01 64
+R 00 00 00 04 00 02 00 01 00 04 00 01 00 06 00 01
+T 00 06 01 72 01 7F 01 8E
+R 00 00 00 04 00 02 00 01 00 04 00 01 00 06 00 01
+T 00 0C 01 9E 01 A8
+R 00 00 00 04 00 02 00 01 00 04 00 01
+T 01 B7 53 57 52 00 43 41 50 20 20 20 20 00 49 4E
+R 00 00 00 01
+T 01 C5 44 20 20 20 20 00 50 6F 77 65 72 20 6C 76
+R 00 00 00 01
+T 01 D3 6C 20 28 52 4D 53 29 20 00 56 46 4F 20 20
+R 00 00 00 01
+T 01 E1 20 20 20 20 20 20 20 20 20 20 20 00
+R 00 00 00 01
+T 00 00 01 B7 01 BB 01 C3
+R 00 00 00 06 00 02 00 01 00 04 00 01 00 06 00 01
+T 00 06 01 CB 01 DC
+R 00 00 00 06 00 02 00 01 00 04 00 01
+T 01 ED 4F 66 66 00 33 30 20 53 00 36 30 20 53 00
+R 00 00 00 01
+T 01 FB 39 30 20 53 00
+R 00 00 00 01
+T 00 00 01 ED 01 F1 01 F6
+R 00 00 00 08 00 02 00 01 00 04 00 01 00 06 00 01
+T 00 06 01 FB
+R 00 00 00 08 00 02 00 01
+T 02 00 4F 66 66 00 4C 69 67 68 74 00 4D 65 64 69
+R 00 00 00 01
+T 02 0E 75 6D 00 53 74 72 6F 6E 67 00
+R 00 00 00 01
+T 00 00 02 00 02 04 02 0A
+R 00 00 00 0A 00 02 00 01 00 04 00 01 00 06 00 01
+T 00 06 02 11
+R 00 00 00 0A 00 02 00 01
+T 02 18 39 39 25 00 38 31 25 00 36 36 25 00
+R 00 00 00 01
+T 00 00 02 18 02 1C 02 20
+R 00 00 00 0C 00 02 00 01 00 04 00 01 00 06 00 01
+T 02 24 36 30 30 20 48 7A 00 31 30 30 30 20 48 7A
+R 00 00 00 01
+T 02 32 00 31 32 30 30 20 48 7A 00 32 30 30 30 20
+R 00 00 00 01
+T 02 40 48 7A 00 32 34 30 30 20 48 7A 00
+R 00 00 00 01
+T 00 00 02 24 02 2B 02 33
+R 00 00 00 0E 00 02 00 01 00 04 00 01 00 06 00 01
+T 00 06 02 3B 02 43
+R 00 00 00 0E 00 02 00 01 00 04 00 01

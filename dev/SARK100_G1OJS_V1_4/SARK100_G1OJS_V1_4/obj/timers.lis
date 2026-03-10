@@ -1,0 +1,211 @@
+ 0000                   cpu LMM
+                        .module timers.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./timers.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile ./timers.c
+ 0000           _gDivider_1:
+ 0000 01                .byte 1
+ 0001                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.c
+ 0001                   .dbsym s gDivider_1 _gDivider_1 c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.c
+ 0000           _gDivider_2:
+ 0000 01                .byte 1
+ 0001                   .dbsym s gDivider_2 _gDivider_2 c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.c
+ 0000                   .dbfunc e SleepTimerINT _SleepTimerINT fV
+ 0000           _SleepTimerINT::
+ 0000                   .dbline -1
+ 0000 71C0              or F,-64
+ 0002 08                push A
+ 0003 5DD0              mov A,REG[0xd0]
+ 0005 08                push A
+ 0006                   .dbline 49
+ 0006           ; //*****************************************************************************/
+ 0006           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0006           ; //
+ 0006           ; //    Copyright © 2025 Alan Robinson G1OJS Hampshire England G1OJS@yahoo.com with 
+ 0006           ; //  acknowledgement & thanks to Melchor Varela © 2010, EA4FRB Madrid, Spain 
+ 0006           ; //    (melchor.varela@gmail.com) for the overall software and ideas.
+ 0006           ; //  
+ 0006           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0006           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0006           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0006           ; //  or (at your option) any later version.
+ 0006           ; //
+ 0006           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0006           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0006           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0006           ; //  GNU General Public License for more details.
+ 0006           ; //
+ 0006           ; //  You should have received a copy of the GNU General Public License
+ 0006           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0006           ; //  see <http://www.gnu.org/licenses/>.
+ 0006           ; //*****************************************************************************/
+ 0006           ; //*****************************************************************************/
+ 0006           ; //
+ 0006           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0006           ; //    FILE NAME:      timers.c
+ 0006           ; //    AUTHOR:         G1OJS - Alan Robinson
+ 0006           ; //    DESCRIPTION     Display Screens for different modes and results
+ 0006           ; //    HISTORY
+ 0006           ; //    NAME            DATE            REMARKS
+ 0006           ; //    AJR                     Feb 2025        G1OJS - creation
+ 0006           ; //*****************************************************************************/
+ 0006           ; 
+ 0006           ; #include "m8c.h"
+ 0006           ; #include "glb_data.h"
+ 0006           ; 
+ 0006           ; 
+ 0006           ; 
+ 0006           ; //-----------------------------------------------------------------------------
+ 0006           ; //  FUNCTION NAME:    SleepTimerINT
+ 0006           ; //  DESCRIPTION:      Sleep timer interrupt sevice routine. Period 64Hz.
+ 0006           ; //  ARGUMENTS:                none.
+ 0006           ; //  RETURNS:          none.
+ 0006           ; //-----------------------------------------------------------------------------
+ 0006           ; 
+ 0006           ; static volatile BYTE gDivider_1 = 1;  // Counter to divide clock by 8
+ 0006           ; static volatile BYTE gDivider_2 = 1;  // Counter to divide clock by 8
+ 0006           ; #pragma interrupt_handler     SleepTimerINT
+ 0006           ; void SleepTimerINT ( void )
+ 0006           ; {
+ 0006                   .dbline 50
+ 0006           ;       M8C_ClearWDTAndSleep;
+ 0006 62E338            mov REG[0xe3],56
+ 0009                   .dbline 52
+ 0009           ;       
+ 0009           ;       if (g_bSixtyFourthSecondCounter)        g_bSixtyFourthSecondCounter--;
+ 0009 62D000            mov REG[0xd0],>_g_bSixtyFourthSecondCounter
+ 000C 3C0000            cmp [_g_bSixtyFourthSecondCounter],0
+ 000F A003              jz L10
+ 0011                   .dbline 52
+ 0011 7A00              dec [_g_bSixtyFourthSecondCounter]
+ 0013           L10:
+ 0013                   .dbline 54
+ 0013           ;       
+ 0013           ;       if( --gDivider_1 ) return;      // only pass here to decrement once per sixteenth second counters
+ 0013 62D000            mov REG[0xd0],>_gDivider_1
+ 0016 5100              mov A,[_gDivider_1]
+ 0018 1101              sub A,1
+ 001A 5300              mov [_gDivider_1],A
+ 001C 62D000            mov REG[0xd0],>__r0
+ 001F 3900              cmp A,0
+ 0021 A003              jz L12
+ 0023                   .dbline 54
+ 0023 8047              xjmp L9
+ 0025           L12:
+ 0025                   .dbline 55
+ 0025           ;               gDivider_1 = 4; 
+ 0025 62D000            mov REG[0xd0],>_gDivider_1
+ 0028 550004            mov [_gDivider_1],4
+ 002B                   .dbline 56
+ 002B           ;               if (g_bMeasureCounter)                  g_bMeasureCounter--;
+ 002B 62D000            mov REG[0xd0],>_g_bMeasureCounter
+ 002E 3C0000            cmp [_g_bMeasureCounter],0
+ 0031 A003              jz L14
+ 0033                   .dbline 56
+ 0033 7A00              dec [_g_bMeasureCounter]
+ 0035           L14:
+ 0035                   .dbline 57
+ 0035           ;               if (g_bDebounceCounter)                 g_bDebounceCounter--;
+ 0035 62D000            mov REG[0xd0],>_g_bDebounceCounter
+ 0038 3C0000            cmp [_g_bDebounceCounter],0
+ 003B A003              jz L16
+ 003D                   .dbline 57
+ 003D 7A00              dec [_g_bDebounceCounter]
+ 003F           L16:
+ 003F                   .dbline 59
+ 003F           ;               
+ 003F           ;       if( --gDivider_2 ) return;      // only pass here to decrement once per second counters
+ 003F 62D000            mov REG[0xd0],>_gDivider_2
+ 0042 5100              mov A,[_gDivider_2]
+ 0044 1101              sub A,1
+ 0046 5300              mov [_gDivider_2],A
+ 0048 62D000            mov REG[0xd0],>__r0
+ 004B 3900              cmp A,0
+ 004D A003              jz L18
+ 004F                   .dbline 59
+ 004F 801B              xjmp L9
+ 0051           L18:
+ 0051                   .dbline 60
+ 0051           ;               gDivider_2 = 16;                
+ 0051 62D000            mov REG[0xd0],>_gDivider_2
+ 0054 550010            mov [_gDivider_2],16
+ 0057                   .dbline 61
+ 0057           ;               if (g_bLongPressKeyCounter)             g_bLongPressKeyCounter-- ;
+ 0057 62D000            mov REG[0xd0],>_g_bLongPressKeyCounter
+ 005A 3C0000            cmp [_g_bLongPressKeyCounter],0
+ 005D A003              jz L20
+ 005F                   .dbline 61
+ 005F 7A00              dec [_g_bLongPressKeyCounter]
+ 0061           L20:
+ 0061                   .dbline 62
+ 0061           ;               if (g_bIdleCounter)                     g_bIdleCounter-- ;
+ 0061 62D000            mov REG[0xd0],>_g_bIdleCounter
+ 0064 3C0000            cmp [_g_bIdleCounter],0
+ 0067 A003              jz L22
+ 0069                   .dbline 62
+ 0069 7A00              dec [_g_bIdleCounter]
+ 006B           L22:
+ 006B                   .dbline -2
+ 006B           L9:
+ 006B 18                pop A
+ 006C 60D0              mov REG[208],A
+ 006E 18                pop A
+ 006F                   .dbline 0 ; func end
+ 006F 7E                reti
+ 0070                   .dbend
+ 0070                   .dbfunc e Delay_64ths _Delay_64ths fV
+ 0070           ;         b64ths -> X-4
+ 0070           _Delay_64ths::
+ 0070                   .dbline -1
+ 0070 10                push X
+ 0071 4F                mov X,SP
+ 0072                   .dbline 71
+ 0072           ; }
+ 0072           ; //-----------------------------------------------------------------------------
+ 0072           ; //  FUNCTION NAME:    Delay_64ths
+ 0072           ; //  DESCRIPTION:      Implements a blocking delay of b64ths/64 seconds
+ 0072           ; //  ARGUMENTS:        BYTE b64ths: 1= 16ms, 255= 3984ms
+ 0072           ; //  RETURNS:                  Nothing
+ 0072           ; //-----------------------------------------------------------------------------
+ 0072           ; void Delay_64ths(BYTE b64ths)                 
+ 0072           ; {
+ 0072                   .dbline 72
+ 0072           ;       g_bSixtyFourthSecondCounter = b64ths;
+ 0072 52FC              mov A,[X-4]
+ 0074 62D000            mov REG[0xd0],>_g_bSixtyFourthSecondCounter
+ 0077 5300              mov [_g_bSixtyFourthSecondCounter],A
+ 0079                   .dbline 73
+ 0079           ;       M8C_Sleep;
+ 0079 43FF08            or REG[0xff],8
+ 007C 800B              xjmp L26
+ 007E           L25:
+ 007E                   .dbline 74
+ 007E           ;       while(1){ if (g_bSixtyFourthSecondCounter ==0) break; }
+ 007E                   .dbline 74
+ 007E 62D000            mov REG[0xd0],>_g_bSixtyFourthSecondCounter
+ 0081 3C0000            cmp [_g_bSixtyFourthSecondCounter],0
+ 0084 B003              jnz L28
+ 0086                   .dbline 74
+ 0086 8003              xjmp L27
+ 0088           L28:
+ 0088                   .dbline 74
+ 0088           L26:
+ 0088                   .dbline 74
+ 0088 8FF5              xjmp L25
+ 008A           L27:
+ 008A                   .dbline -2
+ 008A           L24:
+ 008A 20                pop X
+ 008B                   .dbline 0 ; func end
+ 008B 7F                ret
+ 008C                   .dbsym l b64ths -4 c
+ 008C                   .dbend

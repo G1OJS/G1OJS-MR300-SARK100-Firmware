@@ -1,0 +1,2559 @@
+ 0000                   cpu LMM
+                        .module main.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./main.c
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\main.c
+ 0000                   .dbfunc e main _main fV
+ 0000           ;           bKey -> X+0
+ 0000           _main::
+ 0000                   .dbline -1
+ 0000 10                push X
+ 0001 4F                mov X,SP
+ 0002 3801              add SP,1
+ 0004                   .dbline 73
+ 0004           ; //*****************************************************************************/
+ 0004           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0004           ; //
+ 0004           ; //    Copyright © 2025 Alan Robinson G1OJS Hampshire England G1OJS@yahoo.com with 
+ 0004           ; //  acknowledgement & thanks to Melchor Varela © 2010, EA4FRB Madrid, Spain 
+ 0004           ; //    (melchor.varela@gmail.com) for the overall software and ideas.
+ 0004           ; //  
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0004           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0004           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0004           ; //  or (at your option) any later version.
+ 0004           ; //
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0004           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0004           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0004           ; //  GNU General Public License for more details.
+ 0004           ; //
+ 0004           ; //  You should have received a copy of the GNU General Public License
+ 0004           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0004           ; //  see <http://www.gnu.org/licenses/>.
+ 0004           ; //*****************************************************************************/
+ 0004           ; //*****************************************************************************/
+ 0004           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0004           ; //    FILE NAME:      Main.c
+ 0004           ; //    AUTHOR:         G1OJS - Alan Robinson
+ 0004           ; //    DESCRIPTION     Main program logic
+ 0004           ; //    HISTORY
+ 0004           ; //    NAME            DATE            REMARKS 
+ 0004           ; //    AJR                     FEB 2025        G1OJS  - creation 
+ 0004           ; //*****************************************************************************/
+ 0004           ; //#include <stdlib.h>
+ 0004           ; #include <m8c.h>
+ 0004           ; #include "control.h"
+ 0004           ; #include "screens.h"
+ 0004           ; #include "glb_data.h"
+ 0004           ; #include "msg_generic.h"
+ 0004           ; #include "storage.h"
+ 0004           ; #include "keypad.h"
+ 0004           ; #include "morse.h"
+ 0004           ; #include "correctionmodel.h"
+ 0004           ; #include "pclink.h"
+ 0004           ; #include "bridge.h"
+ 0004           ; #include "timers.h"
+ 0004           ; #include "scans.h"
+ 0004           ; #include "derive.h"
+ 0004           ; #include "string.h"
+ 0004           ; 
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; //  Defines
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; 
+ 0004           ; 
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; //  Prototypes
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; 
+ 0004           ; static void Do_Config_Menu (void);
+ 0004           ; static void Do_DizzlingMeasureCorrectCalc(void);
+ 0004           ; static void Load_Firmware(void);
+ 0004           ; static void Config_ByteSettingItem(const char **sSettingStrings, BYTE *bSetting, BYTE bMaxValue);
+ 0004           ; static void CycleBand(void);
+ 0004           ; static void ChangeCurrHz(STEP_DIRECTION xDir);
+ 0004           ; static void cycleParameter(BYTE *bSetting, BYTE bMinValue, BYTE bMaxValue, STEP_DIRECTION xDir, BYTE bCycle);
+ 0004           ; static void handleKeypress(BYTE bKey);
+ 0004           ; static void PowerSave(void);
+ 0004           ; extern void MeasureCorrectCalc(void);
+ 0004           ; extern BYTE getUserConfirmation(void);
+ 0004           ; extern char FormatNumberRJ(unsigned long dwVal, unsigned char bFieldLen, unsigned char bDP);
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; //  MAIN
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; void main(void)
+ 0004           ; {
+ 0004                   .dbline 76
+ 0004           ;       BYTE bKey;
+ 0004           ; 
+ 0004           ;       M8C_ClearWDTAndSleep;           
+ 0004 62E338            mov REG[0xe3],56
+ 0007                   .dbline 77
+ 0007           ;       M8C_EnableIntMask(INT_MSK0, INT_MSK0_SLEEP);
+ 0007 43E040            or REG[0xe0],64
+ 000A                   .dbline 78
+ 000A           ;       M8C_EnableGInt;                                 
+ 000A 7101                      or  F, 01h
+ 000C           
+ 000C                   .dbline 79
+ 000C           ;       LCD_Start();                                            // Initialise display
+ 000C 10                push X
+ 000D 7C0000            xcall _LCD_Start
+ 0010 20                pop X
+ 0011                   .dbline 81
+ 0011           ;       
+ 0011           ;       SetPowerDigitalAndAnalogue(PWRON);
+ 0011 5001              mov A,1
+ 0013 08                push A
+ 0014 7C0000            xcall _SetPowerDigitalAndAnalogue
+ 0017                   .dbline 84
+ 0017           ;       
+ 0017           ;       // Display welcome screen
+ 0017           ;       Screen_CStrAtRowCol(0,0, g_welcome1Str);
+ 0017 5000              mov A,>_g_welcome1Str
+ 0019 08                push A
+ 001A 5000              mov A,<_g_welcome1Str
+ 001C 08                push A
+ 001D 5000              mov A,0
+ 001F 08                push A
+ 0020 08                push A
+ 0021 7C0000            xcall _Screen_CStrAtRowCol
+ 0024 38FB              add SP,-5
+ 0026                   .dbline 85
+ 0026           ;       Screen_CStrAtRowCol(1,0, g_welcome2Str);
+ 0026 5000              mov A,>_g_welcome2Str
+ 0028 08                push A
+ 0029 5000              mov A,<_g_welcome2Str
+ 002B 08                push A
+ 002C 5000              mov A,0
+ 002E 08                push A
+ 002F 5001              mov A,1
+ 0031 08                push A
+ 0032 7C0000            xcall _Screen_CStrAtRowCol
+ 0035                   .dbline 86
+ 0035           ;       Delay_64ths(TIME_FLASH_MSG);
+ 0035 5060              mov A,96
+ 0037 08                push A
+ 0038 7C0000            xcall _Delay_64ths
+ 003B 38FB              add SP,-5
+ 003D                   .dbline 89
+ 003D           ;       
+ 003D           ;       //set initial band (scope to store band initial freqs in EEPROM - make g_wBandInitialFreq var not const)
+ 003D           ;       g_bBandIndex = BAND_ATPWRON;
+ 003D 62D000            mov REG[0xd0],>_g_bBandIndex
+ 0040 550006            mov [_g_bBandIndex],6
+ 0043                   .dbline 90
+ 0043           ;       g_dwCurrHz=BAND_FREQ_ToHz * g_wBandInitialFreq[g_bBandIndex];   // current frequency in Hz
+ 0043 5100              mov A,[_g_bBandIndex]
+ 0045 62D000            mov REG[0xd0],>__r0
+ 0048 5300              mov [__r1],A
+ 004A 550000            mov [__r0],0
+ 004D 6500              asl [__r1]
+ 004F 6B00              rlc [__r0]
+ 0051 060000            add [__r1],<_g_wBandInitialFreq
+ 0054 0E0000            adc [__r0],>_g_wBandInitialFreq
+ 0057 5100              mov A,[__r0]
+ 0059 10                push X
+ 005A 08                push A
+ 005B 5800              mov X,[__r1]
+ 005D 28                romx
+ 005E 5300              mov [__r0],A
+ 0060 18                pop A
+ 0061 75                inc X
+ 0062 0900              adc A,0
+ 0064 28                romx
+ 0065 20                pop X
+ 0066 5300              mov [__r3],A
+ 0068 5100              mov A,[__r0]
+ 006A 5300              mov [__r2],A
+ 006C 5000              mov A,0
+ 006E 08                push A
+ 006F 08                push A
+ 0070 5100              mov A,[__r2]
+ 0072 08                push A
+ 0073 5100              mov A,[__r3]
+ 0075 08                push A
+ 0076 5000              mov A,0
+ 0078 08                push A
+ 0079 5001              mov A,1
+ 007B 08                push A
+ 007C 5086              mov A,-122
+ 007E 08                push A
+ 007F 50A0              mov A,-96
+ 0081 08                push A
+ 0082 7C0000            xcall __mul_32X32_32
+ 0085 38FC              add SP,-4
+ 0087 18                pop A
+ 0088 5300              mov [__r3],A
+ 008A 18                pop A
+ 008B 5300              mov [__r2],A
+ 008D 18                pop A
+ 008E 5300              mov [__r1],A
+ 0090 18                pop A
+ 0091 08                push A
+ 0092 5100              mov A,[__r1]
+ 0094 08                push A
+ 0095 5100              mov A,[__r2]
+ 0097 08                push A
+ 0098 5100              mov A,[__r3]
+ 009A 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 009D 5303              mov [_g_dwCurrHz+3],A
+ 009F 18                pop A
+ 00A0 5302              mov [_g_dwCurrHz+2],A
+ 00A2 18                pop A
+ 00A3 5301              mov [_g_dwCurrHz+1],A
+ 00A5 18                pop A
+ 00A6 5300              mov [_g_dwCurrHz],A
+ 00A8                   .dbline 93
+ 00A8           ;       
+ 00A8           ;       // Check Vf level
+ 00A8           ;       if (wRead_ADC_DDSON(VfPort)<500)        {
+ 00A8 5000              mov A,0
+ 00AA 08                push A
+ 00AB 7C0000            xcall _wRead_ADC_DDSON
+ 00AE 38FF              add SP,-1
+ 00B0 62D000            mov REG[0xd0],>__r0
+ 00B3 5100              mov A,[__r1]
+ 00B5 11F4              sub A,-12
+ 00B7 5100              mov A,[__r0]
+ 00B9 1901              sbb A,1
+ 00BB D02D              jnc L13
+ 00BD           X1:
+ 00BD                   .dbline 93
+ 00BD                   .dbline 94
+ 00BD           ;               Morse_Err();
+ 00BD 7C0000            xcall _Morse_Err
+ 00C0                   .dbline 95
+ 00C0           ;               Screen_CStrAtRowCol(0,0, gErrorAdjustVfStr);
+ 00C0 5000              mov A,>_gErrorAdjustVfStr
+ 00C2 08                push A
+ 00C3 5000              mov A,<_gErrorAdjustVfStr
+ 00C5 08                push A
+ 00C6 5000              mov A,0
+ 00C8 08                push A
+ 00C9 08                push A
+ 00CA 7C0000            xcall _Screen_CStrAtRowCol
+ 00CD 38FC              add SP,-4
+ 00CF                   .dbline 96
+ 00CF           ;               Screen_CStrAtRowCol(1,0, gPressAnyKeyStr);
+ 00CF 5000              mov A,>_gPressAnyKeyStr
+ 00D1 08                push A
+ 00D2 5000              mov A,<_gPressAnyKeyStr
+ 00D4 08                push A
+ 00D5 5000              mov A,0
+ 00D7 08                push A
+ 00D8 5001              mov A,1
+ 00DA 08                push A
+ 00DB 7C0000            xcall _Screen_CStrAtRowCol
+ 00DE                   .dbline 97
+ 00DE           ;               KEYPAD_WaitKey(TIME_WAIT_KEY_S);        // Important, so wait for key press
+ 00DE 501E              mov A,30
+ 00E0 08                push A
+ 00E1 7C0000            xcall _KEYPAD_WaitKey
+ 00E4 38FB              add SP,-5
+ 00E6 62D000            mov REG[0xd0],>__r0
+ 00E9                   .dbline 98
+ 00E9           ;       }
+ 00E9           L13:
+ 00E9                   .dbline 100
+ 00E9           ; 
+ 00E9           ;       STR_Restore();                                  // Load cal and config data from EEPROM, with warning message if not calibrated
+ 00E9 7C0000            xcall _STR_Restore
+ 00EC                   .dbline 101
+ 00EC           ;       SetDDSGain();                                   // it was set at power on but now STR_Restore() has given us a new setting
+ 00EC 7C0000            xcall _SetDDSGain
+ 00EF                   .dbline 104
+ 00EF           ;       
+ 00EF           ;       // clear screen and start main loop
+ 00EF           ;       Screen_Clear();
+ 00EF 7C0000            xcall _Screen_Clear
+ 00F2                   .dbline 105
+ 00F2           ;       g_bIdleCounter = g_bUserIdle[g_xConf.bUserIdle];                        // Initial set Idle counter
+ 00F2 62D000            mov REG[0xd0],>_g_xConf
+ 00F5 5100              mov A,[_g_xConf]
+ 00F7 62D000            mov REG[0xd0],>__r0
+ 00FA 5300              mov [__r1],A
+ 00FC 550000            mov [__r0],0
+ 00FF 060000            add [__r1],<_g_bUserIdle
+ 0102 0E0000            adc [__r0],>_g_bUserIdle
+ 0105 5100              mov A,[__r0]
+ 0107 10                push X
+ 0108 5800              mov X,[__r1]
+ 010A 28                romx
+ 010B 20                pop X
+ 010C 62D000            mov REG[0xd0],>_g_bIdleCounter
+ 010F 5300              mov [_g_bIdleCounter],A
+ 0111           L15:
+ 0111                   .dbline 106
+ 0111           ;       do {
+ 0111                   .dbline 107
+ 0111           ;               if((g_bMode==MODE_SIG) || (g_bMode==MODE_VFO)) {
+ 0111 62D000            mov REG[0xd0],>_g_bMode
+ 0114 3C0003            cmp [_g_bMode],3
+ 0117 A006              jz L20
+ 0119 3C0004            cmp [_g_bMode],4
+ 011C B017              jnz L18
+ 011E           L20:
+ 011E                   .dbline 107
+ 011E                   .dbline 108
+ 011E           ;                       Screen_Power(wRead_ADC_DDSUNCHANGED(VzPort));   
+ 011E 5002              mov A,2
+ 0120 08                push A
+ 0121 7C0000            xcall _wRead_ADC_DDSUNCHANGED
+ 0124 62D000            mov REG[0xd0],>__r0
+ 0127 5100              mov A,[__r0]
+ 0129 08                push A
+ 012A 5100              mov A,[__r1]
+ 012C 08                push A
+ 012D 7C0000            xcall _Screen_Power
+ 0130 38FD              add SP,-3
+ 0132                   .dbline 109
+ 0132           ;               } else {
+ 0132 8028              xjmp L19
+ 0134           L18:
+ 0134                   .dbline 109
+ 0134                   .dbline 110
+ 0134           ;                       Do_DizzlingMeasureCorrectCalc();
+ 0134 9601              xcall _Do_DizzlingMeasureCorrectCalc
+ 0136                   .dbline 111
+ 0136           ;                       if(g_bMode==MODE_IMP) {Screen_SRXZ();}
+ 0136 62D000            mov REG[0xd0],>_g_bMode
+ 0139 3C0000            cmp [_g_bMode],0
+ 013C B006              jnz L21
+ 013E                   .dbline 111
+ 013E                   .dbline 111
+ 013E 7C0000            xcall _Screen_SRXZ
+ 0141                   .dbline 111
+ 0141 8019              xjmp L22
+ 0143           L21:
+ 0143                   .dbline 112
+ 0143           ;                       else if(g_bMode==MODE_CAP) {Screen_Capacitance();}
+ 0143 62D000            mov REG[0xd0],>_g_bMode
+ 0146 3C0001            cmp [_g_bMode],1
+ 0149 B006              jnz L23
+ 014B                   .dbline 112
+ 014B                   .dbline 112
+ 014B 7C0000            xcall _Screen_Capacitance
+ 014E                   .dbline 112
+ 014E 800C              xjmp L24
+ 0150           L23:
+ 0150                   .dbline 113
+ 0150           ;                       else if(g_bMode==MODE_IND) {Screen_Inductance();}
+ 0150 62D000            mov REG[0xd0],>_g_bMode
+ 0153 3C0002            cmp [_g_bMode],2
+ 0156 B004              jnz L25
+ 0158                   .dbline 113
+ 0158                   .dbline 113
+ 0158 7C0000            xcall _Screen_Inductance
+ 015B                   .dbline 113
+ 015B           L25:
+ 015B           L24:
+ 015B           L22:
+ 015B                   .dbline 114
+ 015B           ;               }
+ 015B           L19:
+ 015B                   .dbline 115
+ 015B           ;               if(g_bMode!=MODE_SIG) Screen_Frequency(Display_Hz);                                                     
+ 015B 62D000            mov REG[0xd0],>_g_bMode
+ 015E 3C0003            cmp [_g_bMode],3
+ 0161 A009              jz L27
+ 0163                   .dbline 115
+ 0163 5000              mov A,0
+ 0165 08                push A
+ 0166 7C0000            xcall _Screen_Frequency
+ 0169 38FF              add SP,-1
+ 016B           L27:
+ 016B                   .dbline 118
+ 016B           ; 
+ 016B           ;               // wait here until key pressed or measurement timer expires
+ 016B           ;               g_bMeasureCounter = MEASURE_PERIOD;             
+ 016B 62D000            mov REG[0xd0],>_g_bMeasureCounter
+ 016E 550020            mov [_g_bMeasureCounter],32
+ 0171           L29:
+ 0171                   .dbline 119
+ 0171           ;               do {    
+ 0171                   .dbline 120
+ 0171           ;                       if ((g_bIdleCounter==0) && (g_bUserIdle[g_xConf.bUserIdle] != 0)) PowerSave();
+ 0171 62D000            mov REG[0xd0],>_g_bIdleCounter
+ 0174 3C0000            cmp [_g_bIdleCounter],0
+ 0177 B021              jnz L32
+ 0179 62D000            mov REG[0xd0],>_g_xConf
+ 017C 5100              mov A,[_g_xConf]
+ 017E 62D000            mov REG[0xd0],>__r0
+ 0181 5300              mov [__r1],A
+ 0183 550000            mov [__r0],0
+ 0186 060000            add [__r1],<_g_bUserIdle
+ 0189 0E0000            adc [__r0],>_g_bUserIdle
+ 018C 5100              mov A,[__r0]
+ 018E 10                push X
+ 018F 5800              mov X,[__r1]
+ 0191 28                romx
+ 0192 20                pop X
+ 0193 3900              cmp A,0
+ 0195 A003              jz L32
+ 0197                   .dbline 120
+ 0197 91F3              xcall _PowerSave
+ 0199           L32:
+ 0199                   .dbline 121
+ 0199           ;                       if (g_bMeasureCounter==0) break;        
+ 0199 62D000            mov REG[0xd0],>_g_bMeasureCounter
+ 019C 3C0000            cmp [_g_bMeasureCounter],0
+ 019F B003              jnz L34
+ 01A1                   .dbline 121
+ 01A1 800E              xjmp L31
+ 01A3           L34:
+ 01A3                   .dbline 122
+ 01A3           ;                       bKey = KEYPAD_Get();
+ 01A3 7C0000            xcall _KEYPAD_Get
+ 01A6 62D000            mov REG[0xd0],>__r0
+ 01A9 5400              mov [X+0],A
+ 01AB                   .dbline 123
+ 01AB           ;               } while(!bKey);
+ 01AB           L30:
+ 01AB                   .dbline 123
+ 01AB 3D0000            cmp [X+0],0
+ 01AE AFC2              jz L29
+ 01B0           L31:
+ 01B0                   .dbline 125
+ 01B0           ; 
+ 01B0           ;               if (bKey) handleKeypress(bKey);
+ 01B0 3D0000            cmp [X+0],0
+ 01B3 A008              jz L36
+ 01B5                   .dbline 125
+ 01B5 5200              mov A,[X+0]
+ 01B7 08                push A
+ 01B8 9009              xcall _handleKeypress
+ 01BA 38FF              add SP,-1
+ 01BC           L36:
+ 01BC                   .dbline 127
+ 01BC           ;               
+ 01BC           ;       } while (TRUE);
+ 01BC           L16:
+ 01BC                   .dbline 127
+ 01BC 8F54              xjmp L15
+ 01BE           X0:
+ 01BE                   .dbline -2
+ 01BE           L12:
+ 01BE 38FF              add SP,-1
+ 01C0 20                pop X
+ 01C1                   .dbline 0 ; func end
+ 01C1 8FFF              jmp .
+ 01C3                   .dbsym l bKey 0 c
+ 01C3                   .dbend
+ 01C3                   .dbfunc s handleKeypress _handleKeypress fV
+ 01C3           ;           bKey -> X-4
+ 01C3           _handleKeypress:
+ 01C3                   .dbline -1
+ 01C3 10                push X
+ 01C4 4F                mov X,SP
+ 01C5                   .dbline 141
+ 01C5           ; 
+ 01C5           ; }
+ 01C5           ; 
+ 01C5           ; //-----------------------------------------------------------------------------
+ 01C5           ; //  Main's functions
+ 01C5           ; //-----------------------------------------------------------------------------
+ 01C5           ; 
+ 01C5           ; //-----------------------------------------------------------------------------
+ 01C5           ; //  FUNCTION NAME:    handleKeypress()
+ 01C5           ; //  DESCRIPTION:      Function to do actions depending on key pressed
+ 01C5           ; //  ARGUMENTS:                BYTE bKey - key pressed code
+ 01C5           ; //  RETURNS:          Nothing
+ 01C5           ; //-----------------------------------------------------------------------------
+ 01C5           ; static void handleKeypress(BYTE bKey){
+ 01C5                   .dbline 143
+ 01C5           ; 
+ 01C5           ;       g_bIdleCounter = g_bUserIdle[g_xConf.bUserIdle];
+ 01C5 62D000            mov REG[0xd0],>_g_xConf
+ 01C8 5100              mov A,[_g_xConf]
+ 01CA 62D000            mov REG[0xd0],>__r0
+ 01CD 5300              mov [__r1],A
+ 01CF 550000            mov [__r0],0
+ 01D2 060000            add [__r1],<_g_bUserIdle
+ 01D5 0E0000            adc [__r0],>_g_bUserIdle
+ 01D8 5100              mov A,[__r0]
+ 01DA 10                push X
+ 01DB 5800              mov X,[__r1]
+ 01DD 28                romx
+ 01DE 20                pop X
+ 01DF 62D000            mov REG[0xd0],>_g_bIdleCounter
+ 01E2 5300              mov [_g_bIdleCounter],A
+ 01E4                   .dbline 145
+ 01E4           ; 
+ 01E4           ;       if(bKey == KBD_CONFIG)  {
+ 01E4 3DFC01            cmp [X-4],1
+ 01E7 B022              jnz L39
+ 01E9                   .dbline 145
+ 01E9                   .dbline 146
+ 01E9           ;               if (g_bUP_DOWN_SelectsIncDigit) { g_bUP_DOWN_SelectsIncDigit = 0; }                     // Config turns off inc control digit select if it is on
+ 01E9 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsIncDigit
+ 01EC 3C0000            cmp [_g_bUP_DOWN_SelectsIncDigit],0
+ 01EF A006              jz L41
+ 01F1                   .dbline 146
+ 01F1                   .dbline 146
+ 01F1 550000            mov [_g_bUP_DOWN_SelectsIncDigit],0
+ 01F4                   .dbline 146
+ 01F4 8015              xjmp L42
+ 01F6           L41:
+ 01F6                   .dbline 147
+ 01F6           ;               else if (g_bMode == MODE_VFO)   { g_bUP_DOWN_SelectsVFOPower = ~g_bUP_DOWN_SelectsVFOPower;}    // If in VFO mode, config key toggles power setting & monitor options
+ 01F6 62D000            mov REG[0xd0],>_g_bMode
+ 01F9 3C0004            cmp [_g_bMode],4
+ 01FC B00B              jnz L43
+ 01FE                   .dbline 147
+ 01FE                   .dbline 147
+ 01FE 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsVFOPower
+ 0201 5100              mov A,[_g_bUP_DOWN_SelectsVFOPower]
+ 0203 73                cpl A
+ 0204 5300              mov [_g_bUP_DOWN_SelectsVFOPower],A
+ 0206                   .dbline 147
+ 0206 8003              xjmp L44
+ 0208           L43:
+ 0208                   .dbline 148
+ 0208           ;               else {Do_Config_Menu();}
+ 0208                   .dbline 148
+ 0208 9625              xcall _Do_Config_Menu
+ 020A                   .dbline 148
+ 020A           L44:
+ 020A           L42:
+ 020A                   .dbline 149
+ 020A           ;       }
+ 020A           L39:
+ 020A                   .dbline 151
+ 020A           ;       
+ 020A           ;       if((bKey == KBD_SCAN) && (g_bMode==MODE_IMP)) Do_VSWR_Scan(); 
+ 020A 3DFC04            cmp [X-4],4
+ 020D B00C              jnz L45
+ 020F 62D000            mov REG[0xd0],>_g_bMode
+ 0212 3C0000            cmp [_g_bMode],0
+ 0215 B004              jnz L45
+ 0217                   .dbline 151
+ 0217 7C0000            xcall _Do_VSWR_Scan
+ 021A           L45:
+ 021A                   .dbline 153
+ 021A           ;       
+ 021A           ;       if(bKey == KBD_MODE)    {
+ 021A 3DFC02            cmp [X-4],2
+ 021D B042              jnz L47
+ 021F                   .dbline 153
+ 021F                   .dbline 154
+ 021F           ;               Screen_Clear();
+ 021F 7C0000            xcall _Screen_Clear
+ 0222                   .dbline 155
+ 0222           ;               g_bUP_DOWN_SelectsIncDigit  = FALSE;                    // clear the "alt use of arrow keys" flags
+ 0222 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsIncDigit
+ 0225 550000            mov [_g_bUP_DOWN_SelectsIncDigit],0
+ 0228                   .dbline 156
+ 0228           ;               g_bUP_DOWN_SelectsVFOPower  = FALSE;
+ 0228 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsVFOPower
+ 022B 550000            mov [_g_bUP_DOWN_SelectsVFOPower],0
+ 022E                   .dbline 157
+ 022E           ;               cycleParameter(&g_bMode, 0, MODE_NUM-1, STEPUP, TRUE);                  // cycle to next MODE
+ 022E 5001              mov A,1
+ 0230 08                push A
+ 0231 5000              mov A,0
+ 0233 08                push A
+ 0234 5004              mov A,4
+ 0236 08                push A
+ 0237 5000              mov A,0
+ 0239 08                push A
+ 023A 5000              mov A,>_g_bMode
+ 023C 08                push A
+ 023D 5000              mov A,<_g_bMode
+ 023F 08                push A
+ 0240 9445              xcall _cycleParameter
+ 0242 38FA              add SP,-6
+ 0244                   .dbline 158
+ 0244           ;               if (g_bMode == MODE_VFO) Set_DDS(g_dwCurrHz);           // if going into VFO mode, turn on DDS
+ 0244 62D000            mov REG[0xd0],>_g_bMode
+ 0247 3C0004            cmp [_g_bMode],4
+ 024A B015              jnz L49
+ 024C                   .dbline 158
+ 024C 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 024F 5100              mov A,[_g_dwCurrHz]
+ 0251 08                push A
+ 0252 5101              mov A,[_g_dwCurrHz+1]
+ 0254 08                push A
+ 0255 5102              mov A,[_g_dwCurrHz+2]
+ 0257 08                push A
+ 0258 5103              mov A,[_g_dwCurrHz+3]
+ 025A 08                push A
+ 025B 7C0000            xcall _Set_DDS
+ 025E 38FC              add SP,-4
+ 0260           L49:
+ 0260                   .dbline 159
+ 0260           ;       }
+ 0260           L47:
+ 0260                   .dbline 161
+ 0260           ;                       
+ 0260           ;       if((bKey == KBD_UP_DWN) && (g_bMode != MODE_SIG)) g_bUP_DOWN_SelectsIncDigit = ~g_bUP_DOWN_SelectsIncDigit;    // Toggle between cursor or frequency change modes
+ 0260 3DFC09            cmp [X-4],9
+ 0263 B011              jnz L51
+ 0265 62D000            mov REG[0xd0],>_g_bMode
+ 0268 3C0003            cmp [_g_bMode],3
+ 026B A009              jz L51
+ 026D                   .dbline 161
+ 026D 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsIncDigit
+ 0270 5100              mov A,[_g_bUP_DOWN_SelectsIncDigit]
+ 0272 73                cpl A
+ 0273 5300              mov [_g_bUP_DOWN_SelectsIncDigit],A
+ 0275           L51:
+ 0275                   .dbline 162
+ 0275           ;       if((bKey == KBD_BAND) && (g_bMode != MODE_SIG)) CycleBand(); 
+ 0275 3DFC03            cmp [X-4],3
+ 0278 B00B              jnz L53
+ 027A 62D000            mov REG[0xd0],>_g_bMode
+ 027D 3C0003            cmp [_g_bMode],3
+ 0280 A003              jz L53
+ 0282                   .dbline 162
+ 0282 9139              xcall _CycleBand
+ 0284           L53:
+ 0284                   .dbline 164
+ 0284           ; 
+ 0284           ;       if((bKey==KBD_UP) && (g_bMode != MODE_SIG)){                                                            
+ 0284 3DFC05            cmp [X-4],5
+ 0287 B051              jnz L55
+ 0289 62D000            mov REG[0xd0],>_g_bMode
+ 028C 3C0003            cmp [_g_bMode],3
+ 028F A049              jz L55
+ 0291                   .dbline 164
+ 0291                   .dbline 165
+ 0291           ;               if (g_bUP_DOWN_SelectsIncDigit) {cycleParameter(&g_bIncDigit, 0,  NUM_INCREMENT-1, STEPUP, TRUE);}              // Move frequency cursor left & cycle back to right
+ 0291 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsIncDigit
+ 0294 3C0000            cmp [_g_bUP_DOWN_SelectsIncDigit],0
+ 0297 A019              jz L57
+ 0299                   .dbline 165
+ 0299                   .dbline 165
+ 0299 5001              mov A,1
+ 029B 08                push A
+ 029C 5000              mov A,0
+ 029E 08                push A
+ 029F 5007              mov A,7
+ 02A1 08                push A
+ 02A2 5000              mov A,0
+ 02A4 08                push A
+ 02A5 5000              mov A,>_g_bIncDigit
+ 02A7 08                push A
+ 02A8 5000              mov A,<_g_bIncDigit
+ 02AA 08                push A
+ 02AB 93DA              xcall _cycleParameter
+ 02AD 38FA              add SP,-6
+ 02AF                   .dbline 165
+ 02AF 8029              xjmp L58
+ 02B1           L57:
+ 02B1                   .dbline 166
+ 02B1           ;               else if (g_bUP_DOWN_SelectsVFOPower) { cycleParameter(&g_bDDS_GainStep, 0, GAIN_SETTINGS_NUM-1, STEPUP, FALSE); SetDDSGain();}  // increase DDS level
+ 02B1 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsVFOPower
+ 02B4 3C0000            cmp [_g_bUP_DOWN_SelectsVFOPower],0
+ 02B7 A01A              jz L59
+ 02B9                   .dbline 166
+ 02B9                   .dbline 166
+ 02B9 5000              mov A,0
+ 02BB 08                push A
+ 02BC 08                push A
+ 02BD 5010              mov A,16
+ 02BF 08                push A
+ 02C0 5000              mov A,0
+ 02C2 08                push A
+ 02C3 5000              mov A,>_g_bDDS_GainStep
+ 02C5 08                push A
+ 02C6 5000              mov A,<_g_bDDS_GainStep
+ 02C8 08                push A
+ 02C9 93BC              xcall _cycleParameter
+ 02CB 38FA              add SP,-6
+ 02CD                   .dbline 166
+ 02CD 7C0000            xcall _SetDDSGain
+ 02D0                   .dbline 166
+ 02D0 8008              xjmp L60
+ 02D2           L59:
+ 02D2                   .dbline 167
+ 02D2           ;               else ChangeCurrHz(STEPUP); 
+ 02D2 5000              mov A,0
+ 02D4 08                push A
+ 02D5 918C              xcall _ChangeCurrHz
+ 02D7 38FF              add SP,-1
+ 02D9           L60:
+ 02D9           L58:
+ 02D9                   .dbline 168
+ 02D9           ;       }
+ 02D9           L55:
+ 02D9                   .dbline 169
+ 02D9           ;       if((bKey==KBD_DWN) && (g_bMode != MODE_SIG)){                                                           
+ 02D9 3DFC06            cmp [X-4],6
+ 02DC B051              jnz L61
+ 02DE 62D000            mov REG[0xd0],>_g_bMode
+ 02E1 3C0003            cmp [_g_bMode],3
+ 02E4 A049              jz L61
+ 02E6                   .dbline 169
+ 02E6                   .dbline 170
+ 02E6           ;               if (g_bUP_DOWN_SelectsIncDigit) {cycleParameter(&g_bIncDigit, 0, NUM_INCREMENT-1, STEPDOWN, TRUE); }    // Move frequency cursor right & cycle back to left
+ 02E6 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsIncDigit
+ 02E9 3C0000            cmp [_g_bUP_DOWN_SelectsIncDigit],0
+ 02EC A017              jz L63
+ 02EE                   .dbline 170
+ 02EE                   .dbline 170
+ 02EE 5001              mov A,1
+ 02F0 08                push A
+ 02F1 08                push A
+ 02F2 5007              mov A,7
+ 02F4 08                push A
+ 02F5 5000              mov A,0
+ 02F7 08                push A
+ 02F8 5000              mov A,>_g_bIncDigit
+ 02FA 08                push A
+ 02FB 5000              mov A,<_g_bIncDigit
+ 02FD 08                push A
+ 02FE 9387              xcall _cycleParameter
+ 0300 38FA              add SP,-6
+ 0302                   .dbline 170
+ 0302 802B              xjmp L64
+ 0304           L63:
+ 0304                   .dbline 171
+ 0304           ;               else if (g_bUP_DOWN_SelectsVFOPower) {cycleParameter(&g_bDDS_GainStep, 0, GAIN_SETTINGS_NUM-1, STEPDOWN, FALSE); SetDDSGain(); }        // decrease DDS level
+ 0304 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsVFOPower
+ 0307 3C0000            cmp [_g_bUP_DOWN_SelectsVFOPower],0
+ 030A A01C              jz L65
+ 030C                   .dbline 171
+ 030C                   .dbline 171
+ 030C 5000              mov A,0
+ 030E 08                push A
+ 030F 5001              mov A,1
+ 0311 08                push A
+ 0312 5010              mov A,16
+ 0314 08                push A
+ 0315 5000              mov A,0
+ 0317 08                push A
+ 0318 5000              mov A,>_g_bDDS_GainStep
+ 031A 08                push A
+ 031B 5000              mov A,<_g_bDDS_GainStep
+ 031D 08                push A
+ 031E 9367              xcall _cycleParameter
+ 0320 38FA              add SP,-6
+ 0322                   .dbline 171
+ 0322 7C0000            xcall _SetDDSGain
+ 0325                   .dbline 171
+ 0325 8008              xjmp L66
+ 0327           L65:
+ 0327                   .dbline 172
+ 0327           ;               else ChangeCurrHz(STEPDOWN); 
+ 0327 5001              mov A,1
+ 0329 08                push A
+ 032A 9137              xcall _ChangeCurrHz
+ 032C 38FF              add SP,-1
+ 032E           L66:
+ 032E           L64:
+ 032E                   .dbline 173
+ 032E           ;       }
+ 032E           L61:
+ 032E                   .dbline 177
+ 032E           ; 
+ 032E           ;       // speedkeys: if not SIG mode, and UP or DOWN have long press, enter and stay in the loop below until key released
+ 032E           ;       // note - could also use g_bLongPressKeyCounter in place of g_bLongPress (opposite logic) & delete g_bLongPress 
+ 032E           ;       if( ((bKey == KBD_UP) || (bKey == KBD_DWN)) && (g_bLongPress) && (g_bMode != MODE_SIG) && !g_bUP_DOWN_SelectsIncDigit && !g_bUP_DOWN_SelectsVFOPower){ 
+ 032E 3DFC05            cmp [X-4],5
+ 0331 A006              jz L69
+ 0333 3DFC06            cmp [X-4],6
+ 0336 B053              jnz L67
+ 0338           L69:
+ 0338 62D000            mov REG[0xd0],>_g_bLongPress
+ 033B 3C0000            cmp [_g_bLongPress],0
+ 033E A04B              jz L67
+ 0340 62D000            mov REG[0xd0],>_g_bMode
+ 0343 3C0003            cmp [_g_bMode],3
+ 0346 A043              jz L67
+ 0348 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsIncDigit
+ 034B 3C0000            cmp [_g_bUP_DOWN_SelectsIncDigit],0
+ 034E B03B              jnz L67
+ 0350 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsVFOPower
+ 0353 3C0000            cmp [_g_bUP_DOWN_SelectsVFOPower],0
+ 0356 B033              jnz L67
+ 0358                   .dbline 177
+ 0358                   .dbline 178
+ 0358           ;               Screen_Clear();
+ 0358 7C0000            xcall _Screen_Clear
+ 035B 8021              xjmp L71
+ 035D           L70:
+ 035D                   .dbline 179
+ 035D           ;               while (g_bLongPress && bKey){
+ 035D                   .dbline 180
+ 035D           ;                       bKey = KEYPAD_Get();
+ 035D 7C0000            xcall _KEYPAD_Get
+ 0360 62D000            mov REG[0xd0],>__r0
+ 0363 54FC              mov [X-4],A
+ 0365                   .dbline 181
+ 0365           ;                       if( bKey == KBD_UP      ) { ChangeCurrHz(STEPUP);  }
+ 0365 3DFC05            cmp [X-4],5
+ 0368 B008              jnz L73
+ 036A                   .dbline 181
+ 036A                   .dbline 181
+ 036A 5000              mov A,0
+ 036C 08                push A
+ 036D 90F4              xcall _ChangeCurrHz
+ 036F 38FF              add SP,-1
+ 0371                   .dbline 181
+ 0371           L73:
+ 0371                   .dbline 182
+ 0371           ;                       if( bKey == KBD_DWN ) { ChangeCurrHz(STEPDOWN);}
+ 0371 3DFC06            cmp [X-4],6
+ 0374 B008              jnz L75
+ 0376                   .dbline 182
+ 0376                   .dbline 182
+ 0376 5001              mov A,1
+ 0378 08                push A
+ 0379 90E8              xcall _ChangeCurrHz
+ 037B 38FF              add SP,-1
+ 037D                   .dbline 182
+ 037D           L75:
+ 037D                   .dbline 183
+ 037D           ;               }
+ 037D           L71:
+ 037D                   .dbline 179
+ 037D 62D000            mov REG[0xd0],>_g_bLongPress
+ 0380 3C0000            cmp [_g_bLongPress],0
+ 0383 A006              jz L77
+ 0385 3DFC00            cmp [X-4],0
+ 0388 BFD4              jnz L70
+ 038A           L77:
+ 038A                   .dbline 184
+ 038A           ;       }
+ 038A           L67:
+ 038A                   .dbline -2
+ 038A           L38:
+ 038A 20                pop X
+ 038B                   .dbline 0 ; func end
+ 038B 7F                ret
+ 038C                   .dbsym l bKey -4 c
+ 038C                   .dbend
+ 038C                   .dbfunc s PowerSave _PowerSave fV
+ 038C           _PowerSave:
+ 038C                   .dbline -1
+ 038C                   .dbline 195
+ 038C           ; 
+ 038C           ; }
+ 038C           ; //-----------------------------------------------------------------------------
+ 038C           ; //  FUNCTION NAME:    PowerSave
+ 038C           ; //  DESCRIPTION:      Turn off / reduce power and wait in 
+ 038C           ; //                                    KEYPAD_SysSuspendAndWakeFromPress until key pressed
+ 038C           ; //                                    then restore power
+ 038C           ; //  ARGUMENTS:                none
+ 038C           ; //  RETURNS:          Nothing
+ 038C           ; //-----------------------------------------------------------------------------
+ 038C           ; static void PowerSave(void){
+ 038C                   .dbline 196
+ 038C           ;       SetPowerDigitalAndAnalogue(PWROFF);
+ 038C 5000              mov A,0
+ 038E 08                push A
+ 038F 7C0000            xcall _SetPowerDigitalAndAnalogue
+ 0392                   .dbline 197
+ 0392           ;       KEYPAD_SysSuspendAndWakeFromPress();
+ 0392 7C0000            xcall _KEYPAD_SysSuspendAndWakeFromPress
+ 0395                   .dbline 198
+ 0395           ;       SetPowerDigitalAndAnalogue(PWRON);
+ 0395 5001              mov A,1
+ 0397 08                push A
+ 0398 7C0000            xcall _SetPowerDigitalAndAnalogue
+ 039B 38FE              add SP,-2
+ 039D                   .dbline 199
+ 039D           ;       g_bIdleCounter = g_bUserIdle[g_xConf.bUserIdle];
+ 039D 62D000            mov REG[0xd0],>_g_xConf
+ 03A0 5100              mov A,[_g_xConf]
+ 03A2 62D000            mov REG[0xd0],>__r0
+ 03A5 5300              mov [__r1],A
+ 03A7 550000            mov [__r0],0
+ 03AA 060000            add [__r1],<_g_bUserIdle
+ 03AD 0E0000            adc [__r0],>_g_bUserIdle
+ 03B0 5100              mov A,[__r0]
+ 03B2 10                push X
+ 03B3 5800              mov X,[__r1]
+ 03B5 28                romx
+ 03B6 20                pop X
+ 03B7 62D000            mov REG[0xd0],>_g_bIdleCounter
+ 03BA 5300              mov [_g_bIdleCounter],A
+ 03BC                   .dbline -2
+ 03BC           L78:
+ 03BC                   .dbline 0 ; func end
+ 03BC 7F                ret
+ 03BD                   .dbend
+ 03BD                   .dbfunc s CycleBand _CycleBand fV
+ 03BD           _CycleBand:
+ 03BD                   .dbline -1
+ 03BD                   .dbline 207
+ 03BD           ; }
+ 03BD           ; //-----------------------------------------------------------------------------
+ 03BD           ; //  FUNCTION NAME:    CycleBand
+ 03BD           ; //  DESCRIPTION:      Cycle up through bands then back to first band
+ 03BD           ; //  ARGUMENTS:                none
+ 03BD           ; //  RETURNS:          Nothing
+ 03BD           ; //-----------------------------------------------------------------------------
+ 03BD           ; static void CycleBand(void){
+ 03BD                   .dbline 208
+ 03BD           ;       cycleParameter(&g_bBandIndex, 0, BAND_NUM-1, STEPUP, TRUE);
+ 03BD 5001              mov A,1
+ 03BF 08                push A
+ 03C0 5000              mov A,0
+ 03C2 08                push A
+ 03C3 500F              mov A,15
+ 03C5 08                push A
+ 03C6 5000              mov A,0
+ 03C8 08                push A
+ 03C9 5000              mov A,>_g_bBandIndex
+ 03CB 08                push A
+ 03CC 5000              mov A,<_g_bBandIndex
+ 03CE 08                push A
+ 03CF 92B6              xcall _cycleParameter
+ 03D1 38FA              add SP,-6
+ 03D3                   .dbline 209
+ 03D3           ;       g_dwCurrHz = g_wBandInitialFreq[g_bBandIndex] * BAND_FREQ_ToHz ;
+ 03D3 62D000            mov REG[0xd0],>_g_bBandIndex
+ 03D6 5100              mov A,[_g_bBandIndex]
+ 03D8 62D000            mov REG[0xd0],>__r0
+ 03DB 5300              mov [__r1],A
+ 03DD 550000            mov [__r0],0
+ 03E0 6500              asl [__r1]
+ 03E2 6B00              rlc [__r0]
+ 03E4 060000            add [__r1],<_g_wBandInitialFreq
+ 03E7 0E0000            adc [__r0],>_g_wBandInitialFreq
+ 03EA 5100              mov A,[__r0]
+ 03EC 10                push X
+ 03ED 08                push A
+ 03EE 5800              mov X,[__r1]
+ 03F0 28                romx
+ 03F1 5300              mov [__r0],A
+ 03F3 18                pop A
+ 03F4 75                inc X
+ 03F5 0900              adc A,0
+ 03F7 28                romx
+ 03F8 20                pop X
+ 03F9 5300              mov [__r3],A
+ 03FB 5100              mov A,[__r0]
+ 03FD 5300              mov [__r2],A
+ 03FF 5000              mov A,0
+ 0401 08                push A
+ 0402 08                push A
+ 0403 5100              mov A,[__r2]
+ 0405 08                push A
+ 0406 5100              mov A,[__r3]
+ 0408 08                push A
+ 0409 5000              mov A,0
+ 040B 08                push A
+ 040C 5001              mov A,1
+ 040E 08                push A
+ 040F 5086              mov A,-122
+ 0411 08                push A
+ 0412 50A0              mov A,-96
+ 0414 08                push A
+ 0415 7C0000            xcall __mul_32X32_32
+ 0418 38FC              add SP,-4
+ 041A 18                pop A
+ 041B 5300              mov [__r3],A
+ 041D 18                pop A
+ 041E 5300              mov [__r2],A
+ 0420 18                pop A
+ 0421 5300              mov [__r1],A
+ 0423 18                pop A
+ 0424 08                push A
+ 0425 5100              mov A,[__r1]
+ 0427 08                push A
+ 0428 5100              mov A,[__r2]
+ 042A 08                push A
+ 042B 5100              mov A,[__r3]
+ 042D 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0430 5303              mov [_g_dwCurrHz+3],A
+ 0432 18                pop A
+ 0433 5302              mov [_g_dwCurrHz+2],A
+ 0435 18                pop A
+ 0436 5301              mov [_g_dwCurrHz+1],A
+ 0438 18                pop A
+ 0439 5300              mov [_g_dwCurrHz],A
+ 043B                   .dbline 210
+ 043B           ;       if(!g_bBandIndex) Morse_Dah();
+ 043B 62D000            mov REG[0xd0],>_g_bBandIndex
+ 043E 3C0000            cmp [_g_bBandIndex],0
+ 0441 B004              jnz L80
+ 0443                   .dbline 210
+ 0443 7C0000            xcall _Morse_Dah
+ 0446           L80:
+ 0446                   .dbline 212
+ 0446           ;       // In VFO mode we don't call Do_DizzlingMeasureCorrectCalc, so we need to set frequency here
+ 0446           ;       if(g_bMode==MODE_VFO) Set_DDS(g_dwCurrHz);
+ 0446 62D000            mov REG[0xd0],>_g_bMode
+ 0449 3C0004            cmp [_g_bMode],4
+ 044C B015              jnz L82
+ 044E                   .dbline 212
+ 044E 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0451 5100              mov A,[_g_dwCurrHz]
+ 0453 08                push A
+ 0454 5101              mov A,[_g_dwCurrHz+1]
+ 0456 08                push A
+ 0457 5102              mov A,[_g_dwCurrHz+2]
+ 0459 08                push A
+ 045A 5103              mov A,[_g_dwCurrHz+3]
+ 045C 08                push A
+ 045D 7C0000            xcall _Set_DDS
+ 0460 38FC              add SP,-4
+ 0462           L82:
+ 0462                   .dbline -2
+ 0462           L79:
+ 0462                   .dbline 0 ; func end
+ 0462 7F                ret
+ 0463                   .dbend
+ 0463                   .dbfunc s ChangeCurrHz _ChangeCurrHz fV
+ 0463           ;        dwNewHz -> X+0
+ 0463           ;           xDir -> X-4
+ 0463           _ChangeCurrHz:
+ 0463                   .dbline -1
+ 0463 10                push X
+ 0464 4F                mov X,SP
+ 0465 3808              add SP,8
+ 0467                   .dbline 222
+ 0467           ; }
+ 0467           ; //-----------------------------------------------------------------------------
+ 0467           ; //  FUNCTION NAME:    ChangeCurrHz
+ 0467           ; //  DESCRIPTION:      Change frequency by step g_xIncCtrl[g_bIncDigit].dwInc Hz
+ 0467           ; //                                    Does not move frequency outside current band
+ 0467           ; //
+ 0467           ; //  ARGUMENTS:                xDir (STEPUP|STEPDOWN)
+ 0467           ; //  RETURNS:          Nothing
+ 0467           ; //-----------------------------------------------------------------------------
+ 0467           ; static void ChangeCurrHz(STEP_DIRECTION xDir){
+ 0467                   .dbline 223
+ 0467           ;       DWORD dwNewHz = (xDir == STEPUP)? (g_dwCurrHz + g_xIncCtrl[g_bIncDigit].dwInc):(g_dwCurrHz - g_xIncCtrl[g_bIncDigit].dwInc);
+ 0467 3DFC00            cmp [X-4],0
+ 046A B07D              jnz L88
+ 046C 62D000            mov REG[0xd0],>_g_bIncDigit
+ 046F 5100              mov A,[_g_bIncDigit]
+ 0471 62D000            mov REG[0xd0],>__r0
+ 0474 5300              mov [__r1],A
+ 0476 5000              mov A,0
+ 0478 08                push A
+ 0479 5100              mov A,[__r1]
+ 047B 08                push A
+ 047C 5000              mov A,0
+ 047E 08                push A
+ 047F 5005              mov A,5
+ 0481 08                push A
+ 0482 7C0000            xcall __mul16
+ 0485 38FC              add SP,-4
+ 0487 5100              mov A,[__rX]
+ 0489 5300              mov [__r1],A
+ 048B 5100              mov A,[__rY]
+ 048D 5300              mov [__r0],A
+ 048F 060001            add [__r1],<_g_xIncCtrl+1
+ 0492 0E0001            adc [__r0],>_g_xIncCtrl+1
+ 0495 5100              mov A,[__r0]
+ 0497 10                push X
+ 0498 08                push A
+ 0499 5800              mov X,[__r1]
+ 049B 28                romx
+ 049C 5300              mov [__r0],A
+ 049E 18                pop A
+ 049F 75                inc X
+ 04A0 0900              adc A,0
+ 04A2 08                push A
+ 04A3 28                romx
+ 04A4 5300              mov [__r1],A
+ 04A6 18                pop A
+ 04A7 75                inc X
+ 04A8 0900              adc A,0
+ 04AA 08                push A
+ 04AB 28                romx
+ 04AC 5300              mov [__r2],A
+ 04AE 18                pop A
+ 04AF 75                inc X
+ 04B0 0900              adc A,0
+ 04B2 28                romx
+ 04B3 5300              mov [__r3],A
+ 04B5 20                pop X
+ 04B6 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 04B9 5103              mov A,[_g_dwCurrHz+3]
+ 04BB 62D000            mov REG[0xd0],>__r0
+ 04BE 0200              add A,[__r3]
+ 04C0 5407              mov [X+7],A
+ 04C2 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 04C5 5102              mov A,[_g_dwCurrHz+2]
+ 04C7 62D000            mov REG[0xd0],>__r0
+ 04CA 0A00              adc A,[__r2]
+ 04CC 5406              mov [X+6],A
+ 04CE 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 04D1 5101              mov A,[_g_dwCurrHz+1]
+ 04D3 62D000            mov REG[0xd0],>__r0
+ 04D6 0A00              adc A,[__r1]
+ 04D8 5405              mov [X+5],A
+ 04DA 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 04DD 5100              mov A,[_g_dwCurrHz]
+ 04DF 62D000            mov REG[0xd0],>__r0
+ 04E2 0A00              adc A,[__r0]
+ 04E4 5404              mov [X+4],A
+ 04E6 807B              xjmp L89
+ 04E8           L88:
+ 04E8 62D000            mov REG[0xd0],>_g_bIncDigit
+ 04EB 5100              mov A,[_g_bIncDigit]
+ 04ED 62D000            mov REG[0xd0],>__r0
+ 04F0 5300              mov [__r1],A
+ 04F2 5000              mov A,0
+ 04F4 08                push A
+ 04F5 5100              mov A,[__r1]
+ 04F7 08                push A
+ 04F8 5000              mov A,0
+ 04FA 08                push A
+ 04FB 5005              mov A,5
+ 04FD 08                push A
+ 04FE 7C0000            xcall __mul16
+ 0501 38FC              add SP,-4
+ 0503 5100              mov A,[__rX]
+ 0505 5300              mov [__r1],A
+ 0507 5100              mov A,[__rY]
+ 0509 5300              mov [__r0],A
+ 050B 060001            add [__r1],<_g_xIncCtrl+1
+ 050E 0E0001            adc [__r0],>_g_xIncCtrl+1
+ 0511 5100              mov A,[__r0]
+ 0513 10                push X
+ 0514 08                push A
+ 0515 5800              mov X,[__r1]
+ 0517 28                romx
+ 0518 5300              mov [__r0],A
+ 051A 18                pop A
+ 051B 75                inc X
+ 051C 0900              adc A,0
+ 051E 08                push A
+ 051F 28                romx
+ 0520 5300              mov [__r1],A
+ 0522 18                pop A
+ 0523 75                inc X
+ 0524 0900              adc A,0
+ 0526 08                push A
+ 0527 28                romx
+ 0528 5300              mov [__r2],A
+ 052A 18                pop A
+ 052B 75                inc X
+ 052C 0900              adc A,0
+ 052E 28                romx
+ 052F 5300              mov [__r3],A
+ 0531 20                pop X
+ 0532 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0535 5103              mov A,[_g_dwCurrHz+3]
+ 0537 62D000            mov REG[0xd0],>__r0
+ 053A 1200              sub A,[__r3]
+ 053C 5407              mov [X+7],A
+ 053E 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0541 5102              mov A,[_g_dwCurrHz+2]
+ 0543 62D000            mov REG[0xd0],>__r0
+ 0546 1A00              sbb A,[__r2]
+ 0548 5406              mov [X+6],A
+ 054A 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 054D 5101              mov A,[_g_dwCurrHz+1]
+ 054F 62D000            mov REG[0xd0],>__r0
+ 0552 1A00              sbb A,[__r1]
+ 0554 5405              mov [X+5],A
+ 0556 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0559 5100              mov A,[_g_dwCurrHz]
+ 055B 62D000            mov REG[0xd0],>__r0
+ 055E 1A00              sbb A,[__r0]
+ 0560 5404              mov [X+4],A
+ 0562           L89:
+ 0562 5204              mov A,[X+4]
+ 0564 5400              mov [X+0],A
+ 0566 5205              mov A,[X+5]
+ 0568 5401              mov [X+1],A
+ 056A 5206              mov A,[X+6]
+ 056C 5402              mov [X+2],A
+ 056E 5207              mov A,[X+7]
+ 0570 5403              mov [X+3],A
+ 0572                   .dbline 224
+ 0572           ;       if(    (dwNewHz < g_wBandBoundaries[g_bBandIndex] * BAND_FREQ_ToHz ) 
+ 0572 62D000            mov REG[0xd0],>_g_bBandIndex
+ 0575 5100              mov A,[_g_bBandIndex]
+ 0577 62D000            mov REG[0xd0],>__r0
+ 057A 5300              mov [__r1],A
+ 057C 550000            mov [__r0],0
+ 057F 6500              asl [__r1]
+ 0581 6B00              rlc [__r0]
+ 0583 060000            add [__r1],<_g_wBandBoundaries
+ 0586 0E0000            adc [__r0],>_g_wBandBoundaries
+ 0589 5100              mov A,[__r0]
+ 058B 10                push X
+ 058C 08                push A
+ 058D 5800              mov X,[__r1]
+ 058F 28                romx
+ 0590 5300              mov [__r0],A
+ 0592 18                pop A
+ 0593 75                inc X
+ 0594 0900              adc A,0
+ 0596 28                romx
+ 0597 20                pop X
+ 0598 5300              mov [__r3],A
+ 059A 5100              mov A,[__r0]
+ 059C 5300              mov [__r2],A
+ 059E 5000              mov A,0
+ 05A0 08                push A
+ 05A1 08                push A
+ 05A2 5100              mov A,[__r2]
+ 05A4 08                push A
+ 05A5 5100              mov A,[__r3]
+ 05A7 08                push A
+ 05A8 5000              mov A,0
+ 05AA 08                push A
+ 05AB 5001              mov A,1
+ 05AD 08                push A
+ 05AE 5086              mov A,-122
+ 05B0 08                push A
+ 05B1 50A0              mov A,-96
+ 05B3 08                push A
+ 05B4 7C0000            xcall __mul_32X32_32
+ 05B7 38FC              add SP,-4
+ 05B9 18                pop A
+ 05BA 5300              mov [__r3],A
+ 05BC 18                pop A
+ 05BD 5300              mov [__r2],A
+ 05BF 18                pop A
+ 05C0 5300              mov [__r1],A
+ 05C2 18                pop A
+ 05C3 5300              mov [__r0],A
+ 05C5 5203              mov A,[X+3]
+ 05C7 1200              sub A,[__r3]
+ 05C9 5202              mov A,[X+2]
+ 05CB 1A00              sbb A,[__r2]
+ 05CD 5201              mov A,[X+1]
+ 05CF 1A00              sbb A,[__r1]
+ 05D1 5200              mov A,[X+0]
+ 05D3 1A00              sbb A,[__r0]
+ 05D5 C06C              jc L92
+ 05D7           X2:
+ 05D7 62D000            mov REG[0xd0],>_g_bBandIndex
+ 05DA 5100              mov A,[_g_bBandIndex]
+ 05DC 62D000            mov REG[0xd0],>__r0
+ 05DF 5300              mov [__r1],A
+ 05E1 550000            mov [__r0],0
+ 05E4 060001            add [__r1],1
+ 05E7 0E0000            adc [__r0],0
+ 05EA 6500              asl [__r1]
+ 05EC 6B00              rlc [__r0]
+ 05EE 060000            add [__r1],<_g_wBandBoundaries
+ 05F1 0E0000            adc [__r0],>_g_wBandBoundaries
+ 05F4 5100              mov A,[__r0]
+ 05F6 10                push X
+ 05F7 08                push A
+ 05F8 5800              mov X,[__r1]
+ 05FA 28                romx
+ 05FB 5300              mov [__r0],A
+ 05FD 18                pop A
+ 05FE 75                inc X
+ 05FF 0900              adc A,0
+ 0601 28                romx
+ 0602 20                pop X
+ 0603 5300              mov [__r3],A
+ 0605 5100              mov A,[__r0]
+ 0607 5300              mov [__r2],A
+ 0609 5000              mov A,0
+ 060B 08                push A
+ 060C 08                push A
+ 060D 5100              mov A,[__r2]
+ 060F 08                push A
+ 0610 5100              mov A,[__r3]
+ 0612 08                push A
+ 0613 5000              mov A,0
+ 0615 08                push A
+ 0616 5001              mov A,1
+ 0618 08                push A
+ 0619 5086              mov A,-122
+ 061B 08                push A
+ 061C 50A0              mov A,-96
+ 061E 08                push A
+ 061F 7C0000            xcall __mul_32X32_32
+ 0622 38FC              add SP,-4
+ 0624 18                pop A
+ 0625 5300              mov [__r3],A
+ 0627 18                pop A
+ 0628 5300              mov [__r2],A
+ 062A 18                pop A
+ 062B 5300              mov [__r1],A
+ 062D 18                pop A
+ 062E 5300              mov [__r0],A
+ 0630 5100              mov A,[__r3]
+ 0632 1303              sub A,[X+3]
+ 0634 5100              mov A,[__r2]
+ 0636 1B02              sbb A,[X+2]
+ 0638 5100              mov A,[__r1]
+ 063A 1B01              sbb A,[X+1]
+ 063C 5100              mov A,[__r0]
+ 063E 1B00              sbb A,[X+0]
+ 0640 D003              jnc L90
+ 0642           X3:
+ 0642           L92:
+ 0642                   .dbline 225
+ 0642           ;               || (dwNewHz > g_wBandBoundaries[g_bBandIndex+1] * BAND_FREQ_ToHz ) ) return;    
+ 0642 8040              xjmp L84
+ 0644           L90:
+ 0644                   .dbline 226
+ 0644           ;       g_dwCurrHz = dwNewHz;
+ 0644 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0647 5200              mov A,[X+0]
+ 0649 5300              mov [_g_dwCurrHz],A
+ 064B 5201              mov A,[X+1]
+ 064D 5301              mov [_g_dwCurrHz+1],A
+ 064F 5202              mov A,[X+2]
+ 0651 5302              mov [_g_dwCurrHz+2],A
+ 0653 5203              mov A,[X+3]
+ 0655 5303              mov [_g_dwCurrHz+3],A
+ 0657                   .dbline 228
+ 0657           ;       // In VFO mode we don't call Do_DizzlingMeasureCorrectCalc, so we need to set frequency here
+ 0657           ;       if(g_bMode==MODE_VFO) Set_DDS(g_dwCurrHz);
+ 0657 62D000            mov REG[0xd0],>_g_bMode
+ 065A 3C0004            cmp [_g_bMode],4
+ 065D B015              jnz L93
+ 065F                   .dbline 228
+ 065F 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0662 5100              mov A,[_g_dwCurrHz]
+ 0664 08                push A
+ 0665 5101              mov A,[_g_dwCurrHz+1]
+ 0667 08                push A
+ 0668 5102              mov A,[_g_dwCurrHz+2]
+ 066A 08                push A
+ 066B 5103              mov A,[_g_dwCurrHz+3]
+ 066D 08                push A
+ 066E 7C0000            xcall _Set_DDS
+ 0671 38FC              add SP,-4
+ 0673           L93:
+ 0673                   .dbline 229
+ 0673           ;       if(g_bLongPress) Screen_Frequency(Display_Hz);  // fast frequency change doesn't pass through frequency display so update that here
+ 0673 62D000            mov REG[0xd0],>_g_bLongPress
+ 0676 3C0000            cmp [_g_bLongPress],0
+ 0679 A009              jz L95
+ 067B                   .dbline 229
+ 067B 5000              mov A,0
+ 067D 08                push A
+ 067E 7C0000            xcall _Screen_Frequency
+ 0681 38FF              add SP,-1
+ 0683           L95:
+ 0683                   .dbline -2
+ 0683           L84:
+ 0683 38F8              add SP,-8
+ 0685 20                pop X
+ 0686                   .dbline 0 ; func end
+ 0686 7F                ret
+ 0687                   .dbsym l dwNewHz 0 l
+ 0687                   .dbsym l xDir -4 c
+ 0687                   .dbend
+ 0687                   .dbfunc s cycleParameter _cycleParameter fV
+ 0687           ;         bCycle -> X-9
+ 0687           ;           xDir -> X-8
+ 0687           ;      bMaxValue -> X-7
+ 0687           ;      bMinValue -> X-6
+ 0687           ;       bSetting -> X-5
+ 0687           _cycleParameter:
+ 0687                   .dbline -1
+ 0687 10                push X
+ 0688 4F                mov X,SP
+ 0689 3802              add SP,2
+ 068B                   .dbline 243
+ 068B           ; }
+ 068B           ; 
+ 068B           ; //-----------------------------------------------------------------------------
+ 068B           ; //  FUNCTION NAME:    cycleParameter
+ 068B           ; //  DESCRIPTION:      Function to increment or decrement a parameter until it reaches 
+ 068B           ; //                                    its max value or min value. If the parameter hits max||min and 
+ 068B           ; //                                    bCycle is true, the parameter cycles round to min||max
+ 068B           ; //  ARGUMENTS:                *bSetting - pointer to the parameter to change
+ 068B           ; //                                    BbMinValue, bMaxValue, xDir (STEPUP|STEPDOWN), bCycle
+ 068B           ; //  RETURNS:          Nothing
+ 068B           ; //-----------------------------------------------------------------------------
+ 068B           ;  
+ 068B           ; static void cycleParameter(BYTE *bSetting, BYTE bMinValue, BYTE bMaxValue, STEP_DIRECTION xDir, BYTE bCycle)
+ 068B           ; {
+ 068B                   .dbline 244
+ 068B           ;       if(xDir == STEPDOWN) {
+ 068B 3DF801            cmp [X-8],1
+ 068E B058              jnz L98
+ 0690                   .dbline 244
+ 0690                   .dbline 245
+ 0690           ;               if ((--*bSetting+1) < (bMinValue+1)) *bSetting = (bCycle)? bMaxValue:bMinValue; 
+ 0690 62D000            mov REG[0xd0],>__r0
+ 0693 52FC              mov A,[X-4]
+ 0695 5300              mov [__r1],A
+ 0697 52FB              mov A,[X-5]
+ 0699 60D4              mov REG[0xd4],A
+ 069B 3E00              mvi A,[__r1]
+ 069D 5300              mov [__r0],A
+ 069F 160001            sub [__r0],1
+ 06A2 52FC              mov A,[X-4]
+ 06A4 5300              mov [__r3],A
+ 06A6 52FB              mov A,[X-5]
+ 06A8 60D5              mov REG[0xd5],A
+ 06AA 5100              mov A,[__r0]
+ 06AC 3F00              mvi [__r3],A
+ 06AE 52FA              mov A,[X-6]
+ 06B0 0101              add A,1
+ 06B2 5300              mov [__r2],A
+ 06B4 060001            add [__r0],1
+ 06B7 5100              mov A,[__r0]
+ 06B9 3A00              cmp A,[__r2]
+ 06BB D077              jnc L99
+ 06BD           X4:
+ 06BD                   .dbline 245
+ 06BD 3DF700            cmp [X-9],0
+ 06C0 A00A              jz L103
+ 06C2 52F9              mov A,[X-7]
+ 06C4 5401              mov [X+1],A
+ 06C6 560000            mov [X+0],0
+ 06C9 8008              xjmp L104
+ 06CB           L103:
+ 06CB 52FA              mov A,[X-6]
+ 06CD 5401              mov [X+1],A
+ 06CF 560000            mov [X+0],0
+ 06D2           L104:
+ 06D2 62D000            mov REG[0xd0],>__r0
+ 06D5 5201              mov A,[X+1]
+ 06D7 5300              mov [__r0],A
+ 06D9 52FC              mov A,[X-4]
+ 06DB 5300              mov [__r3],A
+ 06DD 52FB              mov A,[X-5]
+ 06DF 60D5              mov REG[0xd5],A
+ 06E1 5100              mov A,[__r0]
+ 06E3 3F00              mvi [__r3],A
+ 06E5                   .dbline 246
+ 06E5           ;       } else {
+ 06E5 804D              xjmp L99
+ 06E7           L98:
+ 06E7                   .dbline 246
+ 06E7                   .dbline 247
+ 06E7           ;               if (++*bSetting > bMaxValue) *bSetting = (bCycle)? bMinValue:bMaxValue; 
+ 06E7 62D000            mov REG[0xd0],>__r0
+ 06EA 52FC              mov A,[X-4]
+ 06EC 5300              mov [__r1],A
+ 06EE 52FB              mov A,[X-5]
+ 06F0 60D4              mov REG[0xd4],A
+ 06F2 3E00              mvi A,[__r1]
+ 06F4 5300              mov [__r0],A
+ 06F6 060001            add [__r0],1
+ 06F9 52FC              mov A,[X-4]
+ 06FB 5300              mov [__r3],A
+ 06FD 52FB              mov A,[X-5]
+ 06FF 60D5              mov REG[0xd5],A
+ 0701 5100              mov A,[__r0]
+ 0703 3F00              mvi [__r3],A
+ 0705 52F9              mov A,[X-7]
+ 0707 3A00              cmp A,[__r0]
+ 0709 D029              jnc L105
+ 070B           X5:
+ 070B                   .dbline 247
+ 070B 3DF700            cmp [X-9],0
+ 070E A00A              jz L108
+ 0710 52FA              mov A,[X-6]
+ 0712 5401              mov [X+1],A
+ 0714 560000            mov [X+0],0
+ 0717 8008              xjmp L109
+ 0719           L108:
+ 0719 52F9              mov A,[X-7]
+ 071B 5401              mov [X+1],A
+ 071D 560000            mov [X+0],0
+ 0720           L109:
+ 0720 62D000            mov REG[0xd0],>__r0
+ 0723 5201              mov A,[X+1]
+ 0725 5300              mov [__r0],A
+ 0727 52FC              mov A,[X-4]
+ 0729 5300              mov [__r3],A
+ 072B 52FB              mov A,[X-5]
+ 072D 60D5              mov REG[0xd5],A
+ 072F 5100              mov A,[__r0]
+ 0731 3F00              mvi [__r3],A
+ 0733           L105:
+ 0733                   .dbline 248
+ 0733           ;       }
+ 0733           L99:
+ 0733                   .dbline -2
+ 0733           L97:
+ 0733 38FE              add SP,-2
+ 0735 20                pop X
+ 0736                   .dbline 0 ; func end
+ 0736 7F                ret
+ 0737                   .dbsym l bCycle -9 c
+ 0737                   .dbsym l xDir -8 c
+ 0737                   .dbsym l bMaxValue -7 c
+ 0737                   .dbsym l bMinValue -6 c
+ 0737                   .dbsym l bSetting -5 pc
+ 0737                   .dbend
+ 0737                   .dbfunc s Do_DizzlingMeasureCorrectCalc _Do_DizzlingMeasureCorrectCalc fV
+ 0737           ; dwDizzlingMemoryHz -> X+2
+ 0737           ; wX10_DizzledReactance -> X+0
+ 0737           _Do_DizzlingMeasureCorrectCalc:
+ 0737                   .dbline -1
+ 0737 10                push X
+ 0738 4F                mov X,SP
+ 0739 3806              add SP,6
+ 073B                   .dbline 262
+ 073B           ; }
+ 073B           ; 
+ 073B           ; //-----------------------------------------------------------------------------
+ 073B           ; //  FUNCTION NAME:    Do_DizzlingMeasureCorrectCalc
+ 073B           ; //  DESCRIPTION:      Briefly step up in frequency & measure reactance, then return
+ 073B           ; //                                    to current frequency and measure again (both measurements also
+ 073B           ; //                                    give full set of VSWR, |Z|, R and X). If reactance increased 
+ 073B           ; //                                    with frequency, set sign of reactance to +ve else -ve, except
+ 073B           ; //                                    if the change is small, leave sign of reactance as it is.
+ 073B           ; //  ARGUMENTS:                none
+ 073B           ; //  RETURNS:          Nothing
+ 073B           ; //-----------------------------------------------------------------------------
+ 073B           ; static void Do_DizzlingMeasureCorrectCalc(void)
+ 073B           ; {
+ 073B                   .dbline 263
+ 073B           ;       DWORD dwDizzlingMemoryHz        = g_dwCurrHz;
+ 073B 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 073E 5100              mov A,[_g_dwCurrHz]
+ 0740 5402              mov [X+2],A
+ 0742 5101              mov A,[_g_dwCurrHz+1]
+ 0744 5403              mov [X+3],A
+ 0746 5102              mov A,[_g_dwCurrHz+2]
+ 0748 5404              mov [X+4],A
+ 074A 5103              mov A,[_g_dwCurrHz+3]
+ 074C 5405              mov [X+5],A
+ 074E                   .dbline 265
+ 074E           ;       WORD wX10_DizzledReactance;
+ 074E           ;       g_dwCurrHz = g_dwCurrHz*(100+DIZZLING_OFFSET_PERCENT) / 100;    // change to dizzled frequency
+ 074E 5100              mov A,[_g_dwCurrHz]
+ 0750 08                push A
+ 0751 5101              mov A,[_g_dwCurrHz+1]
+ 0753 08                push A
+ 0754 5102              mov A,[_g_dwCurrHz+2]
+ 0756 08                push A
+ 0757 5103              mov A,[_g_dwCurrHz+3]
+ 0759 08                push A
+ 075A 5000              mov A,0
+ 075C 08                push A
+ 075D 08                push A
+ 075E 08                push A
+ 075F 5069              mov A,105
+ 0761 08                push A
+ 0762 62D000            mov REG[0xd0],>__r0
+ 0765 7C0000            xcall __mul_32X32_32
+ 0768 38FC              add SP,-4
+ 076A 18                pop A
+ 076B 5300              mov [__r3],A
+ 076D 18                pop A
+ 076E 5300              mov [__r2],A
+ 0770 18                pop A
+ 0771 5300              mov [__r1],A
+ 0773 18                pop A
+ 0774 5300              mov [__r0],A
+ 0776 5000              mov A,0
+ 0778 08                push A
+ 0779 08                push A
+ 077A 08                push A
+ 077B 5064              mov A,100
+ 077D 08                push A
+ 077E 5100              mov A,[__r0]
+ 0780 08                push A
+ 0781 5100              mov A,[__r1]
+ 0783 08                push A
+ 0784 5100              mov A,[__r2]
+ 0786 08                push A
+ 0787 5100              mov A,[__r3]
+ 0789 08                push A
+ 078A 7C0000            xcall __divmodu_32X32_32
+ 078D 18                pop A
+ 078E 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0791 5303              mov [_g_dwCurrHz+3],A
+ 0793 18                pop A
+ 0794 5302              mov [_g_dwCurrHz+2],A
+ 0796 18                pop A
+ 0797 5301              mov [_g_dwCurrHz+1],A
+ 0799 18                pop A
+ 079A 5300              mov [_g_dwCurrHz],A
+ 079C 38FC              add SP,-4
+ 079E                   .dbline 266
+ 079E           ;       MeasureCorrectCalc();                                   // find reactance (incl full set) at dizzling frequency
+ 079E 9339              xcall _MeasureCorrectCalc
+ 07A0                   .dbline 267
+ 07A0           ;       wX10_DizzledReactance   = g_wX10;
+ 07A0 62D000            mov REG[0xd0],>_g_wX10
+ 07A3 5101              mov A,[_g_wX10+1]
+ 07A5 5401              mov [X+1],A
+ 07A7 5100              mov A,[_g_wX10]
+ 07A9 5400              mov [X+0],A
+ 07AB                   .dbline 268
+ 07AB           ;       g_dwCurrHz=dwDizzlingMemoryHz;                  // change back to non-dizzled frequency
+ 07AB 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 07AE 5202              mov A,[X+2]
+ 07B0 5300              mov [_g_dwCurrHz],A
+ 07B2 5203              mov A,[X+3]
+ 07B4 5301              mov [_g_dwCurrHz+1],A
+ 07B6 5204              mov A,[X+4]
+ 07B8 5302              mov [_g_dwCurrHz+2],A
+ 07BA 5205              mov A,[X+5]
+ 07BC 5303              mov [_g_dwCurrHz+3],A
+ 07BE                   .dbline 269
+ 07BE           ;       MeasureCorrectCalc();                                   // measure full set at non-dizzled frequency
+ 07BE 9319              xcall _MeasureCorrectCalc
+ 07C0                   .dbline 270
+ 07C0           ;       if ( (int)(wX10_DizzledReactance - g_wX10) > 5 || (g_wX10==0) ) 
+ 07C0 62D000            mov REG[0xd0],>_g_wX10
+ 07C3 5201              mov A,[X+1]
+ 07C5 1201              sub A,[_g_wX10+1]
+ 07C7 62D000            mov REG[0xd0],>__r0
+ 07CA 5300              mov [__r1],A
+ 07CC 5200              mov A,[X+0]
+ 07CE 62D000            mov REG[0xd0],>_g_wX10
+ 07D1 1A00              sbb A,[_g_wX10]
+ 07D3 62D000            mov REG[0xd0],>__r0
+ 07D6 5300              mov [__r0],A
+ 07D8 5005              mov A,5
+ 07DA 1200              sub A,[__r1]
+ 07DC 5100              mov A,[__r0]
+ 07DE 3180              xor A,-128
+ 07E0 5300              mov [__rX],A
+ 07E2 5080              mov A,(0 ^ 0x80)
+ 07E4 1A00              sbb A,[__rX]
+ 07E6 C00E              jc L113
+ 07E8           X6:
+ 07E8 62D000            mov REG[0xd0],>_g_wX10
+ 07EB 3C0000            cmp [_g_wX10],0
+ 07EE B00E              jnz L111
+ 07F0 3C0100            cmp [_g_wX10+1],0
+ 07F3 B009              jnz L111
+ 07F5           X7:
+ 07F5           L113:
+ 07F5                   .dbline 271
+ 07F5           ;               {g_bSgnX = '+';}
+ 07F5                   .dbline 271
+ 07F5 62D000            mov REG[0xd0],>_g_bSgnX
+ 07F8 55002B            mov [_g_bSgnX],43
+ 07FB                   .dbline 271
+ 07FB 802F              xjmp L112
+ 07FD           L111:
+ 07FD                   .dbline 272
+ 07FD           ;       else if ( (int)(g_wX10-wX10_DizzledReactance) > 5) 
+ 07FD 62D000            mov REG[0xd0],>_g_wX10
+ 0800 5101              mov A,[_g_wX10+1]
+ 0802 1301              sub A,[X+1]
+ 0804 62D000            mov REG[0xd0],>__r0
+ 0807 5300              mov [__r1],A
+ 0809 62D000            mov REG[0xd0],>_g_wX10
+ 080C 5100              mov A,[_g_wX10]
+ 080E 1B00              sbb A,[X+0]
+ 0810 62D000            mov REG[0xd0],>__r0
+ 0813 5300              mov [__r0],A
+ 0815 5005              mov A,5
+ 0817 1200              sub A,[__r1]
+ 0819 5100              mov A,[__r0]
+ 081B 3180              xor A,-128
+ 081D 5300              mov [__rX],A
+ 081F 5080              mov A,(0 ^ 0x80)
+ 0821 1A00              sbb A,[__rX]
+ 0823 D007              jnc L114
+ 0825           X8:
+ 0825                   .dbline 273
+ 0825           ;               {g_bSgnX = '-';}
+ 0825                   .dbline 273
+ 0825 62D000            mov REG[0xd0],>_g_bSgnX
+ 0828 55002D            mov [_g_bSgnX],45
+ 082B                   .dbline 273
+ 082B           L114:
+ 082B           L112:
+ 082B                   .dbline -2
+ 082B           L110:
+ 082B 38FA              add SP,-6
+ 082D 20                pop X
+ 082E                   .dbline 0 ; func end
+ 082E 7F                ret
+ 082F                   .dbsym l dwDizzlingMemoryHz 2 l
+ 082F                   .dbsym l wX10_DizzledReactance 0 i
+ 082F                   .dbend
+ 082F                   .dbfunc s Do_Config_Menu _Do_Config_Menu fV
+ 082F           ;       dwSaveHz -> X+2
+ 082F           ;          bMenu -> X+1
+ 082F           ;           bKey -> X+0
+ 082F           _Do_Config_Menu:
+ 082F                   .dbline -1
+ 082F 10                push X
+ 0830 4F                mov X,SP
+ 0831 3806              add SP,6
+ 0833                   .dbline 283
+ 0833           ; }
+ 0833           ; 
+ 0833           ; //-----------------------------------------------------------------------------
+ 0833           ; //  FUNCTION NAME:    Do_Config_Menu
+ 0833           ; //  DESCRIPTION:      Configuration routine
+ 0833           ; //  ARGUMENTS:                none.
+ 0833           ; //  RETURNS:          none.
+ 0833           ; //-----------------------------------------------------------------------------
+ 0833           ; static void Do_Config_Menu (void)
+ 0833           ; {
+ 0833                   .dbline 284
+ 0833           ;       BYTE bMenu = 0;
+ 0833 560100            mov [X+1],0
+ 0836                   .dbline 288
+ 0836           ;       BYTE bKey;
+ 0836           ;       DWORD dwSaveHz;
+ 0836           ; 
+ 0836           ;       Screen_Clear(); Screen_HideCursor();
+ 0836 7C0000            xcall _Screen_Clear
+ 0839                   .dbline 288
+ 0839 7C0000            xcall _Screen_HideCursor
+ 083C           L117:
+ 083C                   .dbline 290
+ 083C           ;       
+ 083C           ;       do  {   
+ 083C                   .dbline 291
+ 083C           ;               Screen_CStrAtRowCol(0, 0, gBlankStr_16);
+ 083C 5000              mov A,>_gBlankStr_16
+ 083E 08                push A
+ 083F 5000              mov A,<_gBlankStr_16
+ 0841 08                push A
+ 0842 5000              mov A,0
+ 0844 08                push A
+ 0845 08                push A
+ 0846 7C0000            xcall _Screen_CStrAtRowCol
+ 0849 38FC              add SP,-4
+ 084B                   .dbline 292
+ 084B           ;               Screen_CStrAtRowCol(0, 0, gConfigStr[bMenu]);
+ 084B 62D000            mov REG[0xd0],>__r0
+ 084E 5201              mov A,[X+1]
+ 0850 5300              mov [__r1],A
+ 0852 550000            mov [__r0],0
+ 0855 6500              asl [__r1]
+ 0857 6B00              rlc [__r0]
+ 0859 060000            add [__r1],<_gConfigStr
+ 085C 0E0000            adc [__r0],>_gConfigStr
+ 085F 5100              mov A,[__r0]
+ 0861 60D4              mov REG[0xd4],A
+ 0863 3E00              mvi A,[__r1]
+ 0865 5300              mov [__r0],A
+ 0867 3E00              mvi A,[__r1]
+ 0869 5300              mov [__r1],A
+ 086B 5100              mov A,[__r0]
+ 086D 08                push A
+ 086E 5100              mov A,[__r1]
+ 0870 08                push A
+ 0871 5000              mov A,0
+ 0873 08                push A
+ 0874 08                push A
+ 0875 7C0000            xcall _Screen_CStrAtRowCol
+ 0878                   .dbline 293
+ 0878           ;               bKey = KEYPAD_WaitKey(TIME_WAIT_KEY_S);
+ 0878 501E              mov A,30
+ 087A 08                push A
+ 087B 7C0000            xcall _KEYPAD_WaitKey
+ 087E 38FB              add SP,-5
+ 0880 62D000            mov REG[0xd0],>__r0
+ 0883 5400              mov [X+0],A
+ 0885                   .dbline 294
+ 0885           ;               if (bKey==KBD_UP)               break;
+ 0885 3D0005            cmp [X+0],5
+ 0888 B003              jnz L120
+ 088A                   .dbline 294
+ 088A 80EA              xjmp L119
+ 088C           L120:
+ 088C                   .dbline 295
+ 088C           ;               if (bKey==KBD_CONFIG)   cycleParameter(&bMenu, 0, CONFIG_NUM-1, STEPUP, TRUE);  
+ 088C 3D0001            cmp [X+0],1
+ 088F B01F              jnz L122
+ 0891                   .dbline 295
+ 0891 5001              mov A,1
+ 0893 08                push A
+ 0894 5000              mov A,0
+ 0896 08                push A
+ 0897 5007              mov A,7
+ 0899 08                push A
+ 089A 5000              mov A,0
+ 089C 08                push A
+ 089D 62D000            mov REG[0xd0],>__r0
+ 08A0 5A00              mov [__r1],X
+ 08A2 060001            add [__r1],1
+ 08A5 5007              mov A,7
+ 08A7 08                push A
+ 08A8 5100              mov A,[__r1]
+ 08AA 08                push A
+ 08AB 9DDA              xcall _cycleParameter
+ 08AD 38FA              add SP,-6
+ 08AF           L122:
+ 08AF                   .dbline 296
+ 08AF           ;               if (bKey==KBD_DWN) {
+ 08AF 3D0006            cmp [X+0],6
+ 08B2 B0AC              jnz L124
+ 08B4                   .dbline 296
+ 08B4                   .dbline 297
+ 08B4           ;                       if (bMenu==CONFIG_PCLINK)               { dwSaveHz=g_dwCurrHz; PcLink(); g_dwCurrHz=dwSaveHz; break; }
+ 08B4 3D0100            cmp [X+1],0
+ 08B7 B02C              jnz L126
+ 08B9                   .dbline 297
+ 08B9                   .dbline 297
+ 08B9 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 08BC 5100              mov A,[_g_dwCurrHz]
+ 08BE 5402              mov [X+2],A
+ 08C0 5101              mov A,[_g_dwCurrHz+1]
+ 08C2 5403              mov [X+3],A
+ 08C4 5102              mov A,[_g_dwCurrHz+2]
+ 08C6 5404              mov [X+4],A
+ 08C8 5103              mov A,[_g_dwCurrHz+3]
+ 08CA 5405              mov [X+5],A
+ 08CC                   .dbline 297
+ 08CC 7C0000            xcall _PcLink
+ 08CF                   .dbline 297
+ 08CF 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 08D2 5202              mov A,[X+2]
+ 08D4 5300              mov [_g_dwCurrHz],A
+ 08D6 5203              mov A,[X+3]
+ 08D8 5301              mov [_g_dwCurrHz+1],A
+ 08DA 5204              mov A,[X+4]
+ 08DC 5302              mov [_g_dwCurrHz+2],A
+ 08DE 5205              mov A,[X+5]
+ 08E0 5303              mov [_g_dwCurrHz+3],A
+ 08E2                   .dbline 297
+ 08E2 8092              xjmp L119
+ 08E4           L126:
+ 08E4                   .dbline 298
+ 08E4           ;                       if (bMenu==CONFIG_Idle)                 { Config_ByteSettingItem(gIdleStr, &g_xConf.bUserIdle, USER_IDLE_NUM-1); break;}
+ 08E4 3D0101            cmp [X+1],1
+ 08E7 B016              jnz L128
+ 08E9                   .dbline 298
+ 08E9                   .dbline 298
+ 08E9 5003              mov A,3
+ 08EB 08                push A
+ 08EC 5000              mov A,>_g_xConf
+ 08EE 08                push A
+ 08EF 5000              mov A,<_g_xConf
+ 08F1 08                push A
+ 08F2 5000              mov A,>_gIdleStr
+ 08F4 08                push A
+ 08F5 5000              mov A,<_gIdleStr
+ 08F7 08                push A
+ 08F8 9082              xcall _Config_ByteSettingItem
+ 08FA 38FB              add SP,-5
+ 08FC                   .dbline 298
+ 08FC 8078              xjmp L119
+ 08FE           L128:
+ 08FE                   .dbline 299
+ 08FE           ;                       if (bMenu==CONFIG_FltWt)                { Config_ByteSettingItem(gFltWtStr, &g_xConf.bFltWt, FLT_WT_NUM-1); break;}
+ 08FE 3D0102            cmp [X+1],2
+ 0901 B016              jnz L130
+ 0903                   .dbline 299
+ 0903                   .dbline 299
+ 0903 5003              mov A,3
+ 0905 08                push A
+ 0906 5003              mov A,>_g_xConf+3
+ 0908 08                push A
+ 0909 5003              mov A,<_g_xConf+3
+ 090B 08                push A
+ 090C 5000              mov A,>_gFltWtStr
+ 090E 08                push A
+ 090F 5000              mov A,<_gFltWtStr
+ 0911 08                push A
+ 0912 9068              xcall _Config_ByteSettingItem
+ 0914 38FB              add SP,-5
+ 0916                   .dbline 299
+ 0916 805E              xjmp L119
+ 0918           L130:
+ 0918                   .dbline 300
+ 0918           ;                       if (bMenu==CONFIG_CWPitch)              { Config_ByteSettingItem(gCWPitchStr, &g_xConf.bCWPitch, CWPitch_NUM-1); break;}
+ 0918 3D0103            cmp [X+1],3
+ 091B B016              jnz L133
+ 091D                   .dbline 300
+ 091D                   .dbline 300
+ 091D 5004              mov A,4
+ 091F 08                push A
+ 0920 5001              mov A,>_g_xConf+1
+ 0922 08                push A
+ 0923 5001              mov A,<_g_xConf+1
+ 0925 08                push A
+ 0926 5000              mov A,>_gCWPitchStr
+ 0928 08                push A
+ 0929 5000              mov A,<_gCWPitchStr
+ 092B 08                push A
+ 092C 904E              xcall _Config_ByteSettingItem
+ 092E 38FB              add SP,-5
+ 0930                   .dbline 300
+ 0930 8044              xjmp L119
+ 0932           L133:
+ 0932                   .dbline 301
+ 0932           ;                       if (bMenu==CONFIG_VF)                   { Config_ByteSettingItem(gVFStr, &g_xConf.bVF, VF_NUM); break;}
+ 0932 3D0104            cmp [X+1],4
+ 0935 B016              jnz L136
+ 0937                   .dbline 301
+ 0937                   .dbline 301
+ 0937 5003              mov A,3
+ 0939 08                push A
+ 093A 5002              mov A,>_g_xConf+2
+ 093C 08                push A
+ 093D 5002              mov A,<_g_xConf+2
+ 093F 08                push A
+ 0940 5000              mov A,>_gVFStr
+ 0942 08                push A
+ 0943 5000              mov A,<_gVFStr
+ 0945 08                push A
+ 0946 9034              xcall _Config_ByteSettingItem
+ 0948 38FB              add SP,-5
+ 094A                   .dbline 301
+ 094A 802A              xjmp L119
+ 094C           L136:
+ 094C                   .dbline 302
+ 094C           ;                       if (bMenu==CONFIG_CALIB)                { MeasureUncorrectedRatios();   break;  }       
+ 094C 3D0106            cmp [X+1],6
+ 094F B006              jnz L139
+ 0951                   .dbline 302
+ 0951                   .dbline 302
+ 0951 7C0000            xcall _MeasureUncorrectedRatios
+ 0954                   .dbline 302
+ 0954 8020              xjmp L119
+ 0956           L139:
+ 0956                   .dbline 303
+ 0956           ;                       if (bMenu==CONFIG_SW_LOAD)              { Load_Firmware(); break; }
+ 0956 3D0107            cmp [X+1],7
+ 0959 B005              jnz L141
+ 095B                   .dbline 303
+ 095B                   .dbline 303
+ 095B 911F              xcall _Load_Firmware
+ 095D                   .dbline 303
+ 095D 8017              xjmp L119
+ 095F           L141:
+ 095F                   .dbline 304
+ 095F           ;               }
+ 095F           L124:
+ 095F                   .dbline 305
+ 095F           ;               if ((bKey==KBD_DWN) || (bKey == KBD_SCAN)) { 
+ 095F 3D0006            cmp [X+0],6
+ 0962 A006              jz L145
+ 0964 3D0004            cmp [X+0],4
+ 0967 B00B              jnz L143
+ 0969           L145:
+ 0969                   .dbline 305
+ 0969                   .dbline 306
+ 0969           ;                       if(bMenu==CONFIG_CableLength)   { Do_LineLength_Scan(); break;} 
+ 0969 3D0105            cmp [X+1],5
+ 096C B006              jnz L146
+ 096E                   .dbline 306
+ 096E                   .dbline 306
+ 096E 7C0000            xcall _Do_LineLength_Scan
+ 0971                   .dbline 306
+ 0971 8003              xjmp L119
+ 0973           L146:
+ 0973                   .dbline 307
+ 0973           ;               }
+ 0973           L143:
+ 0973                   .dbline 308
+ 0973           ;       } while (TRUE);
+ 0973           L118:
+ 0973                   .dbline 308
+ 0973 8EC8              xjmp L117
+ 0975           L119:
+ 0975                   .dbline 310
+ 0975           ;       
+ 0975           ;       Screen_Clear();
+ 0975 7C0000            xcall _Screen_Clear
+ 0978                   .dbline -2
+ 0978           L116:
+ 0978 38FA              add SP,-6
+ 097A 20                pop X
+ 097B                   .dbline 0 ; func end
+ 097B 7F                ret
+ 097C                   .dbsym l dwSaveHz 2 l
+ 097C                   .dbsym l bMenu 1 c
+ 097C                   .dbsym l bKey 0 c
+ 097C                   .dbend
+ 097C                   .dbfunc s Config_ByteSettingItem _Config_ByteSettingItem fV
+ 097C           ;     bCurrValue -> X+1
+ 097C           ;           bKey -> X+0
+ 097C           ;      bMaxValue -> X-8
+ 097C           ;       bSetting -> X-7
+ 097C           ; sSettingStrings -> X-5
+ 097C           _Config_ByteSettingItem:
+ 097C                   .dbline -1
+ 097C 10                push X
+ 097D 4F                mov X,SP
+ 097E 3802              add SP,2
+ 0980                   .dbline 327
+ 0980           ; }
+ 0980           ; //-----------------------------------------------------------------------------
+ 0980           ; //  FUNCTION NAME:    Config_ByteSettingItem
+ 0980           ; //
+ 0980           ; //  DESCRIPTION:      On keypress 'config' steps through the values of a parameter
+ 0980           ; //                                    defined by a BYTE setting. At any point, pressing UP cancels 
+ 0980           ; //                                    the operation, pressing down confirms saving the displayed value.
+ 0980           ; //  ARGUMENTS:
+ 0980           ; //      const char **sSettingStrings, pointer to the array of pointers to the setting 
+ 0980           ; //                                                                      strings for the parameter from glb_data.h
+ 0980           ; //            BYTE *bSetting, pointer to the parameter to be set
+ 0980           ; //            BYTE bMaxValue, maximum value at which the value returns to zero
+ 0980           ; //
+ 0980           ; //  RETURNS: none.
+ 0980           ; //-----------------------------------------------------------------------------
+ 0980           ; static void Config_ByteSettingItem(const char **sSettingStrings, BYTE *bSetting, BYTE bMaxValue)
+ 0980           ; {
+ 0980                   .dbline 328
+ 0980           ;       BYTE bCurrValue = *bSetting;
+ 0980 62D000            mov REG[0xd0],>__r0
+ 0983 52FA              mov A,[X-6]
+ 0985 5300              mov [__r1],A
+ 0987 52F9              mov A,[X-7]
+ 0989 60D4              mov REG[0xd4],A
+ 098B 3E00              mvi A,[__r1]
+ 098D 5401              mov [X+1],A
+ 098F                   .dbline 330
+ 098F           ;       BYTE bKey;
+ 098F           ;       Screen_CStrAtRowCol(1, 0, sSettingStrings[bCurrValue]);
+ 098F 5201              mov A,[X+1]
+ 0991 5300              mov [__r1],A
+ 0993 550000            mov [__r0],0
+ 0996 6500              asl [__r1]
+ 0998 6B00              rlc [__r0]
+ 099A 52FC              mov A,[X-4]
+ 099C 0400              add [__r1],A
+ 099E 52FB              mov A,[X-5]
+ 09A0 0C00              adc [__r0],A
+ 09A2 5100              mov A,[__r0]
+ 09A4 60D4              mov REG[0xd4],A
+ 09A6 3E00              mvi A,[__r1]
+ 09A8 5300              mov [__r0],A
+ 09AA 3E00              mvi A,[__r1]
+ 09AC 5300              mov [__r1],A
+ 09AE 5100              mov A,[__r0]
+ 09B0 08                push A
+ 09B1 5100              mov A,[__r1]
+ 09B3 08                push A
+ 09B4 5000              mov A,0
+ 09B6 08                push A
+ 09B7 5001              mov A,1
+ 09B9 08                push A
+ 09BA 7C0000            xcall _Screen_CStrAtRowCol
+ 09BD 38FC              add SP,-4
+ 09BF           L149:
+ 09BF                   .dbline 331
+ 09BF           ;       do {
+ 09BF                   .dbline 332
+ 09BF           ;               Screen_CStrAtRowCol(1, 0, sSettingStrings[bCurrValue]);
+ 09BF 62D000            mov REG[0xd0],>__r0
+ 09C2 5201              mov A,[X+1]
+ 09C4 5300              mov [__r1],A
+ 09C6 550000            mov [__r0],0
+ 09C9 6500              asl [__r1]
+ 09CB 6B00              rlc [__r0]
+ 09CD 52FC              mov A,[X-4]
+ 09CF 0400              add [__r1],A
+ 09D1 52FB              mov A,[X-5]
+ 09D3 0C00              adc [__r0],A
+ 09D5 5100              mov A,[__r0]
+ 09D7 60D4              mov REG[0xd4],A
+ 09D9 3E00              mvi A,[__r1]
+ 09DB 5300              mov [__r0],A
+ 09DD 3E00              mvi A,[__r1]
+ 09DF 5300              mov [__r1],A
+ 09E1 5100              mov A,[__r0]
+ 09E3 08                push A
+ 09E4 5100              mov A,[__r1]
+ 09E6 08                push A
+ 09E7 5000              mov A,0
+ 09E9 08                push A
+ 09EA 5001              mov A,1
+ 09EC 08                push A
+ 09ED 7C0000            xcall _Screen_CStrAtRowCol
+ 09F0 38FC              add SP,-4
+ 09F2                   .dbline 333
+ 09F2           ;               Screen_CStr(gBlankStr_4);
+ 09F2 5000              mov A,>_gBlankStr_4
+ 09F4 08                push A
+ 09F5 5000              mov A,<_gBlankStr_4
+ 09F7 08                push A
+ 09F8 7C0000            xcall _Screen_CStr
+ 09FB                   .dbline 334
+ 09FB           ;               bKey = KEYPAD_WaitKey(TIME_WAIT_KEY_S);
+ 09FB 501E              mov A,30
+ 09FD 08                push A
+ 09FE 7C0000            xcall _KEYPAD_WaitKey
+ 0A01 38FD              add SP,-3
+ 0A03 62D000            mov REG[0xd0],>__r0
+ 0A06 5400              mov [X+0],A
+ 0A08                   .dbline 335
+ 0A08           ;               if (bKey==KBD_CONFIG)   cycleParameter(&bCurrValue, 0, bMaxValue, STEPUP, TRUE);
+ 0A08 3D0001            cmp [X+0],1
+ 0A0B B01C              jnz L152
+ 0A0D                   .dbline 335
+ 0A0D 5001              mov A,1
+ 0A0F 08                push A
+ 0A10 5000              mov A,0
+ 0A12 08                push A
+ 0A13 52F8              mov A,[X-8]
+ 0A15 08                push A
+ 0A16 5000              mov A,0
+ 0A18 08                push A
+ 0A19 5A00              mov [__r1],X
+ 0A1B 060001            add [__r1],1
+ 0A1E 5007              mov A,7
+ 0A20 08                push A
+ 0A21 5100              mov A,[__r1]
+ 0A23 08                push A
+ 0A24 9C61              xcall _cycleParameter
+ 0A26 38FA              add SP,-6
+ 0A28           L152:
+ 0A28                   .dbline 336
+ 0A28           ;               if (bKey==KBD_UP)               break;
+ 0A28 3D0005            cmp [X+0],5
+ 0A2B B003              jnz L154
+ 0A2D                   .dbline 336
+ 0A2D 8033              xjmp L151
+ 0A2F           L154:
+ 0A2F                   .dbline 337
+ 0A2F           ;               if (bKey==KBD_DWN){
+ 0A2F 3D0006            cmp [X+0],6
+ 0A32 B02C              jnz L156
+ 0A34                   .dbline 337
+ 0A34                   .dbline 338
+ 0A34           ;                       *bSetting = bCurrValue;
+ 0A34 62D000            mov REG[0xd0],>__r0
+ 0A37 52FA              mov A,[X-6]
+ 0A39 5300              mov [__r1],A
+ 0A3B 52F9              mov A,[X-7]
+ 0A3D 60D5              mov REG[0xd5],A
+ 0A3F 5201              mov A,[X+1]
+ 0A41 3F00              mvi [__r1],A
+ 0A43                   .dbline 339
+ 0A43           ;                       STR_SaveConfig();
+ 0A43 7C0000            xcall _STR_SaveConfig
+ 0A46                   .dbline 340
+ 0A46           ;                       Screen_CStrAtRowCol(1, 8, gValueSavedStr);
+ 0A46 5000              mov A,>_gValueSavedStr
+ 0A48 08                push A
+ 0A49 5000              mov A,<_gValueSavedStr
+ 0A4B 08                push A
+ 0A4C 5008              mov A,8
+ 0A4E 08                push A
+ 0A4F 5001              mov A,1
+ 0A51 08                push A
+ 0A52 7C0000            xcall _Screen_CStrAtRowCol
+ 0A55                   .dbline 341
+ 0A55           ;                       Delay_64ths(TIME_FLASH_MSG);
+ 0A55 5060              mov A,96
+ 0A57 08                push A
+ 0A58 7C0000            xcall _Delay_64ths
+ 0A5B 38FB              add SP,-5
+ 0A5D                   .dbline 342
+ 0A5D           ;                       return;
+ 0A5D 801A              xjmp L148
+ 0A5F           L156:
+ 0A5F                   .dbline 344
+ 0A5F           ;               }
+ 0A5F           ;       } while(TRUE);
+ 0A5F           L150:
+ 0A5F                   .dbline 344
+ 0A5F 8F5F              xjmp L149
+ 0A61           L151:
+ 0A61                   .dbline 346
+ 0A61           ;       
+ 0A61           ;       Screen_CStrAtRowCol(1, 0, gNothingChangedStr);
+ 0A61 5000              mov A,>_gNothingChangedStr
+ 0A63 08                push A
+ 0A64 5000              mov A,<_gNothingChangedStr
+ 0A66 08                push A
+ 0A67 5000              mov A,0
+ 0A69 08                push A
+ 0A6A 5001              mov A,1
+ 0A6C 08                push A
+ 0A6D 7C0000            xcall _Screen_CStrAtRowCol
+ 0A70                   .dbline 347
+ 0A70           ;       Delay_64ths(TIME_FLASH_MSG);
+ 0A70 5060              mov A,96
+ 0A72 08                push A
+ 0A73 7C0000            xcall _Delay_64ths
+ 0A76 38FB              add SP,-5
+ 0A78                   .dbline -2
+ 0A78           L148:
+ 0A78 38FE              add SP,-2
+ 0A7A 20                pop X
+ 0A7B                   .dbline 0 ; func end
+ 0A7B 7F                ret
+ 0A7C                   .dbsym l bCurrValue 1 c
+ 0A7C                   .dbsym l bKey 0 c
+ 0A7C                   .dbsym l bMaxValue -8 c
+ 0A7C                   .dbsym l bSetting -7 pc
+ 0A7C                   .dbsym l sSettingStrings -5 ppkc
+ 0A7C                   .dbend
+ 0A7C                   .dbfunc s Load_Firmware _Load_Firmware fV
+ 0A7C           _Load_Firmware:
+ 0A7C                   .dbline -1
+ 0A7C                   .dbline 357
+ 0A7C           ; }
+ 0A7C           ; 
+ 0A7C           ; //-----------------------------------------------------------------------------
+ 0A7C           ; //  FUNCTION NAME:    Load_Firmware()
+ 0A7C           ; //  DESCRIPTION:      Function to handle the load firmware branch of the config menu
+ 0A7C           ; //  ARGUMENTS:                nont
+ 0A7C           ; //  RETURNS:          TRUE if select KBD_DWN, FALSE other key or timeout
+ 0A7C           ; //-----------------------------------------------------------------------------
+ 0A7C           ; static void Load_Firmware(void)
+ 0A7C           ; {
+ 0A7C                   .dbline 358
+ 0A7C           ;       if(getUserConfirmation()) {
+ 0A7C 901F              xcall _getUserConfirmation
+ 0A7E 62D000            mov REG[0xd0],>__r0
+ 0A81 3900              cmp A,0
+ 0A83 A018              jz L159
+ 0A85                   .dbline 358
+ 0A85                   .dbline 359
+ 0A85           ;               Screen_Clear(); Screen_CStrAtRowCol(0, 0, gSwLoadingStr);
+ 0A85 7C0000            xcall _Screen_Clear
+ 0A88                   .dbline 359
+ 0A88 5000              mov A,>_gSwLoadingStr
+ 0A8A 08                push A
+ 0A8B 5000              mov A,<_gSwLoadingStr
+ 0A8D 08                push A
+ 0A8E 5000              mov A,0
+ 0A90 08                push A
+ 0A91 08                push A
+ 0A92 7C0000            xcall _Screen_CStrAtRowCol
+ 0A95 38FC              add SP,-4
+ 0A97                   .dbline 360
+ 0A97           ;               M8C_DisableGInt;
+ 0A97 70FE                      and F, FEh
+ 0A99           
+ 0A99                   .dbline 361
+ 0A99           ;               asm ("ljmp 0x0000");    // Perform Software Reset
+ 0A99 7D0000                    ljmp 0x0000
+ 0A9C           
+ 0A9C                   .dbline 362
+ 0A9C           ;       }
+ 0A9C           L159:
+ 0A9C                   .dbline -2
+ 0A9C           L158:
+ 0A9C                   .dbline 0 ; func end
+ 0A9C 7F                ret
+ 0A9D                   .dbend
+ 0A9D                   .dbfunc e getUserConfirmation _getUserConfirmation fc
+ 0A9D           _getUserConfirmation::
+ 0A9D                   .dbline -1
+ 0A9D 10                push X
+ 0A9E 4F                mov X,SP
+ 0A9F 3802              add SP,2
+ 0AA1                   .dbline 373
+ 0AA1           ; }
+ 0AA1           ; 
+ 0AA1           ; //-----------------------------------------------------------------------------
+ 0AA1           ; //  FUNCTION NAME:    getUserConfirmation()
+ 0AA1           ; //  DESCRIPTION:      Function to display confirmStr in second row and then wait 
+ 0AA1           ; //                                    for confirm key or timeout
+ 0AA1           ; //  ARGUMENTS:                none
+ 0AA1           ; //  RETURNS:          TRUE if select KBD_DWN, FALSE other key or timeout
+ 0AA1           ; //-----------------------------------------------------------------------------
+ 0AA1           ; BYTE getUserConfirmation(void)
+ 0AA1           ; {
+ 0AA1                   .dbline 374
+ 0AA1           ;       Screen_HideCursor();
+ 0AA1 7C0000            xcall _Screen_HideCursor
+ 0AA4                   .dbline 375
+ 0AA4           ;       Screen_CStrAtRowCol(1, 0, gConfirmStr);
+ 0AA4 5000              mov A,>_gConfirmStr
+ 0AA6 08                push A
+ 0AA7 5000              mov A,<_gConfirmStr
+ 0AA9 08                push A
+ 0AAA 5000              mov A,0
+ 0AAC 08                push A
+ 0AAD 5001              mov A,1
+ 0AAF 08                push A
+ 0AB0 7C0000            xcall _Screen_CStrAtRowCol
+ 0AB3                   .dbline 376
+ 0AB3           ;       return (KEYPAD_WaitKey(TIME_WAIT_KEY_S) == KBD_DWN);
+ 0AB3 501E              mov A,30
+ 0AB5 08                push A
+ 0AB6 7C0000            xcall _KEYPAD_WaitKey
+ 0AB9 38FB              add SP,-5
+ 0ABB 62D000            mov REG[0xd0],>__r0
+ 0ABE 3906              cmp A,6
+ 0AC0 B009              jnz L163
+ 0AC2 560101            mov [X+1],1
+ 0AC5 560000            mov [X+0],0
+ 0AC8 8007              xjmp L164
+ 0ACA           L163:
+ 0ACA 560100            mov [X+1],0
+ 0ACD 560000            mov [X+0],0
+ 0AD0           L164:
+ 0AD0 62D000            mov REG[0xd0],>__r0
+ 0AD3 5201              mov A,[X+1]
+ 0AD5                   .dbline -2
+ 0AD5           L161:
+ 0AD5 38FE              add SP,-2
+ 0AD7 20                pop X
+ 0AD8                   .dbline 0 ; func end
+ 0AD8 7F                ret
+ 0AD9                   .dbend
+ 0AD9                   .dbfunc e MeasureCorrectCalc _MeasureCorrectCalc fV
+ 0AD9           _MeasureCorrectCalc::
+ 0AD9                   .dbline -1
+ 0AD9                   .dbline 386
+ 0AD9           ; }
+ 0AD9           ; 
+ 0AD9           ; //-----------------------------------------------------------------------------
+ 0AD9           ; //  FUNCTION NAME:    MeasureCorrectCalc()
+ 0AD9           ; //  DESCRIPTION:      Measure, do correction, do calcs
+ 0AD9           ; //  ARGUMENTS:                none
+ 0AD9           ; //  RETURNS:          none
+ 0AD9           ; //-----------------------------------------------------------------------------
+ 0AD9           ; void MeasureCorrectCalc(void)
+ 0AD9           ; {     
+ 0AD9                   .dbline 387
+ 0AD9           ;       MeasureBrgRts();
+ 0AD9 7C0000            xcall _MeasureBrgRts
+ 0ADC                   .dbline 388
+ 0ADC           ;       CorrectBrgRts();
+ 0ADC 7C0000            xcall _CorrectBrgRts
+ 0ADF                   .dbline 389
+ 0ADF           ;       Do_SZRX_Calcs();
+ 0ADF 7C0000            xcall _Do_SZRX_Calcs
+ 0AE2                   .dbline -2
+ 0AE2           L165:
+ 0AE2                   .dbline 0 ; func end
+ 0AE2 7F                ret
+ 0AE3                   .dbend
+ 0AE3                   .dbfunc e FormatNumberRJ _FormatNumberRJ fc
+ 0AE3           ;          index -> X+0
+ 0AE3           ;            bDP -> X-9
+ 0AE3           ;      bFieldLen -> X-8
+ 0AE3           ;          dwVal -> X-7
+ 0AE3           _FormatNumberRJ::
+ 0AE3                   .dbline -1
+ 0AE3 10                push X
+ 0AE4 4F                mov X,SP
+ 0AE5 3801              add SP,1
+ 0AE7                   .dbline 405
+ 0AE7           ; }
+ 0AE7           ; 
+ 0AE7           ; //-----------------------------------------------------------------------------
+ 0AE7           ; //  FUNCTION NAME:    FormatNumberRJ
+ 0AE7           ; //  DESCRIPTION:      Bespoke ultoa eliminates library calls & saves 700 bytes ROM
+ 0AE7           ; //                  Results are right-justified if bFieldLen > len needed.
+ 0AE7           ; //  ARGUMENTS:                dwVal           - number to convert
+ 0AE7           ; //                                    bFieldLen       - number of digits (including the decimal point)
+ 0AE7           ; //                                beyond which **** is the result
+ 0AE7           ; //                                    bDP                     - number of decimal places
+ 0AE7           ; //                              - FIXED - fixes the number of decimal places
+ 0AE7           ; //  RETURNS:          true        - OK
+ 0AE7           ; //                  false       - Overrange (digits won't fit in bFieldLen)
+ 0AE7           ; //-----------------------------------------------------------------------------
+ 0AE7           ; char FormatNumberRJ(unsigned long dwVal, unsigned char bFieldLen, unsigned char bDP)
+ 0AE7           ; {
+ 0AE7                   .dbline 409
+ 0AE7           ;       // sequentially extract the digits into the buffer, inserting the 
+ 0AE7           ;       // decimal point at the appropriate place, then terminate the string
+ 0AE7           ;     // Convert number to string with correct decimal placement
+ 0AE7           ;     unsigned char index=0;
+ 0AE7 560000            mov [X+0],0
+ 0AEA 80CB              xjmp L168
+ 0AEC           L167:
+ 0AEC                   .dbline 410
+ 0AEC           ;     while (index < bFieldLen ) {  
+ 0AEC                   .dbline 411
+ 0AEC           ;         g_buffer16[bFieldLen-1-index++] = '0' + (dwVal % 10);
+ 0AEC 62D000            mov REG[0xd0],>__r0
+ 0AEF 5200              mov A,[X+0]
+ 0AF1 5300              mov [__r1],A
+ 0AF3 550000            mov [__r0],0
+ 0AF6 0101              add A,1
+ 0AF8 5400              mov [X+0],A
+ 0AFA 52F8              mov A,[X-8]
+ 0AFC 5300              mov [__r3],A
+ 0AFE 550000            mov [__r2],0
+ 0B01 160001            sub [__r3],1
+ 0B04 1E0000            sbb [__r2],0
+ 0B07 5100              mov A,[__r3]
+ 0B09 1200              sub A,[__r1]
+ 0B0B 5300              mov [__r1],A
+ 0B0D 5100              mov A,[__r2]
+ 0B0F 1A00              sbb A,[__r0]
+ 0B11 5300              mov [__r0],A
+ 0B13 060000            add [__r1],<_g_buffer16
+ 0B16 0E0000            adc [__r0],>_g_buffer16
+ 0B19 5000              mov A,0
+ 0B1B 08                push A
+ 0B1C 08                push A
+ 0B1D 08                push A
+ 0B1E 500A              mov A,10
+ 0B20 08                push A
+ 0B21 52F9              mov A,[X-7]
+ 0B23 08                push A
+ 0B24 52FA              mov A,[X-6]
+ 0B26 08                push A
+ 0B27 52FB              mov A,[X-5]
+ 0B29 08                push A
+ 0B2A 52FC              mov A,[X-4]
+ 0B2C 08                push A
+ 0B2D 7C0000            xcall __divmodu_32X32_32
+ 0B30 38FC              add SP,-4
+ 0B32 18                pop A
+ 0B33 5300              mov [__r7],A
+ 0B35 18                pop A
+ 0B36 5300              mov [__r6],A
+ 0B38 18                pop A
+ 0B39 5300              mov [__r5],A
+ 0B3B 18                pop A
+ 0B3C 5300              mov [__r4],A
+ 0B3E 060030            add [__r7],48
+ 0B41 0E0000            adc [__r6],0
+ 0B44 0E0000            adc [__r5],0
+ 0B47 0E0000            adc [__r4],0
+ 0B4A 5100              mov A,[__r7]
+ 0B4C 5300              mov [__r2],A
+ 0B4E 5100              mov A,[__r0]
+ 0B50 60D5              mov REG[0xd5],A
+ 0B52 5100              mov A,[__r2]
+ 0B54 3F00              mvi [__r1],A
+ 0B56                   .dbline 412
+ 0B56           ;         if(index==bDP) g_buffer16[bFieldLen-1-index++]='.';
+ 0B56 5200              mov A,[X+0]
+ 0B58 3BF7              cmp A,[X-9]
+ 0B5A B033              jnz L170
+ 0B5C                   .dbline 412
+ 0B5C 5200              mov A,[X+0]
+ 0B5E 5300              mov [__r1],A
+ 0B60 550000            mov [__r0],0
+ 0B63 0101              add A,1
+ 0B65 5400              mov [X+0],A
+ 0B67 52F8              mov A,[X-8]
+ 0B69 5300              mov [__r3],A
+ 0B6B 550000            mov [__r2],0
+ 0B6E 160001            sub [__r3],1
+ 0B71 1E0000            sbb [__r2],0
+ 0B74 5100              mov A,[__r3]
+ 0B76 1200              sub A,[__r1]
+ 0B78 5300              mov [__r1],A
+ 0B7A 5100              mov A,[__r2]
+ 0B7C 1A00              sbb A,[__r0]
+ 0B7E 5300              mov [__r0],A
+ 0B80 060000            add [__r1],<_g_buffer16
+ 0B83 0E0000            adc [__r0],>_g_buffer16
+ 0B86 5100              mov A,[__r0]
+ 0B88 60D5              mov REG[0xd5],A
+ 0B8A 502E              mov A,46
+ 0B8C 3F00              mvi [__r1],A
+ 0B8E           L170:
+ 0B8E                   .dbline 413
+ 0B8E           ;         dwVal /= 10;
+ 0B8E 5000              mov A,0
+ 0B90 08                push A
+ 0B91 08                push A
+ 0B92 08                push A
+ 0B93 500A              mov A,10
+ 0B95 08                push A
+ 0B96 52F9              mov A,[X-7]
+ 0B98 08                push A
+ 0B99 52FA              mov A,[X-6]
+ 0B9B 08                push A
+ 0B9C 52FB              mov A,[X-5]
+ 0B9E 08                push A
+ 0B9F 52FC              mov A,[X-4]
+ 0BA1 08                push A
+ 0BA2 62D000            mov REG[0xd0],>__r0
+ 0BA5 7C0000            xcall __divmodu_32X32_32
+ 0BA8 18                pop A
+ 0BA9 54FC              mov [X-4],A
+ 0BAB 18                pop A
+ 0BAC 54FB              mov [X-5],A
+ 0BAE 18                pop A
+ 0BAF 54FA              mov [X-6],A
+ 0BB1 18                pop A
+ 0BB2 54F9              mov [X-7],A
+ 0BB4 38FC              add SP,-4
+ 0BB6                   .dbline 414
+ 0BB6           ;     }
+ 0BB6           L168:
+ 0BB6                   .dbline 410
+ 0BB6 5200              mov A,[X+0]
+ 0BB8 3BF8              cmp A,[X-8]
+ 0BBA CF31              jc L167
+ 0BBC           X9:
+ 0BBC                   .dbline 415
+ 0BBC           ;     g_buffer16[bFieldLen]='\0';
+ 0BBC 62D000            mov REG[0xd0],>__r0
+ 0BBF 52F8              mov A,[X-8]
+ 0BC1 5300              mov [__r1],A
+ 0BC3 550000            mov [__r0],0
+ 0BC6 060000            add [__r1],<_g_buffer16
+ 0BC9 0E0000            adc [__r0],>_g_buffer16
+ 0BCC 5100              mov A,[__r0]
+ 0BCE 60D5              mov REG[0xd5],A
+ 0BD0 5000              mov A,0
+ 0BD2 3F00              mvi [__r1],A
+ 0BD4                   .dbline 417
+ 0BD4           ;     // if dwVal still has a value to encode,  return false
+ 0BD4           ;       if(dwVal>0) return 0;
+ 0BD4 3DF900            cmp [X-7],0
+ 0BD7 B010              jnz X10
+ 0BD9 3DFA00            cmp [X-6],0
+ 0BDC B00B              jnz X10
+ 0BDE 3DFB00            cmp [X-5],0
+ 0BE1 B006              jnz X10
+ 0BE3 3DFC00            cmp [X-4],0
+ 0BE6 A008              jz L172
+ 0BE8           X10:
+ 0BE8                   .dbline 417
+ 0BE8 62D000            mov REG[0xd0],>__r0
+ 0BEB 5000              mov A,0
+ 0BED 806F              xjmp L166
+ 0BEF           L172:
+ 0BEF                   .dbline 419
+ 0BEF           ;     // tidy up any unnecessary leading zeros (right justify so don't move digits)
+ 0BEF           ;       index=0;
+ 0BEF 560000            mov [X+0],0
+ 0BF2 801D              xjmp L175
+ 0BF4           L174:
+ 0BF4                   .dbline 420
+ 0BF4           ;       while (g_buffer16[index]=='0' && g_buffer16[index+1]!='.' && g_buffer16[index+1]!='\0') {g_buffer16[index++]=' ';}
+ 0BF4                   .dbline 420
+ 0BF4 62D000            mov REG[0xd0],>__r0
+ 0BF7 5200              mov A,[X+0]
+ 0BF9 5300              mov [__r1],A
+ 0BFB 550000            mov [__r0],0
+ 0BFE 0101              add A,1
+ 0C00 5400              mov [X+0],A
+ 0C02 060000            add [__r1],<_g_buffer16
+ 0C05 0E0000            adc [__r0],>_g_buffer16
+ 0C08 5100              mov A,[__r0]
+ 0C0A 60D5              mov REG[0xd5],A
+ 0C0C 5020              mov A,32
+ 0C0E 3F00              mvi [__r1],A
+ 0C10                   .dbline 420
+ 0C10           L175:
+ 0C10                   .dbline 420
+ 0C10 62D000            mov REG[0xd0],>__r0
+ 0C13 5200              mov A,[X+0]
+ 0C15 5300              mov [__r1],A
+ 0C17 550000            mov [__r0],0
+ 0C1A 060000            add [__r1],<_g_buffer16
+ 0C1D 0E0000            adc [__r0],>_g_buffer16
+ 0C20 5100              mov A,[__r0]
+ 0C22 60D4              mov REG[0xd4],A
+ 0C24 3E00              mvi A,[__r1]
+ 0C26 3930              cmp A,48
+ 0C28 B02F              jnz L180
+ 0C2A 5200              mov A,[X+0]
+ 0C2C 5300              mov [__r1],A
+ 0C2E 550000            mov [__r0],0
+ 0C31 060001            add [__r1],<_g_buffer16+1
+ 0C34 0E0001            adc [__r0],>_g_buffer16+1
+ 0C37 5100              mov A,[__r0]
+ 0C39 60D4              mov REG[0xd4],A
+ 0C3B 3E00              mvi A,[__r1]
+ 0C3D 392E              cmp A,46
+ 0C3F A018              jz L180
+ 0C41 5200              mov A,[X+0]
+ 0C43 5300              mov [__r1],A
+ 0C45 550000            mov [__r0],0
+ 0C48 060001            add [__r1],<_g_buffer16+1
+ 0C4B 0E0001            adc [__r0],>_g_buffer16+1
+ 0C4E 5100              mov A,[__r0]
+ 0C50 60D4              mov REG[0xd4],A
+ 0C52 3E00              mvi A,[__r1]
+ 0C54 3900              cmp A,0
+ 0C56 BF9D              jnz L174
+ 0C58           L180:
+ 0C58                   .dbline 422
+ 0C58           ;       
+ 0C58           ;       return 1;
+ 0C58 62D000            mov REG[0xd0],>__r0
+ 0C5B 5001              mov A,1
+ 0C5D                   .dbline -2
+ 0C5D           L166:
+ 0C5D 38FF              add SP,-1
+ 0C5F 20                pop X
+ 0C60                   .dbline 0 ; func end
+ 0C60 7F                ret
+ 0C61                   .dbsym l index 0 c
+ 0C61                   .dbsym l bDP -9 c
+ 0C61                   .dbsym l bFieldLen -8 c
+ 0C61                   .dbsym l dwVal -7 l
+ 0C61                   .dbend

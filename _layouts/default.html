@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}">
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,maximum-scale=2">
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ 'assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+    {% seo %}
+    {% include head-custom.html %}
+  </head>
+
+={% assign section_links = 
+  "About:about,
+  Guides:index,
+  Blog:blogpages,
+  Theory:theory-index,
+  Downloads:downloads" | split: "," 
+%}
+  
+{% assign guide_nav_links = 
+  "Impedance:Impedance,
+   L & C:LC,
+   VSWR Scanning:VSWR-scan,
+   Calibration:Calibration,
+   Power Meter:Power-meter,
+   VFO Mode:VFO-mode,
+   Cable length:Cable-length,
+   Menus:menus" | split: "," 
+%}
+  
+  <body>      
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a href="https://g1ojs.github.io/{{ site.github.repository_name }}">
+            <h1 id="project_title" style="text-align: center; margin-bottom:10px;"> {{ site.title | default: site.github.repository_name }} </h1> </a>
+          <div class='navGrid' style='display:grid; grid-template-columns:auto auto auto auto auto; text-align:center;'>
+            {% for item in section_links %}
+              {% assign parts = item | split: ":" %}
+              <a class="toplink" href="https://g1ojs.github.io/{{ site.github.repository_name }}/{{ parts[1] }}">
+              {{ parts[0] }}
+              </a>
+            {% endfor %}
+          </div>
+          <div style="padding-top:5px; padding-bottom:5px; margin-top:10px; margin-bottom:15px;">
+            <img src = 'https://g1ojs.github.io/G1OJS-MR300-SARK100-Firmware/assets/img/MainBannerScreen640px.png' width = "640px" ></img>
+          </div>
+          {% if page.guide %}
+            <div class='navGrid' style='display:grid; grid-template-columns:1fr 1fr 1fr 1fr; text-align:center; grid-template-rows: auto auto;'>
+            {% for item in guide_nav_links %}
+              {% assign parts = item | split: ":" %}
+              <a class="toplink" href="https://g1ojs.github.io/{{ site.github.repository_name }}/{{ parts[1] }}">
+              {{ parts[0] }}<br>
+              <button class='menubutton {% if page.url contains parts[1] %}active{% endif %}'></button>
+              </a>
+            {% endfor %}
+            </div>
+
+
+
+          
+<!--          <div class='navGrid' style='display:grid; grid-template-columns:1fr 1fr 1fr 1fr; text-align:center; grid-template-rows: auto auto;'>
+             <a class="toplink" href="https://g1ojs.github.io/{{ site.github.repository_name }}/Impedance">Impedance<br><button class='menubutton {% if page.url contains '/Impedance' %}active{% endif %}'></button></a>
+             <a class="toplink" href="https://g1ojs.github.io/{{ site.github.repository_name }}/LC">L & C<br><button class='menubutton {% if page.url contains '/LC' %}active{% endif %}'></button></a>              
+             <a class="toplink" href="https://g1ojs.github.io/{{ site.github.repository_name }}/VSWR-scan">VSWR Scanning<br><button class='menubutton {% if page.url contains '/VSWR' %}active{% endif %}'></button></a>
+             <a class="toplink" href="https://g1ojs.github.io/{{ site.github.repository_name }}/Calibration">Calibration<br><button class='menubutton {% if page.url contains '/Calibration' %}active{% endif %}'></button></a>
+             <a class="toplink" href="https://g1ojs.github.io/{{ site.github.repository_name }}/Power-meter">Power Meter<br><button class='menubutton {% if page.url contains '/Power' %}active{% endif %}'></button></a>
+             <a class="toplink" href="https://g1ojs.github.io/{{ site.github.repository_name }}/VFO-mode">VFO Mode<br><button class='menubutton {% if page.url contains '/VFO-mode' %}active{% endif %}'></button></a>
+             <a class="toplink" href="https://g1ojs.github.io/{{ site.github.repository_name }}/Cable-length">Cable length<br><button class='menubutton {% if page.url contains '/Cable-length' %}active{% endif %}'></button></a>
+             <a class="toplink" href="https://g1ojs.github.io/{{ site.github.repository_name }}/menus">Menus<br><button class='menubutton {% if page.url contains '/menus' %}active{% endif %}'></button></a>
+            </div>
+    -->
+  <!--          <div style="color:red; font-weight:bold">Site under construction</div> -->
+          {% endif %}
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <div id="content_panel">
+            {% if page.title %}
+              <p id="page-title" class="page__title" style="text-align:middle;" itemprop="headline">{{ page.title }}</p>
+            {% endif %}
+            {% if page.subtitle %}
+              <p id="page-subtitle" class="page__subtitle" itemprop="headline">{{ page.subtitle }}</p>
+            {% endif %}
+            {{ content }}
+        </div>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        {% if site.github.is_project_page %}
+          <p class="copyright">{{ site.title | default: site.github.repository_name }} maintained by <a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a></p>
+        {% endif %}
+        <p style="font-size:70%; margin-top:0; margin-bottom:0;">With thanks to EA4FRB for designing the SARK100 hardware and Firmware and releasing this under the <a href='https://g1ojs.github.io/G1OJS-MR300-SARK100-Firmware/LICENSE'>GPL License</a>.
+          As required by that license, the software downloadable from this site is released under the same <a href='https://g1ojs.github.io/{{ site.github.repository_name }}/LICENSE'>LICENSE</a>.</p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+          
+
+      </div>
+  </body>
+</html>

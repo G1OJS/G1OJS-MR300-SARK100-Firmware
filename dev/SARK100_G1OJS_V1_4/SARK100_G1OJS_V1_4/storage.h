@@ -1,0 +1,56 @@
+//*****************************************************************************/
+//  This file is a part of the "SARK100 SWR Analyzer firmware"
+//
+//  Copyright © 2010 Melchor Varela - EA4FRB.  All rights reserved.
+//  Melchor Varela, Madrid, Spain.
+//  melchor.varela@gmail.com
+//
+//  Modifications Copyright © 2024,2025 Alan Robinson G1OJS 
+//	Alan Robinson, Hampshire England G1OJS@yahoo.com 
+//
+//  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+//  and/or modify it under the terms of the GNU General Public License as
+//  published by the Free Software Foundation, either version 3 of the License,
+//  or (at your option) any later version.
+//
+//  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+//  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with "SARK100 SWR Analyzer firmware".  If not,
+//  see <http://www.gnu.org/licenses/>.
+//*****************************************************************************/
+//*****************************************************************************/
+//
+//	PROJECT:	SARK100 SWR Analyzer
+// 	FILE NAME: 	STORAGE.H
+// 	AUTHOR:		EA4FRB - Melchor Varela
+//
+// 	DESCRIPTION
+//
+//	EEPROM storage functions
+//
+// 	HISTORY
+//
+//	NAME   		DATE		REMARKS
+//
+//	MVM	   		DEC 2009	Creation
+//  AJR			JAN 2025	Align data with refactoring and functional changes	
+//*****************************************************************************/
+#ifndef __STORAGE_H__
+#define __STORAGE_H__
+
+#include <stdlib.h>
+#include <m8c.h>
+
+//-----------------------------------------------------------------------------
+//  Prototypes
+//-----------------------------------------------------------------------------
+extern void STR_SaveCalibration ( void );
+extern void STR_SaveConfig ( void );
+extern void STR_Restore ( void );
+
+//-----------------------------------------------------------------------------
+#endif

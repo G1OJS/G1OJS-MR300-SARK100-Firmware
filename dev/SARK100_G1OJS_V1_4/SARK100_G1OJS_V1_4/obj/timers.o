@@ -1,0 +1,90 @@
+XH
+H 5 areas 8 global symbols
+M timers.c
+S _g_bLongPressKeyCounter Ref0000
+S _g_bMeasureCounter Ref0000
+S _g_bSixtyFourthSecondCounter Ref0000
+S __r0 Ref0000
+S _g_bDebounceCounter Ref0000
+S _g_bIdleCounter Ref0000
+A text size 8C flags 0
+dbfile ./timers.c
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.c
+dbfunc e SleepTimerINT 0 fV
+dbline FFFFFFFF 0
+dbline 31 6
+dbline 32 6
+dbline 34 9
+dbline 34 11
+dbline 36 13
+dbline 36 23
+dbline 37 25
+dbline 38 2B
+dbline 38 33
+dbline 39 35
+dbline 39 3D
+dbline 3B 3F
+dbline 3B 4F
+dbline 3C 51
+dbline 3D 57
+dbline 3D 5F
+dbline 3E 61
+dbline 3E 69
+dbline FFFFFFFE 6B
+dbline 0 6F
+dbfunc e Delay_64ths 70 fV
+dbsym l b64ths FFFFFFFC c
+dbline FFFFFFFF 70
+dbline 47 72
+dbline 48 72
+dbline 49 79
+dbline 4A 7E
+dbline 4A 7E
+dbline 4A 86
+dbline 4A 88
+dbline 4A 88
+dbline FFFFFFFE 8A
+dbline 0 8B
+S _SleepTimerINT Def0000
+S _Delay_64ths Def0070
+A data size 1 flags 20
+dbfile ./timers.c
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.c
+dbsym s gDivider_1 0 c
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.c
+dbsym s gDivider_2 0 c
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.c
+T 00 00 01
+R 00 00 00 01
+T 00 00 01
+R 00 00 00 03
+T 00 00 71 C0 08 5D D0 08 62 E3 38 62 D0 00 00 3C
+R 00 00 00 00 43 0D 00 02
+T 00 0D 00 00 00 A0 03 7A 00 00 62 D0 00 00 51
+R 00 00 00 00 03 02 00 02 03 08 00 02 41 0C 00 01
+T 00 17 00 00 11 01 53 00 00 62 D0 00 00 39 00 A0
+R 00 00 00 00 01 02 00 01 01 07 00 01 43 0B 00 03
+T 00 22 03 80 47 62 D0 00 00 55 00 00 04 62 D0
+R 00 00 00 00 41 07 00 01 01 0A 00 01
+T 00 2D 00 00 3C 00 00 00 A0 03 7A 00 00 62 D0
+R 00 00 00 00 43 02 00 01 03 05 00 01 03 0B 00 01
+T 00 37 00 00 3C 00 00 00 A0 03 7A 00 00 62 D0
+R 00 00 00 00 43 02 00 04 03 05 00 04 03 0B 00 04
+T 00 41 00 00 51 00 00 11 01 53 00 00 62 D0
+R 00 00 00 00 41 02 00 03 01 05 00 03 01 0A 00 03
+T 00 4A 00 00 39 00 A0 03 80 1B 62 D0 00 00 55
+R 00 00 00 00 43 02 00 03 41 0C 00 03
+T 00 55 00 00 10 62 D0 00 00 3C 00 00 00 A0 03 7A
+R 00 00 00 00 01 02 00 03 43 07 00 00 03 0A 00 00
+T 00 60 00 00 62 D0 00 00 3C 00 00 00 A0 03 7A
+R 00 00 00 00 03 02 00 00 43 06 00 05 03 09 00 05
+T 00 6A 00 00 18 60 D0 18 7E 10 4F 52 FC 62 D0
+R 00 00 00 00 03 02 00 05
+T 00 76 00 00 53 00 00 43 FF 08 80 0B 62 D0 00 00
+R 00 00 00 00 43 02 00 02 03 05 00 02 43 0E 00 02
+T 00 81 3C 00 00 00 B0 03 80 03 8F F5 20 7F
+R 00 00 00 00 03 03 00 02

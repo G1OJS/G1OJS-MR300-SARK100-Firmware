@@ -1,0 +1,47 @@
+Main changes
+  - G1OJS Callsign in welcome screen
+  - Added 60m band
+  - Capacitance and inductance calculations now work above 10MHz and show measured resistance alongside capacitance / inductance
+  - New calibration routine with standard resistors (E12+50ohms): 10,50,220,560
+  - New Cable Length measurement feature
+  - Added 0.1 ohm display resolution for values of R,X,Z below 10 (also added to pcLink output). Display now 1dp for all quantities, pcLink has 2dp but only SWR has 2dp precision.
+  - New power meter (mV RMS and dBm) replaces existing bargraph
+  - Added VFO mode with power level control (press Config key once in VFO mode and then use up/down keys)
+  - Main warning beeps replaced by morse code: U = uncalibrated, Err = error, SK = done
+  - Added short press on config to exit increment setting mode
+  - Added R display to L and C measurements
+  - Redesigned the main display - everything on previous SWR and IMP displays combined.
+
+Internal / minor changes
+  - Internal software structural change - calibration frequencies separated from band frequencies, giving greater freedom for setting cal frequencies and band edges at design time
+  - Calibration data is linearly interpolated between adjacent calibration frequencies, giving improved accuracy & smoother results across frequency
+  - Available DDS gain settings table modified to provide finer steps for DDS gain setting during calibration
+  - DDS gain maintained at lowest frequency setting to avoid steps in output caused when gain changes
+  - Code refactored to reduce memory usage & potentially allow more functions to be added
+  - DDS is now off in all situations except briefly around measurements and for VFO mode
+  - Replaced with new routine which applies simple correction factors to the ratios Vr/Vf and Vz/Va
+	- Linearises a wider range of impedances
+	- Uses less memory (space for more features!)
+  - Revised calibration storage to fit in more calibration points across frequency
+  - Measurement routine now measures and corrects bridge ratios rather than individual voltages
+	- Uses less memory
+	- Backwards compatibility for Scan Raw maintained by outputting measured (uncorrected) Vf and Va values with recalculated Vr and Vz
+	- Removed averaging as it doesn't seem to help with measurement noise but removal means faster SWR scanning and pcLink scanning
+  - Added message to Capacitance display when reactance is zero
+  - Tested with WinPCC-Sark100 V1.0.01_en_DH1KLM to verify backwards compatibility of Scan Raw output
+  - Dizzling offset now 10% of display frequency (was previously 1MHz)
+  - Speeded up non-blocking (& not too important) text messages
+  - DDS Gain setting table recalculated to give 10~15dB range in DDS output level setting
+  - Removed saving band frequency on band change - saves memory
+  - Removed delay following change of band
+  - Default idle timeout set to off
+	- Fixed hopping numbers on dizzling and made display less confusing by removing ">10" at start of line under "IMP"
+  - Added frequency readout / progress indicator to calibration routine
+  - Added automatic restart after calibration
+  - Added a beep when band changes from 6m back to 160m
+  - Default increment for key up / down = 100kHz (was 10kHz)
+  - Scan for match now sets step size internally -> faster and no need for config menu for step size
+  - Added config setting for CW notification / beep pitch
+  - Speeded up non-blocking (& not too important) text messages
+
+

@@ -1,0 +1,243 @@
+XH
+H 27 areas 1F global symbols
+M glb_data.c
+A text size 0 flags 0
+dbfile ./glb_data.c
+A data size 1 flags 20
+dbfile ./glb_data.c
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bIdleCounter 0 c
+S _g_bIdleCounter Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bMeasureCounter 0 c
+S _g_bMeasureCounter Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bDebounceCounter 0 c
+S _g_bDebounceCounter Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bLongPressKeyCounter 0 c
+S _g_bLongPressKeyCounter Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bSixtyFourthSecondCounter 0 c
+S _g_bSixtyFourthSecondCounter Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bMode 0 c
+S _g_bMode Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 58 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_scCalTable 0 A[88:11:4:2]C
+S _g_scCalTable Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bIsCalibrated 0 c
+S _g_bIsCalibrated Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bDDS_GainStep 0 c
+S _g_bDDS_GainStep Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bSgnX 0 c
+S _g_bSgnX Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A lit size 9C flags 0
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bUserIdle 0 A[4:4]kc
+dbsym e g_bCWPitches 4 A[5:5]kc
+dbsym e g_bVF 9 A[3:3]kc
+dbsym e g_bFltWd100kHz C A[4:4]kc
+dbsym e g_wBandBoundaries 10 A[34:17]ki
+dbsym e g_wBandInitialFreq 32 A[32:16]ki
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_xIncCtrl 52 A[40:8]kS[.5]
+dbsym e g_xGainDds 7A A[34:17]kS[.6]
+S _g_wBandBoundaries Def0010
+S _g_bVF Def0009
+S _g_bFltWd100kHz Def000C
+S _g_xGainDds Def007A
+S _g_xIncCtrl Def0052
+S _g_wBandInitialFreq Def0032
+S _g_bUserIdle Def0000
+S _g_bCWPitches Def0004
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bLongPress 0 c
+S _g_bLongPress Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bUP_DOWN_SelectsIncDigit 0 c
+S _g_bUP_DOWN_SelectsIncDigit Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bUP_DOWN_SelectsVFOPower 0 c
+S _g_bUP_DOWN_SelectsVFOPower Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bIncDigit 0 c
+S _g_bIncDigit Def0000
+A data size 0 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbstruct 5 .5
+dbfield 0 bCol c
+dbfield 1 dwInc l
+dbend
+dbstruct 2 .6
+dbfield 0 bGain1 c
+dbfield 1 bGain2 c
+dbend
+A data size 4 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_dwCurrHz 0 l
+S _g_dwCurrHz Def0000
+A data size 1 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_bBandIndex 0 c
+S _g_bBandIndex Def0000
+A data size 4 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbstruct 4 .1
+dbfield 0 bUserIdle c
+dbfield 1 bCWPitch c
+dbfield 2 bVF c
+dbfield 3 bFltWt c
+dbend
+dbsym e g_xConf 0 S[.1]
+S _g_xConf Def0000
+A data size 2 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_wR10 0 i
+S _g_wR10 Def0000
+A data size 2 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_wX10 0 i
+S _g_wX10 Def0000
+A data size 2 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_wZ10 0 i
+S _g_wZ10 Def0000
+A data size 2 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_wSwr100 0 i
+S _g_wSwr100 Def0000
+A data size 4 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_wBrgRts 0 A[4:2]i
+S _g_wBrgRts Def0000
+A data size 10 flags 20
+dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.c
+dbsym e g_buffer16 0 A[16:16]c
+S _g_buffer16 Def0000
+T 00 00 00
+R 00 00 00 01
+T 00 00 00
+R 00 00 00 03
+T 00 00 00
+R 00 00 00 05
+T 00 00 00
+R 00 00 00 07
+T 00 00 00
+R 00 00 00 09
+T 00 00 00
+R 00 00 00 0B
+T 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+R 00 00 00 0D
+T 00 0E 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+R 00 00 00 0D
+T 00 1C 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+R 00 00 00 0D
+T 00 2A 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+R 00 00 00 0D
+T 00 38 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+R 00 00 00 0D
+T 00 46 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+R 00 00 00 0D
+T 00 54 00 00 00 00
+R 00 00 00 0D
+T 00 00 00
+R 00 00 00 0F
+T 00 00 08
+R 00 00 00 11
+T 00 00 3F
+R 00 00 00 13
+T 00 00 00 1E 3C 5A 06 0A 0C 14 18 63 51 42 00 02
+R 00 00 00 15
+T 00 0E 0A 28 00 09 00 14 00 28 00 3C 00 50 00 6E
+R 00 00 00 15
+T 00 1C 00 82 00 AA 00 BE 00 E6 01 04 01 18 01 36
+R 00 00 00 15
+T 00 2A 01 90 01 EA 02 26 02 8A 00 12 00 25 00 35
+R 00 00 00 15
+T 00 38 00 47 00 65 00 78 00 8D 00 B5 00 D3 00 F9
+R 00 00 00 15
+T 00 46 01 0E 01 1A 01 63 01 BD 01 F7 02 3A
+R 00 00 00 15
+T 00 00 00
+R 00 00 00 16
+T 00 00 00
+R 00 00 00 18
+T 00 00 00
+R 00 00 00 1A
+T 00 00 05
+R 00 00 00 1C
+T 00 52 0F 00 00 00 01 0E 00 00 00 0A 0D 00 00
+R 00 00 00 15
+T 00 5F 00 64 0B 00 00 03 E8 0A 00 00 27 10 09
+R 00 00 00 15
+T 00 6C 00 01 86 A0 08 00 0F 42 40 07 00 98 96 80
+R 00 00 00 15
+T 00 7A B8 30 88 20 70 90 C0 50 D8 30 60 90 70 70
+R 00 00 00 15
+T 00 88 B0 40 88 10 98 10 A0 30 C8 10 A0 20 98 00
+R 00 00 00 15
+T 00 96 80 10 90 00 60 00
+R 00 00 00 15
+T 00 00 00 00 00 00
+R 00 00 00 1E
+T 00 00 00
+R 00 00 00 1F
+T 00 00 00 00 00 00
+R 00 00 00 20
+T 00 00 00 00
+R 00 00 00 21
+T 00 00 00 00
+R 00 00 00 22
+T 00 00 00 00
+R 00 00 00 23
+T 00 00 00 00
+R 00 00 00 24
+T 00 00 00 00 00 00
+R 00 00 00 25
+T 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+R 00 00 00 26
+T 00 0E 00 00
+R 00 00 00 26

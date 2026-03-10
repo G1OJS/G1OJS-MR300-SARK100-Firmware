@@ -1,0 +1,114 @@
+LTspice 24.0.12 for Windows
+Circuit: * C:\Users\drala\Documents\Radio_tools\SARK100\Models\Ltspice\De-embedding\Mod Gamma Model.asc
+Start Time: Sun Mar 16 15:29:35 2025
+solver = Normal
+Maximum thread count: 4
+
+
+
+trtol = 7
+.OP point found by inspection.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tnom = 27
+temp = 27
+method = modified trap
+Total elapsed time: 0.787 seconds.
+

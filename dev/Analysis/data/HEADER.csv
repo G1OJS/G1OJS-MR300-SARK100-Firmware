@@ -1,0 +1,30 @@
+# csv bridge voltage file
+#
+# ID format: Type_R[_L_C]_Source_Processing
+# Units: Ohms (R), uH (L), pF (C)
+#
+# Fields:
+# Type: 
+#   R    → Resistive load
+#   RLC  → RLC load
+#   X    → Arbitrary or non-standard test load (e.g. antenna, open coax)
+#
+# R: Resistance in Ohms
+# L: (Optional) Inductance in uH
+# C: (Optional) Capacitance in pF
+# Source: Measurement source (e.g. MR300, LTspice)
+# Processing: Post-processing (e.g. uc = uncorrected, avg = averaged,
+#                               ciV1.3 = corrected in firmware version 1.3)
+#
+# Examples:
+# R_10_MR300_uc             → Resistive load, R = 10Ω, MR300, uncorrected
+# RLC_100_4.7_22_MR300_avg  → RLC load, R = 100Ω, L = 4.7uH, C = 22pF, MR300, averaged
+# X_MR300_uc                → Non-standard load, MR300, uncorrected
+#
+# For Type = X, further details should be documented separately or included in an optional 'Description' column.
+#
+# Data fields:
+# Hz,ID,DateTime,Vf,Vr,Vz,Va
+# Example:
+# 1000000,R_10_MR300_uc,2025-03-20-18:00:01,1.804,0.710,1.280,0.419
+Hz,ID,DateTime,Vf,Vr,Vz,Va,GainStep

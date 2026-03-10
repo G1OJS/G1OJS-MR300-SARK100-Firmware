@@ -1,0 +1,547 @@
+ 0000                   cpu LMM
+                        .module keypad.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./keypad.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile ./keypad.c
+ 0000           L10:
+ 0000 00                .byte 0
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./keypad.c
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\keypad.c
+ 0000                   .dbfunc e KEYPAD_Get _KEYPAD_Get fc
+ 0000                   .dbsym s bLastKey L10 c
+ 0000           ;  bSpeedAllowed -> X+1
+ 0000           ;           bKey -> X+0
+ 0000           _KEYPAD_Get::
+ 0000                   .dbline -1
+ 0000 10                push X
+ 0001 4F                mov X,SP
+ 0002 3802              add SP,2
+ 0004                   .dbline 54
+ 0004           ; //*****************************************************************************/
+ 0004           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0004           ; //
+ 0004           ; //  Copyright © 2010 Melchor Varela - EA4FRB.  All rights reserved.
+ 0004           ; //  Melchor Varela, Madrid, Spain.
+ 0004           ; //  melchor.varela@gmail.com
+ 0004           ; //
+ 0004           ; //  Modifications Copyright © 2024,2025 Alan Robinson G1OJS 
+ 0004           ; //    Alan Robinson, Hampshire England G1OJS@yahoo.com 
+ 0004           ; //
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0004           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0004           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0004           ; //  or (at your option) any later version.
+ 0004           ; //
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0004           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0004           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0004           ; //  GNU General Public License for more details.
+ 0004           ; //
+ 0004           ; //  You should have received a copy of the GNU General Public License
+ 0004           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0004           ; //  see <http://www.gnu.org/licenses/>.
+ 0004           ; //*****************************************************************************/
+ 0004           ; //*****************************************************************************/
+ 0004           ; //    PROJECT:        PSoC AntennaAnalyzer
+ 0004           ; //    FILE NAME:      KEYPAD.C
+ 0004           ; //    AUTHOR:         Melchor Varela
+ 0004           ; //    DESCRIPTION: Keypad driver
+ 0004           ; //    HISTORY
+ 0004           ; //    NAME            DATE            REMARKS
+ 0004           ; //    MVM                     DEC 2009        Creation
+ 0004           ; //  AJR                       JAN 2025        Added comments and changed function names to 
+ 0004           ; //                                                    be more descriptive.
+ 0004           ; //*****************************************************************************/
+ 0004           ; #include "keypad.h"
+ 0004           ; 
+ 0004           ; #include <m8c.h>                                      // Part specific constants and macros
+ 0004           ; #include "PSoCAPI.h"                                  // PSoC API definitions for all User Modules
+ 0004           ; #include "psocgpioint.h"
+ 0004           ; #include "glb_data.h"
+ 0004           ; #include "morse.h"
+ 0004           ; #include "control.h"
+ 0004           ; #include "timers.h"
+ 0004           ; 
+ 0004           ; 
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; //  FUNCTION NAME:    KEYPAD_Get
+ 0004           ; //  DESCRIPTION:      Get key pressed value
+ 0004           ; //  ARGUMENTS:                none.
+ 0004           ; //  RETURNS:          Key pressed. Zero if no key.
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; BYTE KEYPAD_Get ( void )
+ 0004           ; {
+ 0004                   .dbline 57
+ 0004           ;       BYTE bKey;
+ 0004           ;       static BYTE bLastKey = 0;
+ 0004           ;       BYTE bSpeedAllowed=0;
+ 0004 560100            mov [X+1],0
+ 0007                   .dbline 59
+ 0007           ; 
+ 0007           ;       if (g_bDebounceCounter!=0) return 0;    // in the debounce window, return no press
+ 0007 62D000            mov REG[0xd0],>_g_bDebounceCounter
+ 000A 3C0000            cmp [_g_bDebounceCounter],0
+ 000D A008              jz L11
+ 000F                   .dbline 59
+ 000F 62D000            mov REG[0xd0],>__r0
+ 0012 5000              mov A,0
+ 0014 8077              xjmp L9
+ 0016           L11:
+ 0016                   .dbline 61
+ 0016           ; 
+ 0016           ;       bKey = KEYPAD_Scan();
+ 0016 90BB              xcall _KEYPAD_Scan
+ 0018 62D000            mov REG[0xd0],>__r0
+ 001B 5400              mov [X+0],A
+ 001D                   .dbline 62
+ 001D           ;       if (bKey != KEYPAD_Scan()) bKey = 0;    // error nulling
+ 001D 90B4              xcall _KEYPAD_Scan
+ 001F 62D000            mov REG[0xd0],>__r0
+ 0022 5300              mov [__r0],A
+ 0024 5200              mov A,[X+0]
+ 0026 3A00              cmp A,[__r0]
+ 0028 A004              jz L13
+ 002A                   .dbline 62
+ 002A 560000            mov [X+0],0
+ 002D           L13:
+ 002D                   .dbline 64
+ 002D           ; 
+ 002D           ;       if (bKey) {
+ 002D 3D0000            cmp [X+0],0
+ 0030 A050              jz L15
+ 0032                   .dbline 64
+ 0032                   .dbline 65
+ 0032           ;               Morse_Dit();
+ 0032 7C0000            xcall _Morse_Dit
+ 0035                   .dbline 66
+ 0035           ;               g_bDebounceCounter = KEY_DEBOUNCE_TIME;
+ 0035 62D000            mov REG[0xd0],>_g_bDebounceCounter
+ 0038 550004            mov [_g_bDebounceCounter],4
+ 003B                   .dbline 67
+ 003B           ;               if (bKey==bLastKey) {                                                                   // Key is held down
+ 003B 62D000            mov REG[0xd0],>L10
+ 003E 5200              mov A,[X+0]
+ 0040 3A00              cmp A,[L10]
+ 0042 B029              jnz L17
+ 0044                   .dbline 67
+ 0044                   .dbline 68
+ 0044           ;                       if (g_bLongPressKeyCounter == 0) {                                      // If counter hits zero, key is held down longer than LONG_PRESS_DET_TIME_S
+ 0044 62D000            mov REG[0xd0],>_g_bLongPressKeyCounter
+ 0047 3C0000            cmp [_g_bLongPressKeyCounter],0
+ 004A B03C              jnz L16
+ 004C                   .dbline 68
+ 004C                   .dbline 69
+ 004C           ;                               if((bKey == KBD_UP) || (bKey == KBD_DWN)) {             // Long press for UP/DOWN (and only UP/DOWN) means go fast, so:
+ 004C 3D0005            cmp [X+0],5
+ 004F A006              jz L23
+ 0051 3D0006            cmp [X+0],6
+ 0054 B00F              jnz L21
+ 0056           L23:
+ 0056                   .dbline 69
+ 0056                   .dbline 70
+ 0056           ;                                       g_bDebounceCounter = 0;                                         // hold debounce counter at zero (this provides the speed increase)
+ 0056 62D000            mov REG[0xd0],>_g_bDebounceCounter
+ 0059 550000            mov [_g_bDebounceCounter],0
+ 005C                   .dbline 71
+ 005C           ;                                       Delay_64ths(SPEED_KEY_CLICKRATE_64ths);         // but introduce a reasonable delay
+ 005C 5002              mov A,2
+ 005E 08                push A
+ 005F 7C0000            xcall _Delay_64ths
+ 0062 38FF              add SP,-1
+ 0064                   .dbline 72
+ 0064           ;                               }
+ 0064           L21:
+ 0064                   .dbline 73
+ 0064           ;                               g_bLongPress = 1;                                                               // set global variable to indicate long press
+ 0064 62D000            mov REG[0xd0],>_g_bLongPress
+ 0067 550001            mov [_g_bLongPress],1
+ 006A                   .dbline 74
+ 006A           ;                       }       
+ 006A                   .dbline 75
+ 006A           ;               } else {
+ 006A 801C              xjmp L16
+ 006C           L17:
+ 006C                   .dbline 75
+ 006C                   .dbline 76
+ 006C           ;                       g_bLongPressKeyCounter = LONG_PRESS_DET_TIME_S;         // long press counter resets only if key is not held down
+ 006C 62D000            mov REG[0xd0],>_g_bLongPressKeyCounter
+ 006F 550002            mov [_g_bLongPressKeyCounter],2
+ 0072                   .dbline 77
+ 0072           ;                       bLastKey = bKey;
+ 0072 5200              mov A,[X+0]
+ 0074 62D000            mov REG[0xd0],>L10
+ 0077 5300              mov [L10],A
+ 0079                   .dbline 78
+ 0079           ;                       g_bLongPress = 0;                                                                       // turn off long press flag when key released
+ 0079 62D000            mov REG[0xd0],>_g_bLongPress
+ 007C 550000            mov [_g_bLongPress],0
+ 007F                   .dbline 79
+ 007F           ;               }
+ 007F                   .dbline 80
+ 007F           ;       } else bLastKey = 0;
+ 007F 8007              xjmp L16
+ 0081           L15:
+ 0081                   .dbline 80
+ 0081 62D000            mov REG[0xd0],>L10
+ 0084 550000            mov [L10],0
+ 0087           L16:
+ 0087                   .dbline 84
+ 0087           ;       
+ 0087           ;       
+ 0087           ;       
+ 0087           ;       return bKey;
+ 0087 5200              mov A,[X+0]
+ 0089 62D000            mov REG[0xd0],>__r0
+ 008C                   .dbline -2
+ 008C           L9:
+ 008C 38FE              add SP,-2
+ 008E 20                pop X
+ 008F                   .dbline 0 ; func end
+ 008F 7F                ret
+ 0090                   .dbsym l bSpeedAllowed 1 c
+ 0090                   .dbsym l bKey 0 c
+ 0090                   .dbend
+ 0090                   .dbfunc e KEYPAD_WaitKey _KEYPAD_WaitKey fc
+ 0090           ;           bKey -> X+0
+ 0090           ;        bDelayS -> X-4
+ 0090           _KEYPAD_WaitKey::
+ 0090                   .dbline -1
+ 0090 10                push X
+ 0091 4F                mov X,SP
+ 0092 3801              add SP,1
+ 0094                   .dbline 95
+ 0094           ; }
+ 0094           ; 
+ 0094           ; //-----------------------------------------------------------------------------
+ 0094           ; //  FUNCTION NAME:            KEYPAD_WaitKey
+ 0094           ; //  DESCRIPTION:              Waits for key or delay.
+ 0094           ; //                                            Implements power saving features
+ 0094           ; //    ARGUMENTS:                      bDelayS Wait timeout in seconds
+ 0094           ; //  RETURNS:                  Key pressed.
+ 0094           ; //-----------------------------------------------------------------------------
+ 0094           ; BYTE KEYPAD_WaitKey ( BYTE bDelayS )
+ 0094           ; {
+ 0094                   .dbline 98
+ 0094           ;       BYTE bKey;
+ 0094           ;                                                                               // Actions to minimize power consumption
+ 0094           ;       OSC_CR0 &= ~0x07;                                       // Clear Bits 0 to 2
+ 0094 7110              or F,0x10  ; iopage = 1
+ 0096 41E0F8            and REG[0xe0],-8
+ 0099                   .dbline 99
+ 0099           ;       OSC_CR0 |= OSC_CR0_CPU_750kHz;          // Sets CPU clock to 750Khz
+ 0099 43E005            or REG[0xe0],5
+ 009C                   .dbline 100
+ 009C           ;       g_bIdleCounter = bDelayS;
+ 009C 52FC              mov A,[X-4]
+ 009E 70CF              and F,0xCF      ; iopage = 0
+ 00A0 62D000            mov REG[0xd0],>_g_bIdleCounter
+ 00A3 5300              mov [_g_bIdleCounter],A
+ 00A5           L25:
+ 00A5                   .dbline 102
+ 00A5           ;       do
+ 00A5           ;       {
+ 00A5                   .dbline 103
+ 00A5           ;               M8C_Sleep;
+ 00A5 43FF08            or REG[0xff],8
+ 00A8                   .dbline 104
+ 00A8           ;               bKey = KEYPAD_Get();
+ 00A8 9F56              xcall _KEYPAD_Get
+ 00AA 5400              mov [X+0],A
+ 00AC                   .dbline 105
+ 00AC           ;               if (bDelayS)
+ 00AC 3DFC00            cmp [X-4],0
+ 00AF A00B              jz L28
+ 00B1                   .dbline 106
+ 00B1           ;               {
+ 00B1                   .dbline 107
+ 00B1           ;                       if (g_bIdleCounter==0)
+ 00B1 62D000            mov REG[0xd0],>_g_bIdleCounter
+ 00B4 3C0000            cmp [_g_bIdleCounter],0
+ 00B7 B003              jnz L30
+ 00B9                   .dbline 108
+ 00B9           ;                               break;
+ 00B9 8006              xjmp L27
+ 00BB           L30:
+ 00BB                   .dbline 109
+ 00BB           ;               }
+ 00BB           L28:
+ 00BB                   .dbline 110
+ 00BB           ;       } while (bKey == 0);
+ 00BB           L26:
+ 00BB                   .dbline 110
+ 00BB 3D0000            cmp [X+0],0
+ 00BE AFE6              jz L25
+ 00C0           L27:
+ 00C0                   .dbline 111
+ 00C0           ;       OSC_CR0 &= ~0x07;                                       // Clear Bits 0 to 2
+ 00C0 7110              or F,0x10  ; iopage = 1
+ 00C2 41E0F8            and REG[0xe0],-8
+ 00C5                   .dbline 112
+ 00C5           ;       OSC_CR0 |= OSC_CR0_CPU_24MHz;           // Set CPU Clock to SysClk/1
+ 00C5 43E003            or REG[0xe0],3
+ 00C8                   .dbline 114
+ 00C8           ; 
+ 00C8           ;       return bKey;
+ 00C8 5200              mov A,[X+0]
+ 00CA 70CF              and F,0xCF      ; iopage = 0
+ 00CC 62D000            mov REG[0xd0],>__r0
+ 00CF                   .dbline -2
+ 00CF           L24:
+ 00CF 38FF              add SP,-1
+ 00D1 20                pop X
+ 00D2                   .dbline 0 ; func end
+ 00D2 7F                ret
+ 00D3                   .dbsym l bKey 0 c
+ 00D3                   .dbsym l bDelayS -4 c
+ 00D3                   .dbend
+ 00D3                   .dbfunc e KEYPAD_Scan _KEYPAD_Scan fc
+ 00D3           ;           bKey -> X+0
+ 00D3           _KEYPAD_Scan::
+ 00D3                   .dbline -1
+ 00D3 10                push X
+ 00D4 4F                mov X,SP
+ 00D5 3803              add SP,3
+ 00D7                   .dbline 124
+ 00D7           ; }
+ 00D7           ; 
+ 00D7           ; //-----------------------------------------------------------------------------
+ 00D7           ; //  FUNCTION NAME:    KEYPAD_Scan
+ 00D7           ; //  DESCRIPTION:      Scans keypad
+ 00D7           ; //  ARGUMENTS:                none.
+ 00D7           ; //  RETURNS:          Key pressed. Zero if no key.
+ 00D7           ; //-----------------------------------------------------------------------------
+ 00D7           ; BYTE KEYPAD_Scan ( void )
+ 00D7           ; {
+ 00D7                   .dbline 125
+ 00D7           ;       BYTE bKey = 0;
+ 00D7 560000            mov [X+0],0
+ 00DA                   .dbline 127
+ 00DA           ; 
+ 00DA           ;       COL0_Data_ADDR |= COL0_MASK;
+ 00DA 430480            or REG[0x4],-128
+ 00DD                   .dbline 128
+ 00DD           ;       COL1_Data_ADDR |= COL1_MASK;
+ 00DD 430420            or REG[0x4],32
+ 00E0                   .dbline 129
+ 00E0           ;       COL2_Data_ADDR |= COL2_MASK;
+ 00E0 430040            or REG[0],64
+ 00E3                   .dbline 131
+ 00E3           ;       
+ 00E3           ;       COL1_Data_ADDR &= ~COL1_MASK;
+ 00E3 4104DF            and REG[0x4],-33
+ 00E6                   .dbline 132
+ 00E6           ;       if ( (ROW0_Data_ADDR & ROW0_MASK) == 0 ) bKey = KBD_SCAN;
+ 00E6 5D04              mov A,REG[0x4]
+ 00E8 62D000            mov REG[0xd0],>__r0
+ 00EB 5300              mov [__r0],A
+ 00ED 470002            tst [__r0],2
+ 00F0 B004              jnz L33
+ 00F2                   .dbline 132
+ 00F2 560004            mov [X+0],4
+ 00F5           L33:
+ 00F5                   .dbline 133
+ 00F5           ;       if ( (ROW1_Data_ADDR & ROW1_MASK) == 0 ) bKey = KBD_UP;
+ 00F5 5D04              mov A,REG[0x4]
+ 00F7 62D000            mov REG[0xd0],>__r0
+ 00FA 5300              mov [__r0],A
+ 00FC 470001            tst [__r0],1
+ 00FF B004              jnz L35
+ 0101                   .dbline 133
+ 0101 560005            mov [X+0],5
+ 0104           L35:
+ 0104                   .dbline 134
+ 0104           ;       COL1_Data_ADDR |= COL1_MASK;
+ 0104 430420            or REG[0x4],32
+ 0107                   .dbline 136
+ 0107           ; 
+ 0107           ;       COL0_Data_ADDR &= ~COL0_MASK;
+ 0107 41047F            and REG[0x4],127
+ 010A                   .dbline 137
+ 010A           ;       if ( (ROW0_Data_ADDR & ROW0_MASK) == 0 ) bKey = KBD_CONFIG;
+ 010A 5D04              mov A,REG[0x4]
+ 010C 62D000            mov REG[0xd0],>__r0
+ 010F 5300              mov [__r0],A
+ 0111 470002            tst [__r0],2
+ 0114 B004              jnz L37
+ 0116                   .dbline 137
+ 0116 560001            mov [X+0],1
+ 0119           L37:
+ 0119                   .dbline 138
+ 0119           ;       if ( (ROW1_Data_ADDR & ROW1_MASK) == 0 ) bKey = KBD_BAND;
+ 0119 5D04              mov A,REG[0x4]
+ 011B 62D000            mov REG[0xd0],>__r0
+ 011E 5300              mov [__r0],A
+ 0120 470001            tst [__r0],1
+ 0123 B004              jnz L39
+ 0125                   .dbline 138
+ 0125 560003            mov [X+0],3
+ 0128           L39:
+ 0128                   .dbline 139
+ 0128           ;       COL0_Data_ADDR |= COL0_MASK;
+ 0128 430480            or REG[0x4],-128
+ 012B                   .dbline 141
+ 012B           ; 
+ 012B           ;       COL2_Data_ADDR &= ~COL2_MASK;
+ 012B 4100BF            and REG[0],-65
+ 012E                   .dbline 142
+ 012E           ;       if ( (ROW0_Data_ADDR & ROW0_MASK) == 0 ) bKey = KBD_MODE;
+ 012E 5D04              mov A,REG[0x4]
+ 0130 62D000            mov REG[0xd0],>__r0
+ 0133 5300              mov [__r0],A
+ 0135 470002            tst [__r0],2
+ 0138 B004              jnz L41
+ 013A                   .dbline 142
+ 013A 560002            mov [X+0],2
+ 013D           L41:
+ 013D                   .dbline 143
+ 013D           ;       if ( (ROW1_Data_ADDR & ROW1_MASK) == 0 ) bKey = (bKey==KBD_UP)?   KBD_UP_DWN : KBD_DWN ;
+ 013D 5D04              mov A,REG[0x4]
+ 013F 62D000            mov REG[0xd0],>__r0
+ 0142 5300              mov [__r0],A
+ 0144 470001            tst [__r0],1
+ 0147 B01B              jnz L43
+ 0149                   .dbline 143
+ 0149 3D0005            cmp [X+0],5
+ 014C B009              jnz L46
+ 014E 560209            mov [X+2],9
+ 0151 560100            mov [X+1],0
+ 0154 8007              xjmp L47
+ 0156           L46:
+ 0156 560206            mov [X+2],6
+ 0159 560100            mov [X+1],0
+ 015C           L47:
+ 015C 62D000            mov REG[0xd0],>__r0
+ 015F 5202              mov A,[X+2]
+ 0161 5400              mov [X+0],A
+ 0163           L43:
+ 0163                   .dbline 144
+ 0163           ;       COL2_Data_ADDR |= COL2_MASK;
+ 0163 430040            or REG[0],64
+ 0166                   .dbline 146
+ 0166           ; 
+ 0166           ;       return bKey;
+ 0166 5200              mov A,[X+0]
+ 0168 62D000            mov REG[0xd0],>__r0
+ 016B                   .dbline -2
+ 016B           L32:
+ 016B 38FD              add SP,-3
+ 016D 20                pop X
+ 016E                   .dbline 0 ; func end
+ 016E 7F                ret
+ 016F                   .dbsym l bKey 0 c
+ 016F                   .dbend
+ 016F                   .dbfunc e KEYPAD_SysSuspendAndWakeFromPress _KEYPAD_SysSuspendAndWakeFromPress fV
+ 016F           ;  bSave_ABF_CR0 -> X+1
+ 016F           ;   bSave_ARF_CR -> X+0
+ 016F           _KEYPAD_SysSuspendAndWakeFromPress::
+ 016F                   .dbline -1
+ 016F 10                push X
+ 0170 4F                mov X,SP
+ 0171 3802              add SP,2
+ 0173                   .dbline 156
+ 0173           ; }
+ 0173           ; 
+ 0173           ; //-----------------------------------------------------------------------------
+ 0173           ; //  FUNCTION NAME:    KEYPAD_SysSuspendAndWakeFromPress
+ 0173           ; //  DESCRIPTION:      System suspend. Wakes up from a key press
+ 0173           ; //  ARGUMENTS:                none.
+ 0173           ; //  RETURNS:          Key pressed. Zero if no key.
+ 0173           ; //-----------------------------------------------------------------------------
+ 0173           ; void KEYPAD_SysSuspendAndWakeFromPress ( void )
+ 0173           ; {
+ 0173                   .dbline 159
+ 0173           ;       BYTE bSave_ARF_CR;
+ 0173           ;       BYTE bSave_ABF_CR0;
+ 0173           ;       M8C_DisableGInt;
+ 0173 70FE                      and F, FEh
+ 0175           
+ 0175                   .dbline 161
+ 0175           ;       // Activate all columns
+ 0175           ;       COL0_Data_ADDR &= ~COL0_MASK;
+ 0175 41047F            and REG[0x4],127
+ 0178                   .dbline 162
+ 0178           ;       COL1_Data_ADDR &= ~COL1_MASK;
+ 0178 4104DF            and REG[0x4],-33
+ 017B                   .dbline 163
+ 017B           ;       COL2_Data_ADDR &= ~COL2_MASK;
+ 017B 4100BF            and REG[0],-65
+ 017E                   .dbline 165
+ 017E           ;       // Reduce analog power
+ 017E           ;       bSave_ARF_CR = ARF_CR;
+ 017E 5D63              mov A,REG[0x63]
+ 0180 5400              mov [X+0],A
+ 0182                   .dbline 166
+ 0182           ;       bSave_ABF_CR0 = ABF_CR0;
+ 0182 7110              or F,0x10  ; iopage = 1
+ 0184 5D62              mov A,REG[0x62]
+ 0186 5401              mov [X+1],A
+ 0188                   .dbline 167
+ 0188           ;       ARF_CR &= 0xf8;                 // analog blocks Off
+ 0188 70CF              and F,0xCF      ; iopage = 0
+ 018A 4163F8            and REG[0x63],-8
+ 018D                   .dbline 168
+ 018D           ;       ABF_CR0 &= 0xc3;                // analog buffer off
+ 018D 7110              or F,0x10  ; iopage = 1
+ 018F 4162C3            and REG[0x62],-61
+ 0192                   .dbline 170
+ 0192           ;       // Set low level active interrupt
+ 0192           ;       PRT1IC0 |= 0x3;
+ 0192 430603            or REG[0x6],3
+ 0195                   .dbline 171
+ 0195           ;       PRT1IC1 &= ~0x3;
+ 0195 4107FC            and REG[0x7],-4
+ 0198                   .dbline 172
+ 0198           ;       PRT1IE  |= 0x3;                 // Enables row0&row1 interrupt
+ 0198 70CF              and F,0xCF      ; iopage = 0
+ 019A 430503            or REG[0x5],3
+ 019D                   .dbline 174
+ 019D           ;       // Disables sleep interrupt
+ 019D           ;       M8C_DisableIntMask(INT_MSK0, INT_MSK0_SLEEP);
+ 019D 41E0BF            and REG[0xe0],-65
+ 01A0                   .dbline 176
+ 01A0           ;       // Enables GPIO interrupt
+ 01A0           ;       M8C_EnableIntMask(INT_MSK0, INT_MSK0_GPIO);
+ 01A0 43E020            or REG[0xe0],32
+ 01A3                   .dbline 177
+ 01A3           ;       INT_CLR0 &= 0x20;               // Clear Pending GPIO Interrupt
+ 01A3 41DA20            and REG[0xda],32
+ 01A6                   .dbline 178
+ 01A6           ;       M8C_EnableGInt;
+ 01A6 7101                      or  F, 01h
+ 01A8           
+ 01A8                   .dbline 179
+ 01A8           ;       M8C_Sleep;                              // Goes sleep
+ 01A8 43FF08            or REG[0xff],8
+ 01AB                   .dbline 180
+ 01AB           ;       INT_VC = 0;                                                     // Erases vector
+ 01AB 62E200            mov REG[0xe2],0
+ 01AE                   .dbline 181
+ 01AE           ;       PRT1IE  &= ~(0x3);              // Disables row0&row1 interrupt                                 
+ 01AE 4105FC            and REG[0x5],-4
+ 01B1                   .dbline 182
+ 01B1           ;       M8C_DisableIntMask(INT_MSK0, INT_MSK0_GPIO);    // Disables GPIO interrupt                      
+ 01B1 41E0DF            and REG[0xe0],-33
+ 01B4                   .dbline 183
+ 01B4           ;       M8C_EnableIntMask(INT_MSK0, INT_MSK0_SLEEP);    // Restores sleep interrupt
+ 01B4 43E040            or REG[0xe0],64
+ 01B7                   .dbline 184
+ 01B7           ;       ARF_CR = bSave_ARF_CR;
+ 01B7 5200              mov A,[X+0]
+ 01B9 6063              mov REG[0x63],A
+ 01BB                   .dbline 185
+ 01BB           ;       ABF_CR0 = bSave_ABF_CR0;
+ 01BB 5201              mov A,[X+1]
+ 01BD 7110              or F,0x10  ; iopage = 1
+ 01BF 6062              mov REG[0x62],A
+ 01C1                   .dbline -2
+ 01C1 70CF              and F,0xCF      ; iopage = 0
+ 01C3           L48:
+ 01C3 38FE              add SP,-2
+ 01C5 20                pop X
+ 01C6                   .dbline 0 ; func end
+ 01C6 7F                ret
+ 01C7                   .dbsym l bSave_ABF_CR0 1 c
+ 01C7                   .dbsym l bSave_ARF_CR 0 c
+ 01C7                   .dbend

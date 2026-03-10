@@ -1,0 +1,3 @@
+Improved accuracy of Mod(Gamma) calibration by interpolating between cal factors at |Z| and 1/|Z| in all cases. Interpolation done using alpha based on |Z|.
+Calibration now uses just 3 loads - 10, 50, 220 R
+Solved issue with frequency scan running out of cal range when scanning ahead to compensate for filter delay.

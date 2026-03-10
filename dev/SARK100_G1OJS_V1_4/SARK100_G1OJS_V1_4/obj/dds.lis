@@ -1,0 +1,1189 @@
+ 0000                   cpu LMM
+                        .module dds.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./dds.c
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\dds.c
+ 0000                   .dbfunc e DDS_Init _DDS_Init fV
+ 0000           _DDS_Init::
+ 0000                   .dbline -1
+ 0000                   .dbline 74
+ 0000           ; //*****************************************************************************/
+ 0000           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0000           ; //
+ 0000           ; //  Copyright © 2010 Melchor Varela - EA4FRB.  All rights reserved.
+ 0000           ; //  Melchor Varela, Madrid, Spain.
+ 0000           ; //  melchor.varela@gmail.com
+ 0000           ; //
+ 0000           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0000           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0000           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0000           ; //  or (at your option) any later version.
+ 0000           ; //
+ 0000           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0000           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0000           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0000           ; //  GNU General Public License for more details.
+ 0000           ; //
+ 0000           ; //  You should have received a copy of the GNU General Public License
+ 0000           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0000           ; //  see <http://www.gnu.org/licenses/>.
+ 0000           ; //*****************************************************************************/
+ 0000           ; //*****************************************************************************/
+ 0000           ; //
+ 0000           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0000           ; //    FILE NAME:      DDS.C
+ 0000           ; //    AUTHOR:         EA4FRB - Melchor Varela
+ 0000           ; //
+ 0000           ; //    DESCRIPTION
+ 0000           ; //
+ 0000           ; //    DDS driver
+ 0000           ; //
+ 0000           ; //    HISTORY
+ 0000           ; //
+ 0000           ; //    NAME            DATE            REMARKS
+ 0000           ; //
+ 0000           ; //    MVM                     DEC 2009        Creation
+ 0000           ; //
+ 0000           ; //*****************************************************************************/
+ 0000           ; #include "dds.h"
+ 0000           ; 
+ 0000           ; #include <m8c.h>                                      // Part specific constants and macros
+ 0000           ; #include "PSoCAPI.h"                                  // PSoC API definitions for all User Modules
+ 0000           ; #include "psocgpioint.h"
+ 0000           ; #include "glb_data.h"
+ 0000           ; 
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; //  Defines
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; //#define REF_FREQUENCY       (4294967296/180000000)  //30Mhz ref clock times 6
+ 0000           ; #define REF_FREQUENCY_NUM     (42949673)                      //30Mhz ref clock times 6
+ 0000           ; #define REF_FREQUENCY_DEN     (1800000)                       //30Mhz ref clock times 6
+ 0000           ; 
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; //  Prototypes
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; static DWORD divluh1(DWORD x, DWORD y, DWORD z) ;
+ 0000           ; static void muldwu1(DWORD w[], DWORD u, DWORD v);
+ 0000           ; 
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; //  FUNCTION NAME:    DDS_Init
+ 0000           ; //
+ 0000           ; //  DESCRIPTION:
+ 0000           ; //
+ 0000           ; //    Initializes DDS driver
+ 0000           ; //
+ 0000           ; //  ARGUMENTS:
+ 0000           ; //     none.
+ 0000           ; //
+ 0000           ; //  RETURNS:
+ 0000           ; //     none.
+ 0000           ; //
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; void DDS_Init(void)
+ 0000           ; {
+ 0000                   .dbline 75
+ 0000           ;       DDS_CLK_Data_ADDR &= ~DDS_CLK_MASK;
+ 0000 4104BF            and REG[0x4],-65
+ 0003                   .dbline 76
+ 0003           ;       DDS_DATA_Data_ADDR &= ~DDS_DATA_MASK;
+ 0003 4104EF            and REG[0x4],-17
+ 0006                   .dbline 77
+ 0006           ;       DDS_LOAD_Data_ADDR &= ~DDS_LOAD_MASK;
+ 0006 4104FB            and REG[0x4],-5
+ 0009                   .dbline 79
+ 0009           ; 
+ 0009           ;       DDS_CLK_Data_ADDR |= DDS_CLK_MASK;              // Strobe Clock to get hardware bits D0, D1 and D2 into the input reg
+ 0009 430440            or REG[0x4],64
+ 000C                   .dbline 80
+ 000C           ;       DDS_CLK_Data_ADDR &= ~DDS_CLK_MASK;
+ 000C 4104BF            and REG[0x4],-65
+ 000F                   .dbline 81
+ 000F           ;       DDS_LOAD_Data_ADDR |= DDS_LOAD_MASK;    // and raise Load to get them into the bControl reg
+ 000F 430404            or REG[0x4],4
+ 0012                   .dbline 82
+ 0012           ;       DDS_LOAD_Data_ADDR &= ~DDS_LOAD_MASK;
+ 0012 4104FB            and REG[0x4],-5
+ 0015                   .dbline 84
+ 0015           ; 
+ 0015           ;       DDS_Set(0);                                                             // Write 32 zeros to AD9851 with 6x PLL enabled
+ 0015 5000              mov A,0
+ 0017 08                push A
+ 0018 08                push A
+ 0019 08                push A
+ 001A 08                push A
+ 001B 9003              xcall _DDS_Set
+ 001D 38FC              add SP,-4
+ 001F                   .dbline -2
+ 001F           L9:
+ 001F                   .dbline 0 ; func end
+ 001F 7F                ret
+ 0020                   .dbend
+ 0020                   .dbfunc e DDS_Set _DDS_Set fV
+ 0020           ;           dwOp -> X+2
+ 0020           ;       bControl -> X+1
+ 0020           ;        bBitCnt -> X+0
+ 0020           ;       dwFreqHz -> X-7
+ 0020           _DDS_Set::
+ 0020                   .dbline -1
+ 0020 10                push X
+ 0021 4F                mov X,SP
+ 0022 380A              add SP,10
+ 0024                   .dbline 102
+ 0024           ; }
+ 0024           ; 
+ 0024           ; //-----------------------------------------------------------------------------
+ 0024           ; //  FUNCTION NAME:    DDS_Set
+ 0024           ; //
+ 0024           ; //  DESCRIPTION:
+ 0024           ; //
+ 0024           ; //    Set DDS frequency
+ 0024           ; //
+ 0024           ; //  ARGUMENTS:
+ 0024           ; //     dwFreqHz       Frequency in Hz
+ 0024           ; //
+ 0024           ; //  RETURNS:
+ 0024           ; //     none.
+ 0024           ; //
+ 0024           ; //-----------------------------------------------------------------------------
+ 0024           ; void DDS_Set(DWORD dwFreqHz)
+ 0024           ; {
+ 0024                   .dbline 108
+ 0024           ;       BYTE bBitCnt;
+ 0024           ;       BYTE bControl;
+ 0024           ;       DWORD dwOp[2];
+ 0024           ;       
+ 0024           ;                                                                               // Drop DDS_Load signal to start the programming sequence
+ 0024           ;       DDS_LOAD_Data_ADDR &= ~DDS_LOAD_MASK;
+ 0024 4104FB            and REG[0x4],-5
+ 0027                   .dbline 111
+ 0027           ; 
+ 0027           ;                                                                               // Transfer frequency bits
+ 0027           ;       if (dwFreqHz!=0)
+ 0027 3DF900            cmp [X-7],0
+ 002A B010              jnz X0
+ 002C 3DFA00            cmp [X-6],0
+ 002F B00B              jnz X0
+ 0031 3DFB00            cmp [X-5],0
+ 0034 B006              jnz X0
+ 0036 3DFC00            cmp [X-4],0
+ 0039 A064              jz L11
+ 003B           X0:
+ 003B                   .dbline 112
+ 003B           ;       {                                                                       // Needs extended multiply
+ 003B                   .dbline 113
+ 003B           ;               muldwu1(dwOp, dwFreqHz, REF_FREQUENCY_NUM);
+ 003B 5002              mov A,2
+ 003D 08                push A
+ 003E 508F              mov A,-113
+ 0040 08                push A
+ 0041 505C              mov A,92
+ 0043 08                push A
+ 0044 5029              mov A,41
+ 0046 08                push A
+ 0047 52F9              mov A,[X-7]
+ 0049 08                push A
+ 004A 52FA              mov A,[X-6]
+ 004C 08                push A
+ 004D 52FB              mov A,[X-5]
+ 004F 08                push A
+ 0050 52FC              mov A,[X-4]
+ 0052 08                push A
+ 0053 62D000            mov REG[0xd0],>__r0
+ 0056 5A00              mov [__r1],X
+ 0058 060002            add [__r1],2
+ 005B 5007              mov A,7
+ 005D 08                push A
+ 005E 5100              mov A,[__r1]
+ 0060 08                push A
+ 0061 9327              xcall _muldwu1
+ 0063                   .dbline 114
+ 0063           ;               dwFreqHz = divluh1(dwOp[0], dwOp[1], REF_FREQUENCY_DEN);
+ 0063 5000              mov A,0
+ 0065 08                push A
+ 0066 501B              mov A,27
+ 0068 08                push A
+ 0069 5077              mov A,119
+ 006B 08                push A
+ 006C 5040              mov A,64
+ 006E 08                push A
+ 006F 5206              mov A,[X+6]
+ 0071 08                push A
+ 0072 5207              mov A,[X+7]
+ 0074 08                push A
+ 0075 5208              mov A,[X+8]
+ 0077 08                push A
+ 0078 5209              mov A,[X+9]
+ 007A 08                push A
+ 007B 5202              mov A,[X+2]
+ 007D 08                push A
+ 007E 5203              mov A,[X+3]
+ 0080 08                push A
+ 0081 5204              mov A,[X+4]
+ 0083 08                push A
+ 0084 5205              mov A,[X+5]
+ 0086 08                push A
+ 0087 9095              xcall _divluh1
+ 0089 38EA              add SP,-22
+ 008B 62D000            mov REG[0xd0],>__r0
+ 008E 5100              mov A,[__r0]
+ 0090 54F9              mov [X-7],A
+ 0092 5100              mov A,[__r1]
+ 0094 54FA              mov [X-6],A
+ 0096 5100              mov A,[__r2]
+ 0098 54FB              mov [X-5],A
+ 009A 5100              mov A,[__r3]
+ 009C 54FC              mov [X-4],A
+ 009E                   .dbline 115
+ 009E           ;       }
+ 009E           L11:
+ 009E                   .dbline 117
+ 009E           ; 
+ 009E           ;       for (bBitCnt=0; bBitCnt<(sizeof(dwFreqHz)*8); bBitCnt++, dwFreqHz>>=1)
+ 009E 560000            mov [X+0],0
+ 00A1 8047              xjmp L17
+ 00A3           L14:
+ 00A3                   .dbline 118
+ 00A3           ;       {
+ 00A3                   .dbline 119
+ 00A3           ;               if ((dwFreqHz&1)!=0)
+ 00A3 62D000            mov REG[0xd0],>__r0
+ 00A6 52FC              mov A,[X-4]
+ 00A8 2101              and A,1
+ 00AA 5300              mov [__r3],A
+ 00AC 52FB              mov A,[X-5]
+ 00AE 2100              and A,0
+ 00B0 5300              mov [__r2],A
+ 00B2 52FA              mov A,[X-6]
+ 00B4 2100              and A,0
+ 00B6 5300              mov [__r1],A
+ 00B8 52F9              mov A,[X-7]
+ 00BA 2100              and A,0
+ 00BC 3900              cmp A,0
+ 00BE B010              jnz X1
+ 00C0 3C0000            cmp [__r1],0
+ 00C3 B00B              jnz X1
+ 00C5 3C0000            cmp [__r2],0
+ 00C8 B006              jnz X1
+ 00CA 3C0000            cmp [__r3],0
+ 00CD A006              jz L18
+ 00CF           X1:
+ 00CF                   .dbline 120
+ 00CF           ;                       DDS_DATA_Data_ADDR |= DDS_DATA_MASK;
+ 00CF 430410            or REG[0x4],16
+ 00D2 8004              xjmp L19
+ 00D4           L18:
+ 00D4                   .dbline 122
+ 00D4           ;               else
+ 00D4           ;                       DDS_DATA_Data_ADDR &= ~DDS_DATA_MASK;
+ 00D4 4104EF            and REG[0x4],-17
+ 00D7           L19:
+ 00D7                   .dbline 124
+ 00D7           ;                                                                               // Toggle write clock
+ 00D7           ;               DDS_CLK_Data_ADDR |= DDS_CLK_MASK;
+ 00D7 430440            or REG[0x4],64
+ 00DA                   .dbline 125
+ 00DA           ;               DDS_CLK_Data_ADDR &= ~DDS_CLK_MASK;
+ 00DA 4104BF            and REG[0x4],-65
+ 00DD                   .dbline 126
+ 00DD           ;       }
+ 00DD           L15:
+ 00DD                   .dbline 117
+ 00DD 7700              inc [X+0]
+ 00DF 70FB              and F,-5
+ 00E1 6FF9              rrc [X-7]
+ 00E3 6FFA              rrc [X-6]
+ 00E5 6FFB              rrc [X-5]
+ 00E7 6FFC              rrc [X-4]
+ 00E9           L17:
+ 00E9                   .dbline 117
+ 00E9 3D0020            cmp [X+0],32
+ 00EC CFB6              jc L14
+ 00EE           X2:
+ 00EE                   .dbline 129
+ 00EE           ; 
+ 00EE           ;                                                                               // Transfer bControl word
+ 00EE           ;       bControl=0x1;                                           // 6x PLL enabled, no phase shift
+ 00EE 560101            mov [X+1],1
+ 00F1                   .dbline 130
+ 00F1           ;       for (bBitCnt=0; bBitCnt<(sizeof(bControl)*8); bBitCnt++, bControl>>=1)
+ 00F1 560000            mov [X+0],0
+ 00F4 801A              xjmp L23
+ 00F6           L20:
+ 00F6                   .dbline 131
+ 00F6           ;       {
+ 00F6                   .dbline 132
+ 00F6           ;               if ((bControl&1)!=0)
+ 00F6 480101            tst [X+1],1
+ 00F9 A006              jz L24
+ 00FB                   .dbline 133
+ 00FB           ;                       DDS_DATA_Data_ADDR |= DDS_DATA_MASK;
+ 00FB 430410            or REG[0x4],16
+ 00FE 8004              xjmp L25
+ 0100           L24:
+ 0100                   .dbline 135
+ 0100           ;               else
+ 0100           ;                       DDS_DATA_Data_ADDR &= ~DDS_DATA_MASK;
+ 0100 4104EF            and REG[0x4],-17
+ 0103           L25:
+ 0103                   .dbline 137
+ 0103           ;                                                                               // Toggle write clock
+ 0103           ;               DDS_CLK_Data_ADDR |= DDS_CLK_MASK;
+ 0103 430440            or REG[0x4],64
+ 0106                   .dbline 138
+ 0106           ;               DDS_CLK_Data_ADDR &= ~DDS_CLK_MASK;
+ 0106 4104BF            and REG[0x4],-65
+ 0109                   .dbline 139
+ 0109           ;       }
+ 0109           L21:
+ 0109                   .dbline 130
+ 0109 7700              inc [X+0]
+ 010B 70FB              and F,-5
+ 010D 6F01              rrc [X+1]
+ 010F           L23:
+ 010F                   .dbline 130
+ 010F 3D0008            cmp [X+0],8
+ 0112 CFE3              jc L20
+ 0114           X3:
+ 0114                   .dbline 141
+ 0114           ;                                                                               // Raise Load signal to load the DDS registers
+ 0114           ;       DDS_LOAD_Data_ADDR |= DDS_LOAD_MASK;
+ 0114 430404            or REG[0x4],4
+ 0117                   .dbline 142
+ 0117           ;       DDS_LOAD_Data_ADDR &= ~DDS_LOAD_MASK;
+ 0117 4104FB            and REG[0x4],-5
+ 011A                   .dbline -2
+ 011A           L10:
+ 011A 38F6              add SP,-10
+ 011C 20                pop X
+ 011D                   .dbline 0 ; func end
+ 011D 7F                ret
+ 011E                   .dbsym l dwOp 2 A[8:2]l
+ 011E                   .dbsym l bControl 1 c
+ 011E                   .dbsym l bBitCnt 0 c
+ 011E                   .dbsym l dwFreqHz -7 l
+ 011E                   .dbend
+ 011E                   .dbfunc s divluh1 _divluh1 fl
+ 011E           ;              i -> X+4
+ 011E           ;              c -> X+0
+ 011E           ;              z -> X-15
+ 011E           ;              y -> X-11
+ 011E           ;              x -> X-7
+ 011E           _divluh1:
+ 011E                   .dbline -1
+ 011E 10                push X
+ 011F 4F                mov X,SP
+ 0120 3808              add SP,8
+ 0122                   .dbline 159
+ 0122           ; }
+ 0122           ; 
+ 0122           ; //-----------------------------------------------------------------------------
+ 0122           ; //  FUNCTION NAME:    64bit math routines
+ 0122           ; //
+ 0122           ; //  DESCRIPTION:
+ 0122           ; //
+ 0122           ; //
+ 0122           ; //  ARGUMENTS:
+ 0122           ; //     none.
+ 0122           ; //
+ 0122           ; //  RETURNS:
+ 0122           ; //     none.
+ 0122           ; //
+ 0122           ; //-----------------------------------------------------------------------------
+ 0122           ; static DWORD divluh1(DWORD x, DWORD y, DWORD z)
+ 0122           ; {
+ 0122                   .dbline 164
+ 0122           ;                                                                               // Divides (x || y) by z.
+ 0122           ;    int i;
+ 0122           ;    DWORD c;
+ 0122           ; 
+ 0122           ;    c = 0;
+ 0122 560000            mov [X+0],0
+ 0125 560100            mov [X+1],0
+ 0128 560200            mov [X+2],0
+ 012B 560300            mov [X+3],0
+ 012E                   .dbline 165
+ 012E           ;    for (i = 1; i <= 32; i++)
+ 012E 560501            mov [X+5],1
+ 0131 560400            mov [X+4],0
+ 0134           L27:
+ 0134                   .dbline 166
+ 0134           ;    {
+ 0134                   .dbline 167
+ 0134           ;       if (c == 0)
+ 0134 3D0000            cmp [X+0],0
+ 0137 B105              jnz L31
+ 0139 3D0100            cmp [X+1],0
+ 013C B100              jnz L31
+ 013E 3D0200            cmp [X+2],0
+ 0141 B0FB              jnz L31
+ 0143 3D0300            cmp [X+3],0
+ 0146 B0F6              jnz L31
+ 0148           X4:
+ 0148                   .dbline 168
+ 0148           ;       {
+ 0148                   .dbline 169
+ 0148           ;          c = x >> 31;
+ 0148 62D000            mov REG[0xd0],>__r0
+ 014B 52F9              mov A,[X-7]
+ 014D 5300              mov [__r0],A
+ 014F 52FA              mov A,[X-6]
+ 0151 5300              mov [__r1],A
+ 0153 52FB              mov A,[X-5]
+ 0155 5300              mov [__r2],A
+ 0157 52FC              mov A,[X-4]
+ 0159 5300              mov [__r3],A
+ 015B 501F              mov A,31
+ 015D           X5:
+ 015D 70FB              and F,-5
+ 015F 62D000            mov REG[0xd0],>__r0
+ 0162 6E00              rrc [__r0]
+ 0164 6E00              rrc [__r1]
+ 0166 6E00              rrc [__r2]
+ 0168 6E00              rrc [__r3]
+ 016A 78                dec A
+ 016B BFF1              jnz X5
+ 016D 5100              mov A,[__r0]
+ 016F 5400              mov [X+0],A
+ 0171 5100              mov A,[__r1]
+ 0173 5401              mov [X+1],A
+ 0175 5100              mov A,[__r2]
+ 0177 5402              mov [X+2],A
+ 0179 5100              mov A,[__r3]
+ 017B 5403              mov [X+3],A
+ 017D                   .dbline 170
+ 017D           ;          x = (x << 1) | (y >> 31);            // Shift x || y left
+ 017D 52F5              mov A,[X-11]
+ 017F 5300              mov [__r0],A
+ 0181 52F6              mov A,[X-10]
+ 0183 5300              mov [__r1],A
+ 0185 52F7              mov A,[X-9]
+ 0187 5300              mov [__r2],A
+ 0189 52F8              mov A,[X-8]
+ 018B 5300              mov [__r3],A
+ 018D 501F              mov A,31
+ 018F           X6:
+ 018F 70FB              and F,-5
+ 0191 62D000            mov REG[0xd0],>__r0
+ 0194 6E00              rrc [__r0]
+ 0196 6E00              rrc [__r1]
+ 0198 6E00              rrc [__r2]
+ 019A 6E00              rrc [__r3]
+ 019C 78                dec A
+ 019D BFF1              jnz X6
+ 019F 52F9              mov A,[X-7]
+ 01A1 5300              mov [__r4],A
+ 01A3 52FA              mov A,[X-6]
+ 01A5 5300              mov [__r5],A
+ 01A7 52FB              mov A,[X-5]
+ 01A9 5300              mov [__r6],A
+ 01AB 52FC              mov A,[X-4]
+ 01AD 5300              mov [__r7],A
+ 01AF 6500              asl [__r7]
+ 01B1 6B00              rlc [__r6]
+ 01B3 6B00              rlc [__r5]
+ 01B5 6B00              rlc [__r4]
+ 01B7 5100              mov A,[__r7]
+ 01B9 2A00              or A,[__r3]
+ 01BB 54FC              mov [X-4],A
+ 01BD 5100              mov A,[__r6]
+ 01BF 2A00              or A,[__r2]
+ 01C1 54FB              mov [X-5],A
+ 01C3 5100              mov A,[__r5]
+ 01C5 2A00              or A,[__r1]
+ 01C7 54FA              mov [X-6],A
+ 01C9 5100              mov A,[__r4]
+ 01CB 2A00              or A,[__r0]
+ 01CD 54F9              mov [X-7],A
+ 01CF                   .dbline 171
+ 01CF           ;          y = y << 1;                          // one bit.
+ 01CF 66F8              asl [X-8]
+ 01D1 6CF7              rlc [X-9]
+ 01D3 6CF6              rlc [X-10]
+ 01D5 6CF5              rlc [X-11]
+ 01D7                   .dbline 172
+ 01D7           ;          c = c ^ (x < z);
+ 01D7 52FC              mov A,[X-4]
+ 01D9 13F4              sub A,[X-12]
+ 01DB 52FB              mov A,[X-5]
+ 01DD 1BF3              sbb A,[X-13]
+ 01DF 52FA              mov A,[X-6]
+ 01E1 1BF2              sbb A,[X-14]
+ 01E3 52F9              mov A,[X-7]
+ 01E5 1BF1              sbb A,[X-15]
+ 01E7 D009              jnc L34
+ 01E9           X7:
+ 01E9 560701            mov [X+7],1
+ 01EC 560600            mov [X+6],0
+ 01EF 8007              xjmp L35
+ 01F1           L34:
+ 01F1 560700            mov [X+7],0
+ 01F4 560600            mov [X+6],0
+ 01F7           L35:
+ 01F7 62D000            mov REG[0xd0],>__r0
+ 01FA 5207              mov A,[X+7]
+ 01FC 5300              mov [__r3],A
+ 01FE 5206              mov A,[X+6]
+ 0200 5300              mov [__r2],A
+ 0202 470080            tst [__r2],-128
+ 0205 A009              jz X8
+ 0207 5500FF            mov [__r1],-1
+ 020A 5500FF            mov [__r0],-1
+ 020D 800A              jmp X9
+ 020F           X8:
+ 020F 62D000            mov REG[0xd0],>__r0
+ 0212 550000            mov [__r1],0
+ 0215 550000            mov [__r0],0
+ 0218           X9:
+ 0218 62D000            mov REG[0xd0],>__r0
+ 021B 5100              mov A,[__r3]
+ 021D 3503              xor [X+3],A
+ 021F 5100              mov A,[__r2]
+ 0221 3502              xor [X+2],A
+ 0223 5100              mov A,[__r1]
+ 0225 3501              xor [X+1],A
+ 0227 5100              mov A,[__r0]
+ 0229 3500              xor [X+0],A
+ 022B                   .dbline 173
+ 022B           ;          x = x - z;
+ 022B 52F4              mov A,[X-12]
+ 022D 15FC              sub [X-4],A
+ 022F 52F3              mov A,[X-13]
+ 0231 1DFB              sbb [X-5],A
+ 0233 52F2              mov A,[X-14]
+ 0235 1DFA              sbb [X-6],A
+ 0237 52F1              mov A,[X-15]
+ 0239 1DF9              sbb [X-7],A
+ 023B                   .dbline 174
+ 023B           ;       }
+ 023B 80F4              xjmp L32
+ 023D           L31:
+ 023D                   .dbline 176
+ 023D           ;       else
+ 023D           ;       {
+ 023D                   .dbline 177
+ 023D           ;          c = x >> 31;
+ 023D 62D000            mov REG[0xd0],>__r0
+ 0240 52F9              mov A,[X-7]
+ 0242 5300              mov [__r0],A
+ 0244 52FA              mov A,[X-6]
+ 0246 5300              mov [__r1],A
+ 0248 52FB              mov A,[X-5]
+ 024A 5300              mov [__r2],A
+ 024C 52FC              mov A,[X-4]
+ 024E 5300              mov [__r3],A
+ 0250 501F              mov A,31
+ 0252           X10:
+ 0252 70FB              and F,-5
+ 0254 62D000            mov REG[0xd0],>__r0
+ 0257 6E00              rrc [__r0]
+ 0259 6E00              rrc [__r1]
+ 025B 6E00              rrc [__r2]
+ 025D 6E00              rrc [__r3]
+ 025F 78                dec A
+ 0260 BFF1              jnz X10
+ 0262 5100              mov A,[__r0]
+ 0264 5400              mov [X+0],A
+ 0266 5100              mov A,[__r1]
+ 0268 5401              mov [X+1],A
+ 026A 5100              mov A,[__r2]
+ 026C 5402              mov [X+2],A
+ 026E 5100              mov A,[__r3]
+ 0270 5403              mov [X+3],A
+ 0272                   .dbline 178
+ 0272           ;          x = (x << 1) | (y >> 31);            // Shift x || y left
+ 0272 52F5              mov A,[X-11]
+ 0274 5300              mov [__r0],A
+ 0276 52F6              mov A,[X-10]
+ 0278 5300              mov [__r1],A
+ 027A 52F7              mov A,[X-9]
+ 027C 5300              mov [__r2],A
+ 027E 52F8              mov A,[X-8]
+ 0280 5300              mov [__r3],A
+ 0282 501F              mov A,31
+ 0284           X11:
+ 0284 70FB              and F,-5
+ 0286 62D000            mov REG[0xd0],>__r0
+ 0289 6E00              rrc [__r0]
+ 028B 6E00              rrc [__r1]
+ 028D 6E00              rrc [__r2]
+ 028F 6E00              rrc [__r3]
+ 0291 78                dec A
+ 0292 BFF1              jnz X11
+ 0294 52F9              mov A,[X-7]
+ 0296 5300              mov [__r4],A
+ 0298 52FA              mov A,[X-6]
+ 029A 5300              mov [__r5],A
+ 029C 52FB              mov A,[X-5]
+ 029E 5300              mov [__r6],A
+ 02A0 52FC              mov A,[X-4]
+ 02A2 5300              mov [__r7],A
+ 02A4 6500              asl [__r7]
+ 02A6 6B00              rlc [__r6]
+ 02A8 6B00              rlc [__r5]
+ 02AA 6B00              rlc [__r4]
+ 02AC 5100              mov A,[__r7]
+ 02AE 2A00              or A,[__r3]
+ 02B0 54FC              mov [X-4],A
+ 02B2 5100              mov A,[__r6]
+ 02B4 2A00              or A,[__r2]
+ 02B6 54FB              mov [X-5],A
+ 02B8 5100              mov A,[__r5]
+ 02BA 2A00              or A,[__r1]
+ 02BC 54FA              mov [X-6],A
+ 02BE 5100              mov A,[__r4]
+ 02C0 2A00              or A,[__r0]
+ 02C2 54F9              mov [X-7],A
+ 02C4                   .dbline 179
+ 02C4           ;          y = y << 1;                          // one bit.
+ 02C4 66F8              asl [X-8]
+ 02C6 6CF7              rlc [X-9]
+ 02C8 6CF6              rlc [X-10]
+ 02CA 6CF5              rlc [X-11]
+ 02CC                   .dbline 180
+ 02CC           ;          x = x + z;
+ 02CC 52F4              mov A,[X-12]
+ 02CE 05FC              add [X-4],A
+ 02D0 52F3              mov A,[X-13]
+ 02D2 0DFB              adc [X-5],A
+ 02D4 52F2              mov A,[X-14]
+ 02D6 0DFA              adc [X-6],A
+ 02D8 52F1              mov A,[X-15]
+ 02DA 0DF9              adc [X-7],A
+ 02DC                   .dbline 181
+ 02DC           ;          c = c ^ (x < z);
+ 02DC 52FC              mov A,[X-4]
+ 02DE 13F4              sub A,[X-12]
+ 02E0 52FB              mov A,[X-5]
+ 02E2 1BF3              sbb A,[X-13]
+ 02E4 52FA              mov A,[X-6]
+ 02E6 1BF2              sbb A,[X-14]
+ 02E8 52F9              mov A,[X-7]
+ 02EA 1BF1              sbb A,[X-15]
+ 02EC D009              jnc L37
+ 02EE           X12:
+ 02EE 560701            mov [X+7],1
+ 02F1 560600            mov [X+6],0
+ 02F4 8007              xjmp L38
+ 02F6           L37:
+ 02F6 560700            mov [X+7],0
+ 02F9 560600            mov [X+6],0
+ 02FC           L38:
+ 02FC 62D000            mov REG[0xd0],>__r0
+ 02FF 5207              mov A,[X+7]
+ 0301 5300              mov [__r3],A
+ 0303 5206              mov A,[X+6]
+ 0305 5300              mov [__r2],A
+ 0307 470080            tst [__r2],-128
+ 030A A009              jz X13
+ 030C 5500FF            mov [__r1],-1
+ 030F 5500FF            mov [__r0],-1
+ 0312 800A              jmp X14
+ 0314           X13:
+ 0314 62D000            mov REG[0xd0],>__r0
+ 0317 550000            mov [__r1],0
+ 031A 550000            mov [__r0],0
+ 031D           X14:
+ 031D 62D000            mov REG[0xd0],>__r0
+ 0320 5100              mov A,[__r3]
+ 0322 3503              xor [X+3],A
+ 0324 5100              mov A,[__r2]
+ 0326 3502              xor [X+2],A
+ 0328 5100              mov A,[__r1]
+ 032A 3501              xor [X+1],A
+ 032C 5100              mov A,[__r0]
+ 032E 3500              xor [X+0],A
+ 0330                   .dbline 182
+ 0330           ;       }
+ 0330           L32:
+ 0330                   .dbline 183
+ 0330           ;       y = y + (1 - c);
+ 0330 62D000            mov REG[0xd0],>__r0
+ 0333 5001              mov A,1
+ 0335 1303              sub A,[X+3]
+ 0337 5300              mov [__r3],A
+ 0339 5000              mov A,0
+ 033B 1B02              sbb A,[X+2]
+ 033D 5300              mov [__r2],A
+ 033F 5000              mov A,0
+ 0341 1B01              sbb A,[X+1]
+ 0343 5300              mov [__r1],A
+ 0345 5000              mov A,0
+ 0347 1B00              sbb A,[X+0]
+ 0349 5300              mov [__r0],A
+ 034B 5100              mov A,[__r3]
+ 034D 05F8              add [X-8],A
+ 034F 5100              mov A,[__r2]
+ 0351 0DF7              adc [X-9],A
+ 0353 5100              mov A,[__r1]
+ 0355 0DF6              adc [X-10],A
+ 0357 5100              mov A,[__r0]
+ 0359 0DF5              adc [X-11],A
+ 035B                   .dbline 184
+ 035B           ;    }
+ 035B           L28:
+ 035B                   .dbline 165
+ 035B 7705              inc [X+5]
+ 035D 0F0400            adc [X+4],0
+ 0360                   .dbline 165
+ 0360 5020              mov A,32
+ 0362 1305              sub A,[X+5]
+ 0364 5204              mov A,[X+4]
+ 0366 3180              xor A,-128
+ 0368 62D000            mov REG[0xd0],>__r0
+ 036B 5300              mov [__rX],A
+ 036D 5080              mov A,(0 ^ 0x80)
+ 036F 1A00              sbb A,[__rX]
+ 0371 DDC2              jnc L27
+ 0373           X15:
+ 0373                   .dbline 185
+ 0373           ;    return y;                                  // Remainder is x.
+ 0373 62D000            mov REG[0xd0],>__r0
+ 0376 52F5              mov A,[X-11]
+ 0378 5300              mov [__r0],A
+ 037A 52F6              mov A,[X-10]
+ 037C 5300              mov [__r1],A
+ 037E 52F7              mov A,[X-9]
+ 0380 5300              mov [__r2],A
+ 0382 52F8              mov A,[X-8]
+ 0384 5300              mov [__r3],A
+ 0386                   .dbline -2
+ 0386           L26:
+ 0386 38F8              add SP,-8
+ 0388 20                pop X
+ 0389                   .dbline 0 ; func end
+ 0389 7F                ret
+ 038A                   .dbsym l i 4 I
+ 038A                   .dbsym l c 0 l
+ 038A                   .dbsym l z -15 l
+ 038A                   .dbsym l y -11 l
+ 038A                   .dbsym l x -7 l
+ 038A                   .dbend
+ 038A                   .dbfunc s muldwu1 _muldwu1 fV
+ 038A           ;             w3 -> X+32
+ 038A           ;             w2 -> X+28
+ 038A           ;             w1 -> X+24
+ 038A           ;             v1 -> X+20
+ 038A           ;             v0 -> X+16
+ 038A           ;             u1 -> X+12
+ 038A           ;             u0 -> X+8
+ 038A           ;              k -> X+4
+ 038A           ;              t -> X+0
+ 038A           ;              v -> X-13
+ 038A           ;              u -> X-9
+ 038A           ;              w -> X-5
+ 038A           _muldwu1:
+ 038A                   .dbline -1
+ 038A 10                push X
+ 038B 4F                mov X,SP
+ 038C 3824              add SP,36
+ 038E                   .dbline 189
+ 038E           ; }
+ 038E           ; 
+ 038E           ; static void muldwu1(DWORD w[], DWORD u, DWORD v)
+ 038E           ; {
+ 038E                   .dbline 193
+ 038E           ;    DWORD u0, u1, v0, v1, k, t;
+ 038E           ;    DWORD w1, w2, w3;
+ 038E           ; 
+ 038E           ;    u0 = u >> 16; u1 = u & 0xFFFF;
+ 038E 62D000            mov REG[0xd0],>__r0
+ 0391 52F7              mov A,[X-9]
+ 0393 5300              mov [__r0],A
+ 0395 52F8              mov A,[X-8]
+ 0397 5300              mov [__r1],A
+ 0399 52F9              mov A,[X-7]
+ 039B 5300              mov [__r2],A
+ 039D 52FA              mov A,[X-6]
+ 039F 5300              mov [__r3],A
+ 03A1 5010              mov A,16
+ 03A3           X16:
+ 03A3 70FB              and F,-5
+ 03A5 62D000            mov REG[0xd0],>__r0
+ 03A8 6E00              rrc [__r0]
+ 03AA 6E00              rrc [__r1]
+ 03AC 6E00              rrc [__r2]
+ 03AE 6E00              rrc [__r3]
+ 03B0 78                dec A
+ 03B1 BFF1              jnz X16
+ 03B3 5100              mov A,[__r0]
+ 03B5 5408              mov [X+8],A
+ 03B7 5100              mov A,[__r1]
+ 03B9 5409              mov [X+9],A
+ 03BB 5100              mov A,[__r2]
+ 03BD 540A              mov [X+10],A
+ 03BF 5100              mov A,[__r3]
+ 03C1 540B              mov [X+11],A
+ 03C3                   .dbline 193
+ 03C3 52FA              mov A,[X-6]
+ 03C5 540F              mov [X+15],A
+ 03C7 52F9              mov A,[X-7]
+ 03C9 540E              mov [X+14],A
+ 03CB 560D00            mov [X+13],0
+ 03CE 560C00            mov [X+12],0
+ 03D1                   .dbline 194
+ 03D1           ;    v0 = v >> 16; v1 = v & 0xFFFF;
+ 03D1 52F3              mov A,[X-13]
+ 03D3 5300              mov [__r0],A
+ 03D5 52F4              mov A,[X-12]
+ 03D7 5300              mov [__r1],A
+ 03D9 52F5              mov A,[X-11]
+ 03DB 5300              mov [__r2],A
+ 03DD 52F6              mov A,[X-10]
+ 03DF 5300              mov [__r3],A
+ 03E1 5010              mov A,16
+ 03E3           X17:
+ 03E3 70FB              and F,-5
+ 03E5 62D000            mov REG[0xd0],>__r0
+ 03E8 6E00              rrc [__r0]
+ 03EA 6E00              rrc [__r1]
+ 03EC 6E00              rrc [__r2]
+ 03EE 6E00              rrc [__r3]
+ 03F0 78                dec A
+ 03F1 BFF1              jnz X17
+ 03F3 5100              mov A,[__r0]
+ 03F5 5410              mov [X+16],A
+ 03F7 5100              mov A,[__r1]
+ 03F9 5411              mov [X+17],A
+ 03FB 5100              mov A,[__r2]
+ 03FD 5412              mov [X+18],A
+ 03FF 5100              mov A,[__r3]
+ 0401 5413              mov [X+19],A
+ 0403                   .dbline 194
+ 0403 52F6              mov A,[X-10]
+ 0405 5417              mov [X+23],A
+ 0407 52F5              mov A,[X-11]
+ 0409 5416              mov [X+22],A
+ 040B 561500            mov [X+21],0
+ 040E 561400            mov [X+20],0
+ 0411                   .dbline 196
+ 0411           ; 
+ 0411           ;    t = u1*v1;
+ 0411 5214              mov A,[X+20]
+ 0413 08                push A
+ 0414 5215              mov A,[X+21]
+ 0416 08                push A
+ 0417 5216              mov A,[X+22]
+ 0419 08                push A
+ 041A 5217              mov A,[X+23]
+ 041C 08                push A
+ 041D 520C              mov A,[X+12]
+ 041F 08                push A
+ 0420 520D              mov A,[X+13]
+ 0422 08                push A
+ 0423 520E              mov A,[X+14]
+ 0425 08                push A
+ 0426 520F              mov A,[X+15]
+ 0428 08                push A
+ 0429 7C0000            xcall __mul_32X32_32
+ 042C 38FC              add SP,-4
+ 042E 18                pop A
+ 042F 5403              mov [X+3],A
+ 0431 18                pop A
+ 0432 5402              mov [X+2],A
+ 0434 18                pop A
+ 0435 5401              mov [X+1],A
+ 0437 18                pop A
+ 0438 5400              mov [X+0],A
+ 043A                   .dbline 197
+ 043A           ;    w3 = t & 0xFFFF;                           // (*)
+ 043A 5203              mov A,[X+3]
+ 043C 5423              mov [X+35],A
+ 043E 5202              mov A,[X+2]
+ 0440 5422              mov [X+34],A
+ 0442 562100            mov [X+33],0
+ 0445 562000            mov [X+32],0
+ 0448                   .dbline 198
+ 0448           ;    k = t >> 16;
+ 0448 5200              mov A,[X+0]
+ 044A 5300              mov [__r0],A
+ 044C 5201              mov A,[X+1]
+ 044E 5300              mov [__r1],A
+ 0450 5202              mov A,[X+2]
+ 0452 5300              mov [__r2],A
+ 0454 5203              mov A,[X+3]
+ 0456 5300              mov [__r3],A
+ 0458 5010              mov A,16
+ 045A           X18:
+ 045A 70FB              and F,-5
+ 045C 62D000            mov REG[0xd0],>__r0
+ 045F 6E00              rrc [__r0]
+ 0461 6E00              rrc [__r1]
+ 0463 6E00              rrc [__r2]
+ 0465 6E00              rrc [__r3]
+ 0467 78                dec A
+ 0468 BFF1              jnz X18
+ 046A 5100              mov A,[__r0]
+ 046C 5404              mov [X+4],A
+ 046E 5100              mov A,[__r1]
+ 0470 5405              mov [X+5],A
+ 0472 5100              mov A,[__r2]
+ 0474 5406              mov [X+6],A
+ 0476 5100              mov A,[__r3]
+ 0478 5407              mov [X+7],A
+ 047A                   .dbline 200
+ 047A           ; 
+ 047A           ;    t = u0*v1 + k;
+ 047A 5214              mov A,[X+20]
+ 047C 08                push A
+ 047D 5215              mov A,[X+21]
+ 047F 08                push A
+ 0480 5216              mov A,[X+22]
+ 0482 08                push A
+ 0483 5217              mov A,[X+23]
+ 0485 08                push A
+ 0486 5208              mov A,[X+8]
+ 0488 08                push A
+ 0489 5209              mov A,[X+9]
+ 048B 08                push A
+ 048C 520A              mov A,[X+10]
+ 048E 08                push A
+ 048F 520B              mov A,[X+11]
+ 0491 08                push A
+ 0492 7C0000            xcall __mul_32X32_32
+ 0495 38FC              add SP,-4
+ 0497 18                pop A
+ 0498 5300              mov [__r3],A
+ 049A 18                pop A
+ 049B 5300              mov [__r2],A
+ 049D 18                pop A
+ 049E 5300              mov [__r1],A
+ 04A0 18                pop A
+ 04A1 5300              mov [__r0],A
+ 04A3 5100              mov A,[__r3]
+ 04A5 0307              add A,[X+7]
+ 04A7 5403              mov [X+3],A
+ 04A9 5100              mov A,[__r2]
+ 04AB 0B06              adc A,[X+6]
+ 04AD 5402              mov [X+2],A
+ 04AF 5100              mov A,[__r1]
+ 04B1 0B05              adc A,[X+5]
+ 04B3 5401              mov [X+1],A
+ 04B5 5100              mov A,[__r0]
+ 04B7 0B04              adc A,[X+4]
+ 04B9 5400              mov [X+0],A
+ 04BB                   .dbline 201
+ 04BB           ;    w2 = t & 0xFFFF;
+ 04BB 5203              mov A,[X+3]
+ 04BD 541F              mov [X+31],A
+ 04BF 5202              mov A,[X+2]
+ 04C1 541E              mov [X+30],A
+ 04C3 561D00            mov [X+29],0
+ 04C6 561C00            mov [X+28],0
+ 04C9                   .dbline 202
+ 04C9           ;    w1 = t >> 16;
+ 04C9 5200              mov A,[X+0]
+ 04CB 5300              mov [__r0],A
+ 04CD 5201              mov A,[X+1]
+ 04CF 5300              mov [__r1],A
+ 04D1 5202              mov A,[X+2]
+ 04D3 5300              mov [__r2],A
+ 04D5 5203              mov A,[X+3]
+ 04D7 5300              mov [__r3],A
+ 04D9 5010              mov A,16
+ 04DB           X19:
+ 04DB 70FB              and F,-5
+ 04DD 62D000            mov REG[0xd0],>__r0
+ 04E0 6E00              rrc [__r0]
+ 04E2 6E00              rrc [__r1]
+ 04E4 6E00              rrc [__r2]
+ 04E6 6E00              rrc [__r3]
+ 04E8 78                dec A
+ 04E9 BFF1              jnz X19
+ 04EB 5100              mov A,[__r0]
+ 04ED 5418              mov [X+24],A
+ 04EF 5100              mov A,[__r1]
+ 04F1 5419              mov [X+25],A
+ 04F3 5100              mov A,[__r2]
+ 04F5 541A              mov [X+26],A
+ 04F7 5100              mov A,[__r3]
+ 04F9 541B              mov [X+27],A
+ 04FB                   .dbline 204
+ 04FB           ; 
+ 04FB           ;    t = u1*v0 + w2;
+ 04FB 5210              mov A,[X+16]
+ 04FD 08                push A
+ 04FE 5211              mov A,[X+17]
+ 0500 08                push A
+ 0501 5212              mov A,[X+18]
+ 0503 08                push A
+ 0504 5213              mov A,[X+19]
+ 0506 08                push A
+ 0507 520C              mov A,[X+12]
+ 0509 08                push A
+ 050A 520D              mov A,[X+13]
+ 050C 08                push A
+ 050D 520E              mov A,[X+14]
+ 050F 08                push A
+ 0510 520F              mov A,[X+15]
+ 0512 08                push A
+ 0513 7C0000            xcall __mul_32X32_32
+ 0516 38FC              add SP,-4
+ 0518 18                pop A
+ 0519 5300              mov [__r3],A
+ 051B 18                pop A
+ 051C 5300              mov [__r2],A
+ 051E 18                pop A
+ 051F 5300              mov [__r1],A
+ 0521 18                pop A
+ 0522 5300              mov [__r0],A
+ 0524 5100              mov A,[__r3]
+ 0526 031F              add A,[X+31]
+ 0528 5403              mov [X+3],A
+ 052A 5100              mov A,[__r2]
+ 052C 0B1E              adc A,[X+30]
+ 052E 5402              mov [X+2],A
+ 0530 5100              mov A,[__r1]
+ 0532 0B1D              adc A,[X+29]
+ 0534 5401              mov [X+1],A
+ 0536 5100              mov A,[__r0]
+ 0538 0B1C              adc A,[X+28]
+ 053A 5400              mov [X+0],A
+ 053C                   .dbline 205
+ 053C           ;    k = t >> 16;
+ 053C 5200              mov A,[X+0]
+ 053E 5300              mov [__r0],A
+ 0540 5201              mov A,[X+1]
+ 0542 5300              mov [__r1],A
+ 0544 5202              mov A,[X+2]
+ 0546 5300              mov [__r2],A
+ 0548 5203              mov A,[X+3]
+ 054A 5300              mov [__r3],A
+ 054C 5010              mov A,16
+ 054E           X20:
+ 054E 70FB              and F,-5
+ 0550 62D000            mov REG[0xd0],>__r0
+ 0553 6E00              rrc [__r0]
+ 0555 6E00              rrc [__r1]
+ 0557 6E00              rrc [__r2]
+ 0559 6E00              rrc [__r3]
+ 055B 78                dec A
+ 055C BFF1              jnz X20
+ 055E 5100              mov A,[__r0]
+ 0560 5404              mov [X+4],A
+ 0562 5100              mov A,[__r1]
+ 0564 5405              mov [X+5],A
+ 0566 5100              mov A,[__r2]
+ 0568 5406              mov [X+6],A
+ 056A 5100              mov A,[__r3]
+ 056C 5407              mov [X+7],A
+ 056E                   .dbline 207
+ 056E           ; 
+ 056E           ;    w[0] = u0*v0 + w1 + k;
+ 056E 5210              mov A,[X+16]
+ 0570 08                push A
+ 0571 5211              mov A,[X+17]
+ 0573 08                push A
+ 0574 5212              mov A,[X+18]
+ 0576 08                push A
+ 0577 5213              mov A,[X+19]
+ 0579 08                push A
+ 057A 5208              mov A,[X+8]
+ 057C 08                push A
+ 057D 5209              mov A,[X+9]
+ 057F 08                push A
+ 0580 520A              mov A,[X+10]
+ 0582 08                push A
+ 0583 520B              mov A,[X+11]
+ 0585 08                push A
+ 0586 7C0000            xcall __mul_32X32_32
+ 0589 38FC              add SP,-4
+ 058B 18                pop A
+ 058C 5300              mov [__r3],A
+ 058E 18                pop A
+ 058F 5300              mov [__r2],A
+ 0591 18                pop A
+ 0592 5300              mov [__r1],A
+ 0594 18                pop A
+ 0595 5300              mov [__r0],A
+ 0597 521B              mov A,[X+27]
+ 0599 0400              add [__r3],A
+ 059B 521A              mov A,[X+26]
+ 059D 0C00              adc [__r2],A
+ 059F 5219              mov A,[X+25]
+ 05A1 0C00              adc [__r1],A
+ 05A3 5218              mov A,[X+24]
+ 05A5 0C00              adc [__r0],A
+ 05A7 5207              mov A,[X+7]
+ 05A9 0400              add [__r3],A
+ 05AB 5206              mov A,[X+6]
+ 05AD 0C00              adc [__r2],A
+ 05AF 5205              mov A,[X+5]
+ 05B1 0C00              adc [__r1],A
+ 05B3 5204              mov A,[X+4]
+ 05B5 0C00              adc [__r0],A
+ 05B7 52FC              mov A,[X-4]
+ 05B9 5300              mov [__r5],A
+ 05BB 52FB              mov A,[X-5]
+ 05BD 60D5              mov REG[0xd5],A
+ 05BF 5100              mov A,[__r0]
+ 05C1 3F00              mvi [__r5],A
+ 05C3 5100              mov A,[__r1]
+ 05C5 3F00              mvi [__r5],A
+ 05C7 5100              mov A,[__r2]
+ 05C9 3F00              mvi [__r5],A
+ 05CB 5100              mov A,[__r3]
+ 05CD 3F00              mvi [__r5],A
+ 05CF                   .dbline 208
+ 05CF           ;    w[1] = (t << 16) + w3;                     // (*)
+ 05CF 5200              mov A,[X+0]
+ 05D1 5300              mov [__r0],A
+ 05D3 5201              mov A,[X+1]
+ 05D5 5300              mov [__r1],A
+ 05D7 5202              mov A,[X+2]
+ 05D9 5300              mov [__r2],A
+ 05DB 5203              mov A,[X+3]
+ 05DD 5300              mov [__r3],A
+ 05DF 5010              mov A,16
+ 05E1           X21:
+ 05E1 62D000            mov REG[0xd0],>__r0
+ 05E4 6500              asl [__r3]
+ 05E6 6B00              rlc [__r2]
+ 05E8 6B00              rlc [__r1]
+ 05EA 6B00              rlc [__r0]
+ 05EC 78                dec A
+ 05ED BFF3              jnz X21
+ 05EF 5223              mov A,[X+35]
+ 05F1 0400              add [__r3],A
+ 05F3 5222              mov A,[X+34]
+ 05F5 0C00              adc [__r2],A
+ 05F7 5221              mov A,[X+33]
+ 05F9 0C00              adc [__r1],A
+ 05FB 5220              mov A,[X+32]
+ 05FD 0C00              adc [__r0],A
+ 05FF 52FC              mov A,[X-4]
+ 0601 0104              add A,4
+ 0603 5300              mov [__r5],A
+ 0605 52FB              mov A,[X-5]
+ 0607 0900              adc A,0
+ 0609 60D5              mov REG[0xd5],A
+ 060B 5100              mov A,[__r0]
+ 060D 3F00              mvi [__r5],A
+ 060F 5100              mov A,[__r1]
+ 0611 3F00              mvi [__r5],A
+ 0613 5100              mov A,[__r2]
+ 0615 3F00              mvi [__r5],A
+ 0617 5100              mov A,[__r3]
+ 0619 3F00              mvi [__r5],A
+ 061B                   .dbline 211
+ 061B           ; /* w[1] = u*v;                                // Alternative. */
+ 061B           ; 
+ 061B           ;    return;
+ 061B                   .dbline -2
+ 061B           L39:
+ 061B 38DC              add SP,-36
+ 061D 20                pop X
+ 061E                   .dbline 0 ; func end
+ 061E 7F                ret
+ 061F                   .dbsym l w3 32 l
+ 061F                   .dbsym l w2 28 l
+ 061F                   .dbsym l w1 24 l
+ 061F                   .dbsym l v1 20 l
+ 061F                   .dbsym l v0 16 l
+ 061F                   .dbsym l u1 12 l
+ 061F                   .dbsym l u0 8 l
+ 061F                   .dbsym l k 4 l
+ 061F                   .dbsym l t 0 l
+ 061F                   .dbsym l v -13 l
+ 061F                   .dbsym l u -9 l
+ 061F                   .dbsym l w -5 pl
+ 061F                   .dbend

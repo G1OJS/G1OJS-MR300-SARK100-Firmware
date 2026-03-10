@@ -1,0 +1,106 @@
+---
+---
+
+@import "{{ site.theme }}"; 
+
+/* Jekyll slate theme scss is here: https://github.com/pages-themes/slate/blob/master/_sass/jekyll-theme-slate.scss */
+
+#project_title {
+  margin-bottom: 10px;
+  color: #fff;
+  font-size: 42px;
+  font-weight: 700;
+  text-shadow: #111 0px 0px 10px;
+}
+
+#header_wrap {
+  background: #212121;
+}
+
+#header_wrap .inner {
+  padding: 50px 10px 30px 10px;
+  background: -moz-linear-gradient(top, #373737, #212121);
+  background: -webkit-linear-gradient(top, #373737, #212121);
+  background: -ms-linear-gradient(top, #373737, #212121);
+  background: -o-linear-gradient(top, #373737, #212121);
+  background: linear-gradient(to top, #373737, #212121);
+}
+
+#main_content_wrap {background-color:#212121; border:none;}
+#main_content_wrap .outer {background-color:#212121; border:none;}
+#main_content_wrap .inner {background-color:#373737; border:none; background-image: radial-gradient(white,black);} 
+#main_content {
+    padding-top: 10px
+}
+
+#content_panel {background-color:#eeeeee; border:5px white; border-radius: 5px; margin:10px; padding: 5px;}
+
+.page__title{
+    font-size: 42px;
+    font-weight: bold;
+    padding-bottom:0px;
+    margin-bottom:0px;
+}
+.page__subtitle{
+    font-size: 20px;
+    padding-top:0px;
+    margin-top:0px;
+    color:gray;
+}
+
+.navGrid {display:grid;}
+.navGrid > a {text-decoration: none; color: white; padding-left:2px; padding-right:2px; font-size:1em; line-height: 80%; font-weight:bold;}
+.navGrid > a.active {text-decoration:underline;}
+
+.menubutton {
+  background-color: #ff0000; 
+  border: none;
+  height: 20px;
+  width: 30px;
+  display: inline-block;
+  margin: 1px 1px 10px 1px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.menubutton.active {background-color:#CDEF3B;}
+
+img {
+    max-width: 640px;
+    margin:0;
+    padding:0;
+    max-width: 100%; /* Makes sure the image never exceeds its container */
+    height: auto; /* Keeps aspect ratio */
+    display: block; /* Prevents inline spacing issues */
+}
+
+.image-left {
+      display: block;
+      max-width: 60%;
+      height: auto;
+      margin-left: auto;
+      margin-right: auto;
+      float: left;
+    }
+.image-right {
+      display: block;
+      max-width: 60%;
+      height: auto;
+      margin-left: auto;
+      margin-right: auto;
+      float: right;
+    }
+
+
+div .HighlightBox{background-color:#dddad9; margin:5px;padding:7px;}
+div .sidepadding {background-color:#212121;}
+
+table .equation{border:none !important;}
+
+div .equation{overflow-x:auto;}
+
+.codepen {
+  overflow: hidden;
+  resize: both;
+  width:fit-content;
+}

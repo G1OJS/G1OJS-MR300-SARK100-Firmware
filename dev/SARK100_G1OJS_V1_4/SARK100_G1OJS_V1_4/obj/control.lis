@@ -1,0 +1,356 @@
+ 0000                   cpu LMM
+                        .module control.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./control.c
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\control.c
+ 0000                   .dbfunc e Set_DDS _Set_DDS fV
+ 0000           ;         dwFreq -> X-7
+ 0000           _Set_DDS::
+ 0000                   .dbline -1
+ 0000 10                push X
+ 0001 4F                mov X,SP
+ 0002                   .dbline 59
+ 0002           ; //*****************************************************************************/
+ 0002           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0002           ; //
+ 0002           ; //    Copyright © 2025 Alan Robinson G1OJS Hampshire England G1OJS@yahoo.com with 
+ 0002           ; //  acknowledgement & thanks to Melchor Varela © 2010, EA4FRB Madrid, Spain 
+ 0002           ; //    (melchor.varela@gmail.com) for the overall software and ideas.
+ 0002           ; //  
+ 0002           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0002           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0002           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0002           ; //  or (at your option) any later version.
+ 0002           ; //
+ 0002           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0002           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0002           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0002           ; //  GNU General Public License for more details.
+ 0002           ; //
+ 0002           ; //  You should have received a copy of the GNU General Public License
+ 0002           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0002           ; //  see <http://www.gnu.org/licenses/>.
+ 0002           ; //*****************************************************************************/
+ 0002           ; //*****************************************************************************/
+ 0002           ; //
+ 0002           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0002           ; //    FILE NAME:      control.c
+ 0002           ; //    AUTHOR:         G1OJS - Alan Robinson
+ 0002           ; //    DESCRIPTION     Set control lines and gain settings
+ 0002           ; //    HISTORY
+ 0002           ; //    NAME            DATE            REMARKS
+ 0002           ; //    AJR                     Feb 2025        G1OJS - creation
+ 0002           ; //*****************************************************************************/
+ 0002           ; #include "control.h"
+ 0002           ; 
+ 0002           ; #include <m8c.h>                      // Part specific constants and macros
+ 0002           ; #include "PSoCAPI.h"                  // PSoC API definitions for all User Modules
+ 0002           ; #include "psocgpioint.h"
+ 0002           ; #include "glb_data.h"
+ 0002           ; #include "string.h"
+ 0002           ; #include "screens.h"
+ 0002           ; #include "Dds.h"
+ 0002           ; #include "msg_generic.h"
+ 0002           ; #include "keypad.h"
+ 0002           ; #include "morse.h"
+ 0002           ; #include "timers.h"
+ 0002           ; //-----------------------------------------------------------------------------
+ 0002           ; //  FUNCTION NAME:    debug_IntToLCD
+ 0002           ; //  DESCRIPTION:      Clear lcd and write the two arguments to the display
+ 0002           ; //  ARGUMENTS:        two integers to display
+ 0002           ; //  RETURNS:                  Nothing
+ 0002           ; //-----------------------------------------------------------------------------
+ 0002           ; //void debug_IntToLCD(int iVal1, int iVal2)
+ 0002           ; //{
+ 0002           ; //    Screen_Clear();
+ 0002           ; //    itoa(g_buffer16,iVal1,10); Screen_StrAtRowCol(0, 0, g_buffer16);
+ 0002           ; //    itoa(g_buffer16,iVal2,10); Screen_StrAtRowCol(1, 0, g_buffer16);
+ 0002           ; //    Delay_64ths(TIME_FLASH_MSG);
+ 0002           ; //}
+ 0002           ; 
+ 0002           ; void Set_DDS(DWORD dwFreq) {DDS_Set(dwFreq);}
+ 0002                   .dbline 59
+ 0002 52F9              mov A,[X-7]
+ 0004 08                push A
+ 0005 52FA              mov A,[X-6]
+ 0007 08                push A
+ 0008 52FB              mov A,[X-5]
+ 000A 08                push A
+ 000B 52FC              mov A,[X-4]
+ 000D 08                push A
+ 000E 7C0000            xcall _DDS_Set
+ 0011 38FC              add SP,-4
+ 0013                   .dbline -2
+ 0013           L10:
+ 0013 20                pop X
+ 0014                   .dbline 0 ; func end
+ 0014 7F                ret
+ 0015                   .dbsym l dwFreq -7 l
+ 0015                   .dbend
+ 0015                   .dbfunc e SetPowerDigitalAndAnalogue _SetPowerDigitalAndAnalogue fV
+ 0015           ;       pwrState -> X-4
+ 0015           _SetPowerDigitalAndAnalogue::
+ 0015                   .dbline -1
+ 0015 10                push X
+ 0016 4F                mov X,SP
+ 0017                   .dbline 70
+ 0017           ; 
+ 0017           ; //-----------------------------------------------------------------------------
+ 0017           ; //  FUNCTION NAME:    SetPowerDigitalAndAnalogue
+ 0017           ; //  DESCRIPTION:      Turn on LCD, Backlight and 30MHz osc, ADC, ADC's PGAs
+ 0017           ; //                                    DDS, DDS's PGAs, Set DDS Gain, Set ADC PGA Gain
+ 0017           ; //                                    OR: if isON is false, turn all of that off
+ 0017           ; //  ARGUMENTS:                POWER_STATE pwrState
+ 0017           ; //  RETURNS:          Nothing
+ 0017           ; //-----------------------------------------------------------------------------
+ 0017           ; void SetPowerDigitalAndAnalogue(POWER_STATE pwrState)
+ 0017           ; {
+ 0017                   .dbline 71
+ 0017           ;     if(pwrState==PWRON)
+ 0017 3DFC01            cmp [X-4],1
+ 001A B05E              jnz L12
+ 001C                   .dbline 72
+ 001C           ;       {
+ 001C                   .dbline 73
+ 001C           ;               LCD_Init(); LCD_Control(LCD_DISP_ON);
+ 001C 10                push X
+ 001D 7C0000            xcall _LCD_Init
+ 0020 20                pop X
+ 0021                   .dbline 73
+ 0021 10                push X
+ 0022 500C              mov A,12
+ 0024 7C0000            xcall _LCD_Control
+ 0027 20                pop X
+ 0028                   .dbline 75
+ 0028           ; 
+ 0028           ;               SetPowerBackLightAndOsc(PWRON);
+ 0028 5001              mov A,1
+ 002A 08                push A
+ 002B 90BC              xcall _SetPowerBackLightAndOsc
+ 002D                   .dbline 76
+ 002D           ;               Delay_64ths(1);
+ 002D 5001              mov A,1
+ 002F 08                push A
+ 0030 7C0000            xcall _Delay_64ths
+ 0033 38FE              add SP,-2
+ 0035                   .dbline 77
+ 0035           ;               SetPowerBackLightAndOsc(PWROFF);
+ 0035 5000              mov A,0
+ 0037 08                push A
+ 0038 90AF              xcall _SetPowerBackLightAndOsc
+ 003A                   .dbline 78
+ 003A           ;               Delay_64ths(1);
+ 003A 5001              mov A,1
+ 003C 08                push A
+ 003D 7C0000            xcall _Delay_64ths
+ 0040 38FE              add SP,-2
+ 0042                   .dbline 79
+ 0042           ;               SetPowerBackLightAndOsc(PWRON);
+ 0042 5001              mov A,1
+ 0044 08                push A
+ 0045 90A2              xcall _SetPowerBackLightAndOsc
+ 0047                   .dbline 80
+ 0047           ;               Delay_64ths(1);
+ 0047 5001              mov A,1
+ 0049 08                push A
+ 004A 7C0000            xcall _Delay_64ths
+ 004D 38FE              add SP,-2
+ 004F                   .dbline 82
+ 004F           ;       
+ 004F           ;               ADCINC12_Start(ADCINC12_HIGHPOWER); 
+ 004F 10                push X
+ 0050 5003              mov A,3
+ 0052 7C0000            xcall _ADCINC12_Start
+ 0055 20                pop X
+ 0056                   .dbline 83
+ 0056           ;               PGA_ADC_Start(PGA_ADC_HIGHPOWER);
+ 0056 10                push X
+ 0057 5003              mov A,3
+ 0059 7C0000            xcall _PGA_ADC_Start
+ 005C 20                pop X
+ 005D                   .dbline 84
+ 005D           ;               PGA_ADC_SetGain(PGA_ADC_G2_67);
+ 005D 10                push X
+ 005E 5058              mov A,88
+ 0060 7C0000            xcall _PGA_ADC_SetGain
+ 0063 20                pop X
+ 0064                   .dbline 85
+ 0064           ;               DDS_Init();
+ 0064 7C0000            xcall _DDS_Init
+ 0067                   .dbline 86
+ 0067           ;               PGA_DDS_1_Start(PGA_DDS_1_HIGHPOWER);   
+ 0067 10                push X
+ 0068 5003              mov A,3
+ 006A 7C0000            xcall _PGA_DDS_1_Start
+ 006D 20                pop X
+ 006E                   .dbline 87
+ 006E           ;               PGA_DDS_2_Start(PGA_DDS_2_HIGHPOWER);
+ 006E 10                push X
+ 006F 5003              mov A,3
+ 0071 7C0000            xcall _PGA_DDS_2_Start
+ 0074 20                pop X
+ 0075                   .dbline 88
+ 0075           ;               SetDDSGain();
+ 0075 902B              xcall _SetDDSGain
+ 0077                   .dbline 89
+ 0077           ;       } else {
+ 0077 8028              xjmp L13
+ 0079           L12:
+ 0079                   .dbline 89
+ 0079                   .dbline 90
+ 0079           ;               SetPowerBackLightAndOsc(PWROFF);
+ 0079 5000              mov A,0
+ 007B 08                push A
+ 007C 906B              xcall _SetPowerBackLightAndOsc
+ 007E                   .dbline 91
+ 007E           ;               Set_DDS(0);
+ 007E 5000              mov A,0
+ 0080 08                push A
+ 0081 08                push A
+ 0082 08                push A
+ 0083 08                push A
+ 0084 9F7A              xcall _Set_DDS
+ 0086 38FB              add SP,-5
+ 0088                   .dbline 92
+ 0088           ;               PGA_DDS_1_Stop();
+ 0088 10                push X
+ 0089 7C0000            xcall _PGA_DDS_1_Stop
+ 008C                   .dbline 93
+ 008C           ;               PGA_DDS_2_Stop();               
+ 008C 7C0000            xcall _PGA_DDS_2_Stop
+ 008F                   .dbline 94
+ 008F           ;               ADCINC12_Stop(); 
+ 008F 7C0000            xcall _ADCINC12_Stop
+ 0092                   .dbline 95
+ 0092           ;               PGA_ADC_Stop();
+ 0092 7C0000            xcall _PGA_ADC_Stop
+ 0095                   .dbline 96
+ 0095           ;               LCD_Init(); LCD_Control(LCD_DISP_OFF);
+ 0095 7C0000            xcall _LCD_Init
+ 0098 20                pop X
+ 0099                   .dbline 96
+ 0099 10                push X
+ 009A 5008              mov A,8
+ 009C 7C0000            xcall _LCD_Control
+ 009F 20                pop X
+ 00A0                   .dbline 97
+ 00A0           ;       }
+ 00A0           L13:
+ 00A0                   .dbline -2
+ 00A0           L11:
+ 00A0 20                pop X
+ 00A1                   .dbline 0 ; func end
+ 00A1 7F                ret
+ 00A2                   .dbsym l pwrState -4 c
+ 00A2                   .dbend
+ 00A2                   .dbfunc e SetDDSGain _SetDDSGain fV
+ 00A2           _SetDDSGain::
+ 00A2                   .dbline -1
+ 00A2                   .dbline 108
+ 00A2           ; }
+ 00A2           ; //-----------------------------------------------------------------------------
+ 00A2           ; //  FUNCTION NAME:    SetDDSGain
+ 00A2           ; //  DESCRIPTION:      Set the gain of both PGAs controlling the DDS output
+ 00A2           ; //                                    to the setting specified by g_bDDS_GainStep and the DDS PGA
+ 00A2           ; //                                    gain settings table
+ 00A2           ; //  ARGUMENTS:                Nothing
+ 00A2           ; //  RETURNS:          Nothing
+ 00A2           ; //-----------------------------------------------------------------------------
+ 00A2           ; void SetDDSGain(void)
+ 00A2           ; {
+ 00A2                   .dbline 109
+ 00A2           ;       PGA_DDS_1_SetGain(g_xGainDds[g_bDDS_GainStep].bGain1);
+ 00A2 62D000            mov REG[0xd0],>_g_bDDS_GainStep
+ 00A5 5100              mov A,[_g_bDDS_GainStep]
+ 00A7 62D000            mov REG[0xd0],>__r0
+ 00AA 5300              mov [__r1],A
+ 00AC 550000            mov [__r0],0
+ 00AF 6500              asl [__r1]
+ 00B1 6B00              rlc [__r0]
+ 00B3 060000            add [__r1],<_g_xGainDds
+ 00B6 0E0000            adc [__r0],>_g_xGainDds
+ 00B9 5100              mov A,[__r0]
+ 00BB 10                push X
+ 00BC 5800              mov X,[__r1]
+ 00BE 28                romx
+ 00BF 20                pop X
+ 00C0 10                push X
+ 00C1 7C0000            xcall _PGA_DDS_1_SetGain
+ 00C4 20                pop X
+ 00C5                   .dbline 110
+ 00C5           ;       PGA_DDS_2_SetGain(g_xGainDds[g_bDDS_GainStep].bGain2);
+ 00C5 62D000            mov REG[0xd0],>_g_bDDS_GainStep
+ 00C8 5100              mov A,[_g_bDDS_GainStep]
+ 00CA 62D000            mov REG[0xd0],>__r0
+ 00CD 5300              mov [__r1],A
+ 00CF 550000            mov [__r0],0
+ 00D2 6500              asl [__r1]
+ 00D4 6B00              rlc [__r0]
+ 00D6 060001            add [__r1],<_g_xGainDds+1
+ 00D9 0E0001            adc [__r0],>_g_xGainDds+1
+ 00DC 5100              mov A,[__r0]
+ 00DE 10                push X
+ 00DF 5800              mov X,[__r1]
+ 00E1 28                romx
+ 00E2 20                pop X
+ 00E3 10                push X
+ 00E4 7C0000            xcall _PGA_DDS_2_SetGain
+ 00E7 20                pop X
+ 00E8                   .dbline -2
+ 00E8           L14:
+ 00E8                   .dbline 0 ; func end
+ 00E8 7F                ret
+ 00E9                   .dbend
+ 00E9                   .dbfunc e SetPowerBackLightAndOsc _SetPowerBackLightAndOsc fV
+ 00E9           ;       pwrState -> X-4
+ 00E9           _SetPowerBackLightAndOsc::
+ 00E9                   .dbline -1
+ 00E9 10                push X
+ 00EA 4F                mov X,SP
+ 00EB                   .dbline 120
+ 00EB           ; }
+ 00EB           ; //-----------------------------------------------------------------------------
+ 00EB           ; //  FUNCTION NAME:    SetPowerBackLightAndOsc
+ 00EB           ; //  DESCRIPTION:      Assert XO_EN which powers the backlight and 30MHz osc
+ 00EB           ; //                                    OR: if isON is false, off
+ 00EB           ; //  ARGUMENTS:                POWER_STATE pwrState
+ 00EB           ; //  RETURNS:          Nothing
+ 00EB           ; //-----------------------------------------------------------------------------
+ 00EB           ; void SetPowerBackLightAndOsc(POWER_STATE pwrState)
+ 00EB           ; {
+ 00EB                   .dbline 121
+ 00EB           ;     if(pwrState==PWRON) {
+ 00EB 3DFC01            cmp [X-4],1
+ 00EE B00F              jnz L17
+ 00F0                   .dbline 121
+ 00F0                   .dbline 122
+ 00F0           ;               Port_2_Data_SHADE |= XO_EN_MASK;
+ 00F0 62D000            mov REG[0xd0],>_Port_2_Data_SHADE
+ 00F3 5100              mov A,[_Port_2_Data_SHADE]
+ 00F5 2980              or A,-128
+ 00F7 5300              mov [_Port_2_Data_SHADE],A
+ 00F9                   .dbline 123
+ 00F9           ;               XO_EN_Data_ADDR |= XO_EN_MASK;
+ 00F9 430880            or REG[0x8],-128
+ 00FC                   .dbline 124
+ 00FC           ;       }  else  {
+ 00FC 800A              xjmp L18
+ 00FE           L17:
+ 00FE                   .dbline 124
+ 00FE                   .dbline 125
+ 00FE           ;               XO_EN_Data_ADDR &= ~XO_EN_MASK;
+ 00FE 41087F            and REG[0x8],127
+ 0101                   .dbline 126
+ 0101           ;               Port_2_Data_SHADE &= ~XO_EN_MASK;
+ 0101 62D000            mov REG[0xd0],>_Port_2_Data_SHADE
+ 0104 26007F            and [_Port_2_Data_SHADE],127
+ 0107                   .dbline 127
+ 0107           ;       }
+ 0107           L18:
+ 0107                   .dbline -2
+ 0107           L16:
+ 0107 20                pop X
+ 0108                   .dbline 0 ; func end
+ 0108 7F                ret
+ 0109                   .dbsym l pwrState -4 c
+ 0109                   .dbend

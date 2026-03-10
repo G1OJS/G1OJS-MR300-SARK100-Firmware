@@ -1,0 +1,17 @@
+LTspice 24.1.6 for Windows
+Circuit: C:\Users\drala\Documents\Radio_tools\SARK100\Analysis\LtSpice\SARK100_Full_Bridge_Manual_GUI_Runs\Isolated BridgeAmp.net
+Start Time: Sun Apr  6 22:15:56 2025
+solver = Normal
+Maximum thread count: 4
+tnom = 27
+temp = 27
+method = modified trap
+trtol = 7
+Direct Newton iteration for .op point succeeded.
+Total elapsed time: 0.124 seconds.
+
+Files loaded:
+C:\Users\drala\Documents\Radio_tools\SARK100\Analysis\LtSpice\SARK100_Full_Bridge_Manual_GUI_Runs\Isolated BridgeAmp.net
+C:\Users\drala\AppData\Local\LTspice\lib\cmp\standard.dio
+C:\Users\drala\AppData\Local\LTspice\lib\sub\UniversalOpAmp1.lib
+

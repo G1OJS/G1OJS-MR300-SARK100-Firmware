@@ -1,0 +1,410 @@
+ 0000                   cpu LMM
+                        .module storage.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./storage.c
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\storage.c
+ 0000                   .dbfunc e STR_SaveCalibration _STR_SaveCalibration fV
+ 0000           _STR_SaveCalibration::
+ 0000                   .dbline -1
+ 0000                   .dbline 91
+ 0000           ; //*****************************************************************************/
+ 0000           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0000           ; //
+ 0000           ; //  Copyright © 2010 Melchor Varela - EA4FRB.  All rights reserved.
+ 0000           ; //  Melchor Varela, Madrid, Spain.
+ 0000           ; //  melchor.varela@gmail.com
+ 0000           ; //
+ 0000           ; //  Modifications Copyright © 2024,2025 Alan Robinson G1OJS 
+ 0000           ; //    Alan Robinson, Hampshire England G1OJS@yahoo.com 
+ 0000           ; //
+ 0000           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0000           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0000           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0000           ; //  or (at your option) any later version.
+ 0000           ; //
+ 0000           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0000           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0000           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0000           ; //  GNU General Public License for more details.
+ 0000           ; //
+ 0000           ; //  You should have received a copy of the GNU General Public License
+ 0000           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0000           ; //  see <http://www.gnu.org/licenses/>.
+ 0000           ; //*****************************************************************************/
+ 0000           ; //*****************************************************************************/
+ 0000           ; //
+ 0000           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0000           ; //    FILE NAME:      STORAGE.C
+ 0000           ; //    AUTHOR:         EA4FRB - Melchor Varela
+ 0000           ; //
+ 0000           ; //    DESCRIPTION
+ 0000           ; //
+ 0000           ; //    EEPROM storage functions
+ 0000           ; //
+ 0000           ; //    HISTORY
+ 0000           ; //
+ 0000           ; //    NAME            DATE            REMARKS
+ 0000           ; //
+ 0000           ; //    MVM                     DEC 2009        Creation
+ 0000           ; //
+ 0000           ; //  AJR                       JAN 2025        Align data with refactoring and functional changes      
+ 0000           ; //*****************************************************************************/
+ 0000           ; #include "storage.h"
+ 0000           ; 
+ 0000           ; #include <stdlib.h>
+ 0000           ; #include <string.h>
+ 0000           ; #include <m8c.h>
+ 0000           ; #include "PSoCAPI.h"
+ 0000           ; 
+ 0000           ; #include "glb_data.h"
+ 0000           ; #include "control.h"
+ 0000           ; #include "screens.h"
+ 0000           ; #include "morse.h"
+ 0000           ; #include "msg_generic.h"
+ 0000           ; #include "timers.h"
+ 0000           ; 
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; //  Macros
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; #define offsetof(st, m) \
+ 0000           ;     ((size_t) ( (char *)&((st *)(0))->m - (char *)0 ))
+ 0000           ; 
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; //  Defines
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; #define MAGIC_NUMBER  0x55ab
+ 0000           ; 
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; //  Typedefs
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; typedef struct                                                        // Structure stored in EEPROM
+ 0000           ; {
+ 0000           ;       INT rec_scCalTable[CAL_FREQS_NUM][CAL_LOAD_NUM][2];                             // Cal table
+ 0000           ;       BYTE rec_bDDS_GainStep;                                                                                 // DDS Gain step
+ 0000           ;       BYTE rec_bIsCalibrated;                                                                                 // Identify defaults or calibrated
+ 0000           ;       CONFIG_DATA rec_xConf;                                                                                  // Configuration data
+ 0000           ;       WORD rec_wMagic;                                                                                                // Integrity control
+ 0000           ;       
+ 0000           ; } RECORD_DATA;
+ 0000           ; // 
+ 0000           ; // Size = CalFreqs x CalLoads x (2+2) + 1+ 1+ 2 + 2
+ 0000           ; //            = CalFreqs x CalLoads x 4 + 6
+ 0000           ; //
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; //  FUNCTION NAME:    STR_SaveCalibration
+ 0000           ; //  DESCRIPTION:      Save calibration data in EEPROM
+ 0000           ; //  ARGUMENTS:                none.
+ 0000           ; //  RETURNS:                  none.
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; void STR_SaveCalibration ( void )
+ 0000           ; {
+ 0000                   .dbline 92
+ 0000           ;       E2PROM_bE2Write(offsetof(RECORD_DATA,rec_scCalTable), (unsigned char*) &g_scCalTable, sizeof(g_scCalTable), 25);
+ 0000 10                push X
+ 0001 5019              mov A,25
+ 0003 08                push A
+ 0004 5000              mov A,0
+ 0006 08                push A
+ 0007 5058              mov A,88
+ 0009 08                push A
+ 000A 5000              mov A,>_g_scCalTable
+ 000C 08                push A
+ 000D 5000              mov A,<_g_scCalTable
+ 000F 08                push A
+ 0010 5000              mov A,0
+ 0012 08                push A
+ 0013 08                push A
+ 0014 7C0000            xcall _E2PROM_bE2Write
+ 0017 62D000            mov REG[0xd0],>__r0
+ 001A 38F9              add SP,-7
+ 001C 20                pop X
+ 001D                   .dbline 93
+ 001D           ;       E2PROM_bE2Write(offsetof(RECORD_DATA,rec_bDDS_GainStep), &g_bDDS_GainStep, sizeof(g_bDDS_GainStep), 25);
+ 001D 10                push X
+ 001E 5019              mov A,25
+ 0020 08                push A
+ 0021 5000              mov A,0
+ 0023 08                push A
+ 0024 5001              mov A,1
+ 0026 08                push A
+ 0027 5000              mov A,>_g_bDDS_GainStep
+ 0029 08                push A
+ 002A 5000              mov A,<_g_bDDS_GainStep
+ 002C 08                push A
+ 002D 5000              mov A,0
+ 002F 08                push A
+ 0030 50B0              mov A,-80
+ 0032 08                push A
+ 0033 7C0000            xcall _E2PROM_bE2Write
+ 0036 62D000            mov REG[0xd0],>__r0
+ 0039 38F9              add SP,-7
+ 003B 20                pop X
+ 003C                   .dbline 94
+ 003C           ;       E2PROM_bE2Write(offsetof(RECORD_DATA,rec_bIsCalibrated), &g_bIsCalibrated, sizeof(g_bIsCalibrated), 25);
+ 003C 10                push X
+ 003D 5019              mov A,25
+ 003F 08                push A
+ 0040 5000              mov A,0
+ 0042 08                push A
+ 0043 5001              mov A,1
+ 0045 08                push A
+ 0046 5000              mov A,>_g_bIsCalibrated
+ 0048 08                push A
+ 0049 5000              mov A,<_g_bIsCalibrated
+ 004B 08                push A
+ 004C 5000              mov A,0
+ 004E 08                push A
+ 004F 50B1              mov A,-79
+ 0051 08                push A
+ 0052 7C0000            xcall _E2PROM_bE2Write
+ 0055 62D000            mov REG[0xd0],>__r0
+ 0058 38F9              add SP,-7
+ 005A 20                pop X
+ 005B                   .dbline -2
+ 005B           L11:
+ 005B                   .dbline 0 ; func end
+ 005B 7F                ret
+ 005C                   .dbend
+ 005C                   .dbfunc e STR_SaveConfig _STR_SaveConfig fV
+ 005C           _STR_SaveConfig::
+ 005C                   .dbline -1
+ 005C                   .dbline 103
+ 005C           ; }
+ 005C           ; //-----------------------------------------------------------------------------
+ 005C           ; //  FUNCTION NAME:    STR_SaveConfig
+ 005C           ; //  DESCRIPTION:      Save configuration data
+ 005C           ; //  ARGUMENTS:        none.
+ 005C           ; //  RETURNS:          none.
+ 005C           ; //-----------------------------------------------------------------------------
+ 005C           ; void STR_SaveConfig ( void )
+ 005C           ; {
+ 005C                   .dbline 104
+ 005C           ;       E2PROM_bE2Write(offsetof(RECORD_DATA,rec_xConf), (unsigned char*)&g_xConf, sizeof(g_xConf), 25);
+ 005C 10                push X
+ 005D 5019              mov A,25
+ 005F 08                push A
+ 0060 5000              mov A,0
+ 0062 08                push A
+ 0063 5004              mov A,4
+ 0065 08                push A
+ 0066 5000              mov A,>_g_xConf
+ 0068 08                push A
+ 0069 5000              mov A,<_g_xConf
+ 006B 08                push A
+ 006C 5000              mov A,0
+ 006E 08                push A
+ 006F 50B2              mov A,-78
+ 0071 08                push A
+ 0072 7C0000            xcall _E2PROM_bE2Write
+ 0075 62D000            mov REG[0xd0],>__r0
+ 0078 38F9              add SP,-7
+ 007A 20                pop X
+ 007B                   .dbline -2
+ 007B           L12:
+ 007B                   .dbline 0 ; func end
+ 007B 7F                ret
+ 007C                   .dbend
+ 007C                   .dbfunc e STR_Restore _STR_Restore fV
+ 007C           ;          magic -> X+0
+ 007C           _STR_Restore::
+ 007C                   .dbline -1
+ 007C 10                push X
+ 007D 4F                mov X,SP
+ 007E 3802              add SP,2
+ 0080                   .dbline 113
+ 0080           ; }
+ 0080           ; //-----------------------------------------------------------------------------
+ 0080           ; //  FUNCTION NAME:    STR_Restore
+ 0080           ; //  DESCRIPTION:      Restores EEPROM data. In case of not initialized save defaults
+ 0080           ; //  ARGUMENTS:        none.
+ 0080           ; //  RETURNS:          none.
+ 0080           ; //-----------------------------------------------------------------------------
+ 0080           ; void STR_Restore ( void )
+ 0080           ; {
+ 0080                   .dbline 115
+ 0080           ;       WORD magic;
+ 0080           ;       E2PROM_E2Read(offsetof(RECORD_DATA,rec_wMagic), (unsigned char*) &magic, sizeof(WORD));
+ 0080 10                push X
+ 0081 5000              mov A,0
+ 0083 08                push A
+ 0084 5002              mov A,2
+ 0086 08                push A
+ 0087 62D000            mov REG[0xd0],>__r0
+ 008A 5007              mov A,7
+ 008C 08                push A
+ 008D 10                push X
+ 008E 5000              mov A,0
+ 0090 08                push A
+ 0091 50B6              mov A,-74
+ 0093 08                push A
+ 0094 7C0000            xcall _E2PROM_E2Read
+ 0097 38FA              add SP,-6
+ 0099 20                pop X
+ 009A                   .dbline 116
+ 009A           ;       if (magic != MAGIC_NUMBER)
+ 009A 3D0055            cmp [X+0],85
+ 009D B006              jnz X0
+ 009F 3D01AB            cmp [X+1],-85
+ 00A2 A03A              jz L14
+ 00A4           X0:
+ 00A4                   .dbline 117
+ 00A4           ;       {       
+ 00A4                   .dbline 118
+ 00A4           ;               STR_SaveCalibration();  // Save defaults set in glb_data.c
+ 00A4 9F5A              xcall _STR_SaveCalibration
+ 00A6                   .dbline 119
+ 00A6           ;               g_xConf.bCWPitch=0;
+ 00A6 62D000            mov REG[0xd0],>_g_xConf
+ 00A9 550100            mov [_g_xConf+1],0
+ 00AC                   .dbline 120
+ 00AC           ;               g_xConf.bFltWt=0;
+ 00AC 550300            mov [_g_xConf+3],0
+ 00AF                   .dbline 121
+ 00AF           ;               g_xConf.bUserIdle=0;
+ 00AF 550000            mov [_g_xConf],0
+ 00B2                   .dbline 122
+ 00B2           ;               g_xConf.bVF=2;
+ 00B2 550202            mov [_g_xConf+2],2
+ 00B5                   .dbline 123
+ 00B5           ;               STR_SaveConfig();               // Save defaults set above
+ 00B5 9FA5              xcall _STR_SaveConfig
+ 00B7                   .dbline 124
+ 00B7           ;               magic = MAGIC_NUMBER;
+ 00B7 5601AB            mov [X+1],-85
+ 00BA 560055            mov [X+0],85
+ 00BD                   .dbline 125
+ 00BD           ;               E2PROM_bE2Write(offsetof(RECORD_DATA,rec_wMagic), (unsigned char*) &magic, sizeof(magic), 25);
+ 00BD 10                push X
+ 00BE 5019              mov A,25
+ 00C0 08                push A
+ 00C1 5000              mov A,0
+ 00C3 08                push A
+ 00C4 5002              mov A,2
+ 00C6 08                push A
+ 00C7 62D000            mov REG[0xd0],>__r0
+ 00CA 5007              mov A,7
+ 00CC 08                push A
+ 00CD 10                push X
+ 00CE 5000              mov A,0
+ 00D0 08                push A
+ 00D1 50B6              mov A,-74
+ 00D3 08                push A
+ 00D4 7C0000            xcall _E2PROM_bE2Write
+ 00D7 62D000            mov REG[0xd0],>__r0
+ 00DA 38F9              add SP,-7
+ 00DC 20                pop X
+ 00DD                   .dbline 126
+ 00DD           ;       }
+ 00DD           L14:
+ 00DD                   .dbline 128
+ 00DD           ;       
+ 00DD           ;       E2PROM_E2Read(offsetof(RECORD_DATA,rec_scCalTable), (unsigned char*) &g_scCalTable, sizeof(g_scCalTable));
+ 00DD 10                push X
+ 00DE 5000              mov A,0
+ 00E0 08                push A
+ 00E1 5058              mov A,88
+ 00E3 08                push A
+ 00E4 5000              mov A,>_g_scCalTable
+ 00E6 08                push A
+ 00E7 5000              mov A,<_g_scCalTable
+ 00E9 08                push A
+ 00EA 5000              mov A,0
+ 00EC 08                push A
+ 00ED 08                push A
+ 00EE 7C0000            xcall _E2PROM_E2Read
+ 00F1 38FA              add SP,-6
+ 00F3 20                pop X
+ 00F4                   .dbline 129
+ 00F4           ;       E2PROM_E2Read(offsetof(RECORD_DATA,rec_bDDS_GainStep), (unsigned char*)&g_bDDS_GainStep, sizeof(g_bDDS_GainStep));
+ 00F4 10                push X
+ 00F5 5000              mov A,0
+ 00F7 08                push A
+ 00F8 5001              mov A,1
+ 00FA 08                push A
+ 00FB 5000              mov A,>_g_bDDS_GainStep
+ 00FD 08                push A
+ 00FE 5000              mov A,<_g_bDDS_GainStep
+ 0100 08                push A
+ 0101 5000              mov A,0
+ 0103 08                push A
+ 0104 50B0              mov A,-80
+ 0106 08                push A
+ 0107 7C0000            xcall _E2PROM_E2Read
+ 010A 38FA              add SP,-6
+ 010C 20                pop X
+ 010D                   .dbline 130
+ 010D           ;       E2PROM_E2Read(offsetof(RECORD_DATA,rec_bIsCalibrated), &g_bIsCalibrated, sizeof(g_bIsCalibrated));
+ 010D 10                push X
+ 010E 5000              mov A,0
+ 0110 08                push A
+ 0111 5001              mov A,1
+ 0113 08                push A
+ 0114 5000              mov A,>_g_bIsCalibrated
+ 0116 08                push A
+ 0117 5000              mov A,<_g_bIsCalibrated
+ 0119 08                push A
+ 011A 5000              mov A,0
+ 011C 08                push A
+ 011D 50B1              mov A,-79
+ 011F 08                push A
+ 0120 7C0000            xcall _E2PROM_E2Read
+ 0123 38FA              add SP,-6
+ 0125 20                pop X
+ 0126                   .dbline 131
+ 0126           ;       E2PROM_E2Read(offsetof(RECORD_DATA,rec_xConf), (unsigned char*)&g_xConf, sizeof(g_xConf));
+ 0126 10                push X
+ 0127 5000              mov A,0
+ 0129 08                push A
+ 012A 5004              mov A,4
+ 012C 08                push A
+ 012D 5000              mov A,>_g_xConf
+ 012F 08                push A
+ 0130 5000              mov A,<_g_xConf
+ 0132 08                push A
+ 0133 5000              mov A,0
+ 0135 08                push A
+ 0136 50B2              mov A,-78
+ 0138 08                push A
+ 0139 7C0000            xcall _E2PROM_E2Read
+ 013C 38FA              add SP,-6
+ 013E 20                pop X
+ 013F                   .dbline 133
+ 013F           ;       
+ 013F           ;       if (g_bIsCalibrated == FALSE)           // If not calibrated presents warning text
+ 013F 62D000            mov REG[0xd0],>_g_bIsCalibrated
+ 0142 3C0000            cmp [_g_bIsCalibrated],0
+ 0145 B01C              jnz L19
+ 0147                   .dbline 134
+ 0147           ;       {
+ 0147                   .dbline 135
+ 0147           ;               Screen_Clear(); Screen_CStrAtRowCol(0,0, gErrorUncalibratedStr);
+ 0147 7C0000            xcall _Screen_Clear
+ 014A                   .dbline 135
+ 014A 5000              mov A,>_gErrorUncalibratedStr
+ 014C 08                push A
+ 014D 5000              mov A,<_gErrorUncalibratedStr
+ 014F 08                push A
+ 0150 5000              mov A,0
+ 0152 08                push A
+ 0153 08                push A
+ 0154 7C0000            xcall _Screen_CStrAtRowCol
+ 0157                   .dbline 136
+ 0157           ;               Morse_U();
+ 0157 7C0000            xcall _Morse_U
+ 015A                   .dbline 137
+ 015A           ;               Delay_64ths(TIME_FLASH_MSG);
+ 015A 5060              mov A,96
+ 015C 08                push A
+ 015D 7C0000            xcall _Delay_64ths
+ 0160 38FB              add SP,-5
+ 0162                   .dbline 138
+ 0162           ;       }
+ 0162           L19:
+ 0162                   .dbline -2
+ 0162           L13:
+ 0162 38FE              add SP,-2
+ 0164 20                pop X
+ 0165                   .dbline 0 ; func end
+ 0165 7F                ret
+ 0166                   .dbsym l magic 0 i
+ 0166                   .dbend

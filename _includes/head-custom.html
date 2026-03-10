@@ -1,0 +1,31 @@
+<!-- this is from the head-custom file that contains elements that can be inserted into head blocks in some or all site pages -->
+
+<!-- page-specific content -->
+{% if page.myvariable_name %}
+    <!-- content placed here will appear if frontmatter includes "myvariable_name: true" -->
+    <!-- can be used for css, script etc needed in page head tag -->
+{% endif %}
+
+
+<!-- MathJax support -->
+{% if page.mathjax %}
+<!-- Configuration must be set _before_ loading MathJax from the CDN. See https://github.com/mathjax/MathJax/issues/2852 -->
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [ ['$', '$'] ]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+    </script>
+    <!-- Enable Inline and Block Level Rendering-->
+    <script
+      type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+{% endif %}
+<!-- end of MathJax support -->
+
+<!-- end of head-custom.html -->

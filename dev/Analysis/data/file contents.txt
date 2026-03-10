@@ -1,0 +1,39 @@
+V1.4 2025-03-25 SymVolt.csv:
+[INFO] Reading R_25_MR300_uc
+[INFO] Reading R_25_MR300_ci
+[INFO] Reading R_0_MR300_uc
+[INFO] Reading R_0_MR300_ci
+[INFO] Reading R_10_MR300_uc
+[INFO] Reading R_10_MR300_ci
+[INFO] Reading R_150_MR300_uc
+[INFO] Reading R_150_MR300_ci
+[INFO] Reading R_220_MR300_uc
+[INFO] Reading R_220_MR300_ci
+[INFO] Reading R_5_MR300_uc
+[INFO] Reading R_5_MR300_ci
+[INFO] Reading R_50_MR300_uc
+[INFO] Reading R_50_MR300_ci
+[INFO] Reading R_470_MR300_uc
+[INFO] Reading R_470_MR300_ci
+[INFO] Reading R_100_MR300_uc
+[INFO] Reading R_100_MR300_ci
+[INFO] Reading RLC_220_4.7_470_MR300_uc
+[INFO] Reading RLC_220_4.7_470_MR300_ci
+[INFO] Reading RLC_220_4.7_22_MR300_uc
+[INFO] Reading RLC_220_4.7_22_MR300_ci
+[INFO] Reading R_10000_MR300_uc
+[INFO] Reading RLC_220_4.7_22_LtSpice_
+
+
+bridge_voltages.csv:
+[INFO] Reading R_150_MR300_uc
+[INFO] Reading R_0_MR300_uc
+[INFO] Reading R_220_MR300_uc
+[INFO] Reading R_470_MR300_uc
+[INFO] Reading R_25_MR300_uc
+[INFO] Reading R_5_MR300_uc
+[INFO] Reading R_50_MR300_uc
+[INFO] Reading R_10_MR300_uc
+[INFO] Reading RLC_220_4.7_33_MR300_uc
+[INFO] Reading R_100_MR300_uc
+[INFO] Reading R_10000_MR300_uc

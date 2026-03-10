@@ -1,0 +1,1820 @@
+ 0000                   cpu LMM
+                        .module scans.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./scans.c
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\scans.c
+ 0000                   .dbfunc e Do_VSWR_Scan _Do_VSWR_Scan fV
+ 0000           ;       dwHzHigh -> X+12
+ 0000           ;        dwHzLow -> X+8
+ 0000           ;  dwEntryFreqHz -> X+4
+ 0000           ;     dwMinSWRHz -> X+0
+ 0000           _Do_VSWR_Scan::
+ 0000                   .dbline -1
+ 0000 10                push X
+ 0001 4F                mov X,SP
+ 0002 3810              add SP,16
+ 0004                   .dbline 66
+ 0004           ; //*****************************************************************************/
+ 0004           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0004           ; //
+ 0004           ; //    Copyright © 2025 Alan Robinson G1OJS Hampshire England G1OJS@yahoo.com with 
+ 0004           ; //  acknowledgement & thanks to Melchor Varela © 2010, EA4FRB Madrid, Spain 
+ 0004           ; //    (melchor.varela@gmail.com) for the overall software and ideas.
+ 0004           ; //  
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0004           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0004           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0004           ; //  or (at your option) any later version.
+ 0004           ; //
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0004           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0004           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0004           ; //  GNU General Public License for more details.
+ 0004           ; //
+ 0004           ; //  You should have received a copy of the GNU General Public License
+ 0004           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0004           ; //  see <http://www.gnu.org/licenses/>.
+ 0004           ; //*****************************************************************************/
+ 0004           ; //*****************************************************************************/
+ 0004           ; //
+ 0004           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0004           ; //    FILE NAME:      scans.c
+ 0004           ; //    AUTHOR:         G1OJS - Alan Robinson
+ 0004           ; //    DESCRIPTION     Scanning functions
+ 0004           ; //    HISTORY
+ 0004           ; //    NAME            DATE            REMARKS 
+ 0004           ; //    AJR                     FEB 2025        G1OJS  - creation 
+ 0004           ; //*****************************************************************************/
+ 0004           ; 
+ 0004           ; #include <stdlib.h>
+ 0004           ; #include <m8c.h>
+ 0004           ; #include "scans.h"
+ 0004           ; #include "morse.h"
+ 0004           ; #include "control.h"
+ 0004           ; #include "screens.h"
+ 0004           ; #include "glb_data.h"
+ 0004           ; #include "msg_generic.h"
+ 0004           ; #include "keypad.h"
+ 0004           ; #include "bridge.h"
+ 0004           ; #include "correctionmodel.h"
+ 0004           ; 
+ 0004           ; 
+ 0004           ; void MeasureCorrectCalc(void);
+ 0004           ; char FormatNumberRJ(unsigned long dwVal, unsigned char bFieldLen, unsigned char bDP);
+ 0004           ; 
+ 0004           ; // TODO - the latest function here is Do_LineLength_Scan which used to call ScanFreqs
+ 0004           ; // but now has a better (more memory-efficient, more robust to noise tbc) minimum
+ 0004           ; // detection algorithm
+ 0004           ; // Next step is to use this algorithm in VSWR scanning, and factor it into a 
+ 0004           ; // mindetect function if that makes sense to do
+ 0004           ; // 
+ 0004           ; 
+ 0004           ; 
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; //  FUNCTION NAME:    Do_VSWR_Scan
+ 0004           ; //  DESCRIPTION:      Scan within band limits to find minimum VSWR that is also below SWR_BW_THRESH
+ 0004           ; //                                    If found, scan up and down (including beyond band limits) to
+ 0004           ; //                                    find SWR bandwidth at SWR_BW_THRESH
+ 0004           ; //  ARGUMENTS:                none
+ 0004           ; //  RETURNS:          Nothing
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; void Do_VSWR_Scan (void)
+ 0004           ; {
+ 0004                   .dbline 70
+ 0004           ;       #define COARSE_STEP_Hz 51000
+ 0004           ;       #define FINE_STEP_Hz 1000
+ 0004           ; 
+ 0004           ;       DWORD dwEntryFreqHz=g_dwCurrHz;
+ 0004 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0007 5100              mov A,[_g_dwCurrHz]
+ 0009 5404              mov [X+4],A
+ 000B 5101              mov A,[_g_dwCurrHz+1]
+ 000D 5405              mov [X+5],A
+ 000F 5102              mov A,[_g_dwCurrHz+2]
+ 0011 5406              mov [X+6],A
+ 0013 5103              mov A,[_g_dwCurrHz+3]
+ 0015 5407              mov [X+7],A
+ 0017                   .dbline 75
+ 0017           ;       DWORD dwMinSWRHz;
+ 0017           ;       DWORD dwHzLow;
+ 0017           ;       DWORD dwHzHigh;
+ 0017           ; 
+ 0017           ;       Screen_Clear();
+ 0017 7C0000            xcall _Screen_Clear
+ 001A                   .dbline 76
+ 001A           ;       Screen_HideCursor();
+ 001A 7C0000            xcall _Screen_HideCursor
+ 001D                   .dbline 80
+ 001D           ; 
+ 001D           ;       // STEP 1: scan the whole band for best minimum Vr (fast)
+ 001D           ;       // coarse scan
+ 001D           ;       Screen_CStrAtRowCol(0, 0, gScanCoarseStr);
+ 001D 5000              mov A,>_gScanCoarseStr
+ 001F 08                push A
+ 0020 5000              mov A,<_gScanCoarseStr
+ 0022 08                push A
+ 0023 5000              mov A,0
+ 0025 08                push A
+ 0026 08                push A
+ 0027 7C0000            xcall _Screen_CStrAtRowCol
+ 002A 38FC              add SP,-4
+ 002C                   .dbline 81
+ 002C           ;       g_dwCurrHz = (DWORD)BAND_FREQ_ToHz*g_wBandBoundaries[g_bBandIndex];
+ 002C 62D000            mov REG[0xd0],>_g_bBandIndex
+ 002F 5100              mov A,[_g_bBandIndex]
+ 0031 62D000            mov REG[0xd0],>__r0
+ 0034 5300              mov [__r1],A
+ 0036 550000            mov [__r0],0
+ 0039 6500              asl [__r1]
+ 003B 6B00              rlc [__r0]
+ 003D 060000            add [__r1],<_g_wBandBoundaries
+ 0040 0E0000            adc [__r0],>_g_wBandBoundaries
+ 0043 5100              mov A,[__r0]
+ 0045 10                push X
+ 0046 08                push A
+ 0047 5800              mov X,[__r1]
+ 0049 28                romx
+ 004A 5300              mov [__r0],A
+ 004C 18                pop A
+ 004D 75                inc X
+ 004E 0900              adc A,0
+ 0050 28                romx
+ 0051 20                pop X
+ 0052 5300              mov [__r3],A
+ 0054 5100              mov A,[__r0]
+ 0056 5300              mov [__r2],A
+ 0058 5000              mov A,0
+ 005A 08                push A
+ 005B 08                push A
+ 005C 5100              mov A,[__r2]
+ 005E 08                push A
+ 005F 5100              mov A,[__r3]
+ 0061 08                push A
+ 0062 5000              mov A,0
+ 0064 08                push A
+ 0065 5001              mov A,1
+ 0067 08                push A
+ 0068 5086              mov A,-122
+ 006A 08                push A
+ 006B 50A0              mov A,-96
+ 006D 08                push A
+ 006E 7C0000            xcall __mul_32X32_32
+ 0071 38FC              add SP,-4
+ 0073 18                pop A
+ 0074 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0077 5303              mov [_g_dwCurrHz+3],A
+ 0079 18                pop A
+ 007A 5302              mov [_g_dwCurrHz+2],A
+ 007C 18                pop A
+ 007D 5301              mov [_g_dwCurrHz+1],A
+ 007F 18                pop A
+ 0080 5300              mov [_g_dwCurrHz],A
+ 0082                   .dbline 82
+ 0082           ;       findGlobalMinimum(SCANPARAM_Vruc, (DWORD)BAND_FREQ_ToHz*g_wBandBoundaries[g_bBandIndex+1], COARSE_STEP_Hz);
+ 0082 5000              mov A,0
+ 0084 08                push A
+ 0085 08                push A
+ 0086 50C7              mov A,-57
+ 0088 08                push A
+ 0089 5038              mov A,56
+ 008B 08                push A
+ 008C 62D000            mov REG[0xd0],>_g_bBandIndex
+ 008F 5100              mov A,[_g_bBandIndex]
+ 0091 62D000            mov REG[0xd0],>__r0
+ 0094 5300              mov [__r1],A
+ 0096 550000            mov [__r0],0
+ 0099 060001            add [__r1],1
+ 009C 0E0000            adc [__r0],0
+ 009F 6500              asl [__r1]
+ 00A1 6B00              rlc [__r0]
+ 00A3 060000            add [__r1],<_g_wBandBoundaries
+ 00A6 0E0000            adc [__r0],>_g_wBandBoundaries
+ 00A9 5100              mov A,[__r0]
+ 00AB 10                push X
+ 00AC 08                push A
+ 00AD 5800              mov X,[__r1]
+ 00AF 28                romx
+ 00B0 5300              mov [__r0],A
+ 00B2 18                pop A
+ 00B3 75                inc X
+ 00B4 0900              adc A,0
+ 00B6 28                romx
+ 00B7 20                pop X
+ 00B8 5300              mov [__r3],A
+ 00BA 5100              mov A,[__r0]
+ 00BC 5300              mov [__r2],A
+ 00BE 5000              mov A,0
+ 00C0 08                push A
+ 00C1 08                push A
+ 00C2 5100              mov A,[__r2]
+ 00C4 08                push A
+ 00C5 5100              mov A,[__r3]
+ 00C7 08                push A
+ 00C8 5000              mov A,0
+ 00CA 08                push A
+ 00CB 5001              mov A,1
+ 00CD 08                push A
+ 00CE 5086              mov A,-122
+ 00D0 08                push A
+ 00D1 50A0              mov A,-96
+ 00D3 08                push A
+ 00D4 7C0000            xcall __mul_32X32_32
+ 00D7 38FC              add SP,-4
+ 00D9 18                pop A
+ 00DA 5300              mov [__r3],A
+ 00DC 18                pop A
+ 00DD 5300              mov [__r2],A
+ 00DF 18                pop A
+ 00E0 5300              mov [__r1],A
+ 00E2 18                pop A
+ 00E3 08                push A
+ 00E4 5100              mov A,[__r1]
+ 00E6 08                push A
+ 00E7 5100              mov A,[__r2]
+ 00E9 08                push A
+ 00EA 5100              mov A,[__r3]
+ 00EC 08                push A
+ 00ED 5001              mov A,1
+ 00EF 08                push A
+ 00F0 9475              xcall _findGlobalMinimum
+ 00F2 38F7              add SP,-9
+ 00F4                   .dbline 83
+ 00F4           ;       dwMinSWRHz = g_dwCurrHz;
+ 00F4 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 00F7 5100              mov A,[_g_dwCurrHz]
+ 00F9 5400              mov [X+0],A
+ 00FB 5101              mov A,[_g_dwCurrHz+1]
+ 00FD 5401              mov [X+1],A
+ 00FF 5102              mov A,[_g_dwCurrHz+2]
+ 0101 5402              mov [X+2],A
+ 0103 5103              mov A,[_g_dwCurrHz+3]
+ 0105 5403              mov [X+3],A
+ 0107                   .dbline 84
+ 0107           ;       Morse_Dit(); 
+ 0107 7C0000            xcall _Morse_Dit
+ 010A                   .dbline 85
+ 010A           ;       Screen_Frequency(Display_Hz); 
+ 010A 5000              mov A,0
+ 010C 08                push A
+ 010D 7C0000            xcall _Screen_Frequency
+ 0110                   .dbline 88
+ 0110           ;       
+ 0110           ;       // fine scan around coarse minimum
+ 0110           ;       Screen_CStrAtRowCol(1, 0, gScanFineStr);
+ 0110 5000              mov A,>_gScanFineStr
+ 0112 08                push A
+ 0113 5000              mov A,<_gScanFineStr
+ 0115 08                push A
+ 0116 5000              mov A,0
+ 0118 08                push A
+ 0119 5001              mov A,1
+ 011B 08                push A
+ 011C 7C0000            xcall _Screen_CStrAtRowCol
+ 011F 38FB              add SP,-5
+ 0121                   .dbline 89
+ 0121           ;       g_dwCurrHz -= COARSE_STEP_Hz;   // reverse one step
+ 0121 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0124 160338            sub [_g_dwCurrHz+3],56
+ 0127 1E02C7            sbb [_g_dwCurrHz+2],-57
+ 012A 1E0100            sbb [_g_dwCurrHz+1],0
+ 012D 1E0000            sbb [_g_dwCurrHz],0
+ 0130                   .dbline 90
+ 0130           ;       findGlobalMinimum(SCANPARAM_SWR, g_dwCurrHz+(DWORD)2*COARSE_STEP_Hz, FINE_STEP_Hz);
+ 0130 5000              mov A,0
+ 0132 08                push A
+ 0133 08                push A
+ 0134 5003              mov A,3
+ 0136 08                push A
+ 0137 50E8              mov A,-24
+ 0139 08                push A
+ 013A 5103              mov A,[_g_dwCurrHz+3]
+ 013C 0170              add A,112
+ 013E 62D000            mov REG[0xd0],>__r0
+ 0141 5300              mov [__r3],A
+ 0143 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0146 5102              mov A,[_g_dwCurrHz+2]
+ 0148 098E              adc A,-114
+ 014A 62D000            mov REG[0xd0],>__r0
+ 014D 5300              mov [__r2],A
+ 014F 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0152 5101              mov A,[_g_dwCurrHz+1]
+ 0154 0901              adc A,1
+ 0156 62D000            mov REG[0xd0],>__r0
+ 0159 5300              mov [__r1],A
+ 015B 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 015E 5100              mov A,[_g_dwCurrHz]
+ 0160 0900              adc A,0
+ 0162 62D000            mov REG[0xd0],>__r0
+ 0165 08                push A
+ 0166 5100              mov A,[__r1]
+ 0168 08                push A
+ 0169 5100              mov A,[__r2]
+ 016B 08                push A
+ 016C 5100              mov A,[__r3]
+ 016E 08                push A
+ 016F 5000              mov A,0
+ 0171 08                push A
+ 0172 93F3              xcall _findGlobalMinimum
+ 0174                   .dbline 91
+ 0174           ;       dwMinSWRHz = g_dwCurrHz;
+ 0174 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0177 5100              mov A,[_g_dwCurrHz]
+ 0179 5400              mov [X+0],A
+ 017B 5101              mov A,[_g_dwCurrHz+1]
+ 017D 5401              mov [X+1],A
+ 017F 5102              mov A,[_g_dwCurrHz+2]
+ 0181 5402              mov [X+2],A
+ 0183 5103              mov A,[_g_dwCurrHz+3]
+ 0185 5403              mov [X+3],A
+ 0187                   .dbline 92
+ 0187           ;       Morse_Dit(); 
+ 0187 7C0000            xcall _Morse_Dit
+ 018A                   .dbline 93
+ 018A           ;       Screen_Frequency(Display_Hz); 
+ 018A 5000              mov A,0
+ 018C 08                push A
+ 018D 7C0000            xcall _Screen_Frequency
+ 0190 38F6              add SP,-10
+ 0192                   .dbline 95
+ 0192           ;               
+ 0192           ;       if(g_wSwr100 < SWR_BW_THRESH) { 
+ 0192 62D000            mov REG[0xd0],>_g_wSwr100
+ 0195 5101              mov A,[_g_wSwr100+1]
+ 0197 11C8              sub A,-56
+ 0199 5100              mov A,[_g_wSwr100]
+ 019B 1900              sbb A,0
+ 019D D20F              jnc L13
+ 019F           X0:
+ 019F                   .dbline 95
+ 019F                   .dbline 98
+ 019F           ;               // STEP 2: search downwards and upwards from the global minimum to find the bandwidth,
+ 019F           ;               // display the bandwidth and return with global variables set to display full measurement results at match frequency
+ 019F           ;               Screen_CStrAtRowCol(0, 0, gScanFineStr);
+ 019F 5000              mov A,>_gScanFineStr
+ 01A1 08                push A
+ 01A2 5000              mov A,<_gScanFineStr
+ 01A4 08                push A
+ 01A5 5000              mov A,0
+ 01A7 08                push A
+ 01A8 08                push A
+ 01A9 7C0000            xcall _Screen_CStrAtRowCol
+ 01AC                   .dbline 99
+ 01AC           ;               Screen_CStrAtRowCol(1, 0, gScanThreshStr);
+ 01AC 5000              mov A,>_gScanThreshStr
+ 01AE 08                push A
+ 01AF 5000              mov A,<_gScanThreshStr
+ 01B1 08                push A
+ 01B2 5000              mov A,0
+ 01B4 08                push A
+ 01B5 5001              mov A,1
+ 01B7 08                push A
+ 01B8 7C0000            xcall _Screen_CStrAtRowCol
+ 01BB 38F8              add SP,-8
+ 01BD                   .dbline 101
+ 01BD           ; 
+ 01BD           ;               findSWRThreshold(SCANDIRECTION_DOWN, FREQ_MIN_Hz, COARSE_STEP_Hz);      
+ 01BD 5000              mov A,0
+ 01BF 08                push A
+ 01C0 08                push A
+ 01C1 50C7              mov A,-57
+ 01C3 08                push A
+ 01C4 5038              mov A,56
+ 01C6 08                push A
+ 01C7 5000              mov A,0
+ 01C9 08                push A
+ 01CA 500F              mov A,15
+ 01CC 08                push A
+ 01CD 5042              mov A,66
+ 01CF 08                push A
+ 01D0 5040              mov A,64
+ 01D2 08                push A
+ 01D3 5001              mov A,1
+ 01D5 08                push A
+ 01D6 96B9              xcall _findSWRThreshold
+ 01D8                   .dbline 102
+ 01D8           ;               g_dwCurrHz      = g_dwCurrHz + COARSE_STEP_Hz;  // reverse one step
+ 01D8 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 01DB 060338            add [_g_dwCurrHz+3],56
+ 01DE 0E02C7            adc [_g_dwCurrHz+2],-57
+ 01E1 0E0100            adc [_g_dwCurrHz+1],0
+ 01E4 0E0000            adc [_g_dwCurrHz],0
+ 01E7                   .dbline 103
+ 01E7           ;               findSWRThreshold(SCANDIRECTION_DOWN, g_dwCurrHz - COARSE_STEP_Hz, FINE_STEP_Hz);        
+ 01E7 5000              mov A,0
+ 01E9 08                push A
+ 01EA 08                push A
+ 01EB 5003              mov A,3
+ 01ED 08                push A
+ 01EE 50E8              mov A,-24
+ 01F0 08                push A
+ 01F1 5103              mov A,[_g_dwCurrHz+3]
+ 01F3 1138              sub A,56
+ 01F5 62D000            mov REG[0xd0],>__r0
+ 01F8 5300              mov [__r3],A
+ 01FA 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 01FD 5102              mov A,[_g_dwCurrHz+2]
+ 01FF 19C7              sbb A,-57
+ 0201 62D000            mov REG[0xd0],>__r0
+ 0204 5300              mov [__r2],A
+ 0206 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0209 5101              mov A,[_g_dwCurrHz+1]
+ 020B 1900              sbb A,0
+ 020D 62D000            mov REG[0xd0],>__r0
+ 0210 5300              mov [__r1],A
+ 0212 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0215 5100              mov A,[_g_dwCurrHz]
+ 0217 1900              sbb A,0
+ 0219 62D000            mov REG[0xd0],>__r0
+ 021C 08                push A
+ 021D 5100              mov A,[__r1]
+ 021F 08                push A
+ 0220 5100              mov A,[__r2]
+ 0222 08                push A
+ 0223 5100              mov A,[__r3]
+ 0225 08                push A
+ 0226 5001              mov A,1
+ 0228 08                push A
+ 0229 9666              xcall _findSWRThreshold
+ 022B 38EE              add SP,-18
+ 022D                   .dbline 104
+ 022D           ;               dwHzLow=g_dwCurrHz;
+ 022D 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0230 5100              mov A,[_g_dwCurrHz]
+ 0232 5408              mov [X+8],A
+ 0234 5101              mov A,[_g_dwCurrHz+1]
+ 0236 5409              mov [X+9],A
+ 0238 5102              mov A,[_g_dwCurrHz+2]
+ 023A 540A              mov [X+10],A
+ 023C 5103              mov A,[_g_dwCurrHz+3]
+ 023E 540B              mov [X+11],A
+ 0240                   .dbline 106
+ 0240           ;       
+ 0240           ;               g_dwCurrHz=dwMinSWRHz;  // set freq to match freq and scan up to SWR>threshold
+ 0240 5200              mov A,[X+0]
+ 0242 5300              mov [_g_dwCurrHz],A
+ 0244 5201              mov A,[X+1]
+ 0246 5301              mov [_g_dwCurrHz+1],A
+ 0248 5202              mov A,[X+2]
+ 024A 5302              mov [_g_dwCurrHz+2],A
+ 024C 5203              mov A,[X+3]
+ 024E 5303              mov [_g_dwCurrHz+3],A
+ 0250                   .dbline 107
+ 0250           ;               findSWRThreshold(SCANDIRECTION_UP, FREQ_MAX_Hz, COARSE_STEP_Hz);        
+ 0250 5000              mov A,0
+ 0252 08                push A
+ 0253 08                push A
+ 0254 50C7              mov A,-57
+ 0256 08                push A
+ 0257 5038              mov A,56
+ 0259 08                push A
+ 025A 5003              mov A,3
+ 025C 08                push A
+ 025D 5093              mov A,-109
+ 025F 08                push A
+ 0260 5087              mov A,-121
+ 0262 08                push A
+ 0263 5000              mov A,0
+ 0265 08                push A
+ 0266 08                push A
+ 0267 9628              xcall _findSWRThreshold
+ 0269                   .dbline 108
+ 0269           ;               g_dwCurrHz      = g_dwCurrHz - COARSE_STEP_Hz;  // reverse one step
+ 0269 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 026C 160338            sub [_g_dwCurrHz+3],56
+ 026F 1E02C7            sbb [_g_dwCurrHz+2],-57
+ 0272 1E0100            sbb [_g_dwCurrHz+1],0
+ 0275 1E0000            sbb [_g_dwCurrHz],0
+ 0278                   .dbline 109
+ 0278           ;               findSWRThreshold(SCANDIRECTION_UP, g_dwCurrHz + COARSE_STEP_Hz, FINE_STEP_Hz);  
+ 0278 5000              mov A,0
+ 027A 08                push A
+ 027B 08                push A
+ 027C 5003              mov A,3
+ 027E 08                push A
+ 027F 50E8              mov A,-24
+ 0281 08                push A
+ 0282 5103              mov A,[_g_dwCurrHz+3]
+ 0284 0138              add A,56
+ 0286 62D000            mov REG[0xd0],>__r0
+ 0289 5300              mov [__r3],A
+ 028B 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 028E 5102              mov A,[_g_dwCurrHz+2]
+ 0290 09C7              adc A,-57
+ 0292 62D000            mov REG[0xd0],>__r0
+ 0295 5300              mov [__r2],A
+ 0297 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 029A 5101              mov A,[_g_dwCurrHz+1]
+ 029C 0900              adc A,0
+ 029E 62D000            mov REG[0xd0],>__r0
+ 02A1 5300              mov [__r1],A
+ 02A3 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 02A6 5100              mov A,[_g_dwCurrHz]
+ 02A8 0900              adc A,0
+ 02AA 62D000            mov REG[0xd0],>__r0
+ 02AD 08                push A
+ 02AE 5100              mov A,[__r1]
+ 02B0 08                push A
+ 02B1 5100              mov A,[__r2]
+ 02B3 08                push A
+ 02B4 5100              mov A,[__r3]
+ 02B6 08                push A
+ 02B7 5000              mov A,0
+ 02B9 08                push A
+ 02BA 95D5              xcall _findSWRThreshold
+ 02BC 38EE              add SP,-18
+ 02BE                   .dbline 110
+ 02BE           ;               dwHzHigh=g_dwCurrHz;
+ 02BE 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 02C1 5100              mov A,[_g_dwCurrHz]
+ 02C3 540C              mov [X+12],A
+ 02C5 5101              mov A,[_g_dwCurrHz+1]
+ 02C7 540D              mov [X+13],A
+ 02C9 5102              mov A,[_g_dwCurrHz+2]
+ 02CB 540E              mov [X+14],A
+ 02CD 5103              mov A,[_g_dwCurrHz+3]
+ 02CF 540F              mov [X+15],A
+ 02D1                   .dbline 113
+ 02D1           ;       
+ 02D1           ;               // Set g_dwCurrHz to min swr freq, measure and display results (live SWR and Frequency plus BW in bottom row) and wait for keypress
+ 02D1           ;               Screen_Clear();
+ 02D1 7C0000            xcall _Screen_Clear
+ 02D4                   .dbline 114
+ 02D4           ;               g_dwCurrHz=dwMinSWRHz;
+ 02D4 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 02D7 5200              mov A,[X+0]
+ 02D9 5300              mov [_g_dwCurrHz],A
+ 02DB 5201              mov A,[X+1]
+ 02DD 5301              mov [_g_dwCurrHz+1],A
+ 02DF 5202              mov A,[X+2]
+ 02E1 5302              mov [_g_dwCurrHz+2],A
+ 02E3 5203              mov A,[X+3]
+ 02E5 5303              mov [_g_dwCurrHz+3],A
+ 02E7                   .dbline 115
+ 02E7           ;               Screen_Frequency(Display_Hz); 
+ 02E7 5000              mov A,0
+ 02E9 08                push A
+ 02EA 7C0000            xcall _Screen_Frequency
+ 02ED                   .dbline 116
+ 02ED           ;               MeasureCorrectCalc();
+ 02ED 7C0000            xcall _MeasureCorrectCalc
+ 02F0                   .dbline 117
+ 02F0           ;               Screen_SRXZ(); 
+ 02F0 7C0000            xcall _Screen_SRXZ
+ 02F3                   .dbline 118
+ 02F3           ;               Screen_CStrAtRowCol(1, 0, gBlankStr_16);
+ 02F3 5000              mov A,>_gBlankStr_16
+ 02F5 08                push A
+ 02F6 5000              mov A,<_gBlankStr_16
+ 02F8 08                push A
+ 02F9 5000              mov A,0
+ 02FB 08                push A
+ 02FC 5001              mov A,1
+ 02FE 08                push A
+ 02FF 7C0000            xcall _Screen_CStrAtRowCol
+ 0302 38FB              add SP,-5
+ 0304                   .dbline 119
+ 0304           ;               FormatNumberRJ(dwHzLow /1000, 5, 0); Screen_StrAtRowCol(1, 0, g_buffer16);
+ 0304 5000              mov A,0
+ 0306 08                push A
+ 0307 5005              mov A,5
+ 0309 08                push A
+ 030A 62D000            mov REG[0xd0],>__r0
+ 030D 5000              mov A,0
+ 030F 08                push A
+ 0310 08                push A
+ 0311 5003              mov A,3
+ 0313 08                push A
+ 0314 50E8              mov A,-24
+ 0316 08                push A
+ 0317 5208              mov A,[X+8]
+ 0319 08                push A
+ 031A 5209              mov A,[X+9]
+ 031C 08                push A
+ 031D 520A              mov A,[X+10]
+ 031F 08                push A
+ 0320 520B              mov A,[X+11]
+ 0322 08                push A
+ 0323 7C0000            xcall __divmodu_32X32_32
+ 0326 18                pop A
+ 0327 5300              mov [__r3],A
+ 0329 18                pop A
+ 032A 5300              mov [__r2],A
+ 032C 18                pop A
+ 032D 5300              mov [__r1],A
+ 032F 18                pop A
+ 0330 38FC              add SP,-4
+ 0332 08                push A
+ 0333 5100              mov A,[__r1]
+ 0335 08                push A
+ 0336 5100              mov A,[__r2]
+ 0338 08                push A
+ 0339 5100              mov A,[__r3]
+ 033B 08                push A
+ 033C 7C0000            xcall _FormatNumberRJ
+ 033F 62D000            mov REG[0xd0],>__r0
+ 0342                   .dbline 119
+ 0342 5000              mov A,>_g_buffer16
+ 0344 08                push A
+ 0345 5000              mov A,<_g_buffer16
+ 0347 08                push A
+ 0348 5000              mov A,0
+ 034A 08                push A
+ 034B 5001              mov A,1
+ 034D 08                push A
+ 034E 7C0000            xcall _Screen_StrAtRowCol
+ 0351 38F6              add SP,-10
+ 0353                   .dbline 120
+ 0353           ;               FormatNumberRJ(dwHzHigh /1000, 5, 0); Screen_StrAtRowCol(1, 8, g_buffer16);
+ 0353 5000              mov A,0
+ 0355 08                push A
+ 0356 5005              mov A,5
+ 0358 08                push A
+ 0359 62D000            mov REG[0xd0],>__r0
+ 035C 5000              mov A,0
+ 035E 08                push A
+ 035F 08                push A
+ 0360 5003              mov A,3
+ 0362 08                push A
+ 0363 50E8              mov A,-24
+ 0365 08                push A
+ 0366 520C              mov A,[X+12]
+ 0368 08                push A
+ 0369 520D              mov A,[X+13]
+ 036B 08                push A
+ 036C 520E              mov A,[X+14]
+ 036E 08                push A
+ 036F 520F              mov A,[X+15]
+ 0371 08                push A
+ 0372 7C0000            xcall __divmodu_32X32_32
+ 0375 18                pop A
+ 0376 5300              mov [__r3],A
+ 0378 18                pop A
+ 0379 5300              mov [__r2],A
+ 037B 18                pop A
+ 037C 5300              mov [__r1],A
+ 037E 18                pop A
+ 037F 38FC              add SP,-4
+ 0381 08                push A
+ 0382 5100              mov A,[__r1]
+ 0384 08                push A
+ 0385 5100              mov A,[__r2]
+ 0387 08                push A
+ 0388 5100              mov A,[__r3]
+ 038A 08                push A
+ 038B 7C0000            xcall _FormatNumberRJ
+ 038E 38FA              add SP,-6
+ 0390 62D000            mov REG[0xd0],>__r0
+ 0393                   .dbline 120
+ 0393 5000              mov A,>_g_buffer16
+ 0395 08                push A
+ 0396 5000              mov A,<_g_buffer16
+ 0398 08                push A
+ 0399 5008              mov A,8
+ 039B 08                push A
+ 039C 5001              mov A,1
+ 039E 08                push A
+ 039F 7C0000            xcall _Screen_StrAtRowCol
+ 03A2                   .dbline 122
+ 03A2           ;       
+ 03A2           ;               KEYPAD_WaitKey(TIME_WAIT_KEY_S);
+ 03A2 501E              mov A,30
+ 03A4 08                push A
+ 03A5 7C0000            xcall _KEYPAD_WaitKey
+ 03A8 38FB              add SP,-5
+ 03AA 62D000            mov REG[0xd0],>__r0
+ 03AD                   .dbline 123
+ 03AD           ;       }
+ 03AD           L13:
+ 03AD                   .dbline 125
+ 03AD           ;       
+ 03AD           ;       Screen_Clear();
+ 03AD 7C0000            xcall _Screen_Clear
+ 03B0                   .dbline 126
+ 03B0           ;       g_dwCurrHz = dwMinSWRHz;
+ 03B0 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 03B3 5200              mov A,[X+0]
+ 03B5 5300              mov [_g_dwCurrHz],A
+ 03B7 5201              mov A,[X+1]
+ 03B9 5301              mov [_g_dwCurrHz+1],A
+ 03BB 5202              mov A,[X+2]
+ 03BD 5302              mov [_g_dwCurrHz+2],A
+ 03BF 5203              mov A,[X+3]
+ 03C1 5303              mov [_g_dwCurrHz+3],A
+ 03C3                   .dbline -2
+ 03C3           L12:
+ 03C3 38F0              add SP,-16
+ 03C5 20                pop X
+ 03C6                   .dbline 0 ; func end
+ 03C6 7F                ret
+ 03C7                   .dbsym l dwHzHigh 12 l
+ 03C7                   .dbsym l dwHzLow 8 l
+ 03C7                   .dbsym l dwEntryFreqHz 4 l
+ 03C7                   .dbsym l dwMinSWRHz 0 l
+ 03C7                   .dbend
+ 03C7                   .dbfunc e Do_LineLength_Scan _Do_LineLength_Scan fV
+ 03C7           ;  dwEntryFreqHz -> X+3
+ 03C7           ; wLastMinFreqkHz -> X+1
+ 03C7           ;      bMinCount -> X+0
+ 03C7           _Do_LineLength_Scan::
+ 03C7                   .dbline -1
+ 03C7 10                push X
+ 03C8 4F                mov X,SP
+ 03C9 3807              add SP,7
+ 03CB                   .dbline 137
+ 03CB           ; 
+ 03CB           ; }
+ 03CB           ; 
+ 03CB           ; //-----------------------------------------------------------------------------
+ 03CB           ; //  FUNCTION NAME:    Do_LineLength_Scan
+ 03CB           ; //  DESCRIPTION:      Scanning routine
+ 03CB           ; //  ARGUMENTS:                none
+ 03CB           ; //  RETURNS:          Nothing
+ 03CB           ; //-----------------------------------------------------------------------------
+ 03CB           ; void Do_LineLength_Scan (void)
+ 03CB           ; {
+ 03CB                   .dbline 141
+ 03CB           ;       #define STEPHZ 233000
+ 03CB           ;       BYTE    bMinCount;
+ 03CB           ;       WORD    wLastMinFreqkHz;
+ 03CB           ;       DWORD   dwEntryFreqHz=g_dwCurrHz;
+ 03CB 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 03CE 5100              mov A,[_g_dwCurrHz]
+ 03D0 5403              mov [X+3],A
+ 03D2 5101              mov A,[_g_dwCurrHz+1]
+ 03D4 5404              mov [X+4],A
+ 03D6 5102              mov A,[_g_dwCurrHz+2]
+ 03D8 5405              mov [X+5],A
+ 03DA 5103              mov A,[_g_dwCurrHz+3]
+ 03DC 5406              mov [X+6],A
+ 03DE           L16:
+ 03DE                   .dbline 143
+ 03DE           ;       
+ 03DE           ;       do { // this loop gives opportunity to repeat the whole process without going through menus again
+ 03DE                   .dbline 145
+ 03DE           ; 
+ 03DE           ;               Screen_Clear();
+ 03DE 7C0000            xcall _Screen_Clear
+ 03E1                   .dbline 146
+ 03E1           ;               Screen_CStrAtRowCol(0, 0, gMinimaStr);
+ 03E1 5000              mov A,>_gMinimaStr
+ 03E3 08                push A
+ 03E4 5000              mov A,<_gMinimaStr
+ 03E6 08                push A
+ 03E7 5000              mov A,0
+ 03E9 08                push A
+ 03EA 08                push A
+ 03EB 7C0000            xcall _Screen_CStrAtRowCol
+ 03EE 38FC              add SP,-4
+ 03F0                   .dbline 147
+ 03F0           ;               Screen_HideCursor();
+ 03F0 7C0000            xcall _Screen_HideCursor
+ 03F3                   .dbline 150
+ 03F3           ; 
+ 03F3           ;               // scan upwards from device min freq and stop on each minimum of *either* Vz or Va and record frequency
+ 03F3           ;               g_dwCurrHz = FREQ_MIN_Hz;
+ 03F3 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 03F6 550000            mov [_g_dwCurrHz],0
+ 03F9 55010F            mov [_g_dwCurrHz+1],15
+ 03FC 550242            mov [_g_dwCurrHz+2],66
+ 03FF 550340            mov [_g_dwCurrHz+3],64
+ 0402                   .dbline 151
+ 0402           ;               bMinCount=0;
+ 0402 560000            mov [X+0],0
+ 0405           L19:
+ 0405                   .dbline 152
+ 0405           ;               do {
+ 0405                   .dbline 153
+ 0405           ;                       if(findNextGoodNotch(SCANPARAM_VzucORVauc, FREQ_MAX_Hz, STEPHZ))        {
+ 0405 5000              mov A,0
+ 0407 08                push A
+ 0408 5003              mov A,3
+ 040A 08                push A
+ 040B 508E              mov A,-114
+ 040D 08                push A
+ 040E 5028              mov A,40
+ 0410 08                push A
+ 0411 5003              mov A,3
+ 0413 08                push A
+ 0414 5093              mov A,-109
+ 0416 08                push A
+ 0417 5087              mov A,-121
+ 0419 08                push A
+ 041A 5000              mov A,0
+ 041C 08                push A
+ 041D 5004              mov A,4
+ 041F 08                push A
+ 0420 9270              xcall _findNextGoodNotch
+ 0422 38F7              add SP,-9
+ 0424 62D000            mov REG[0xd0],>__r0
+ 0427 3900              cmp A,0
+ 0429 A047              jz L22
+ 042B                   .dbline 153
+ 042B                   .dbline 154
+ 042B           ;                               Morse_Dit();
+ 042B 7C0000            xcall _Morse_Dit
+ 042E                   .dbline 155
+ 042E           ;                               wLastMinFreqkHz=g_dwCurrHz/1000;
+ 042E 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0431 5000              mov A,0
+ 0433 08                push A
+ 0434 08                push A
+ 0435 5003              mov A,3
+ 0437 08                push A
+ 0438 50E8              mov A,-24
+ 043A 08                push A
+ 043B 5100              mov A,[_g_dwCurrHz]
+ 043D 08                push A
+ 043E 5101              mov A,[_g_dwCurrHz+1]
+ 0440 08                push A
+ 0441 5102              mov A,[_g_dwCurrHz+2]
+ 0443 08                push A
+ 0444 5103              mov A,[_g_dwCurrHz+3]
+ 0446 08                push A
+ 0447 62D000            mov REG[0xd0],>__r0
+ 044A 7C0000            xcall __divmodu_32X32_32
+ 044D 18                pop A
+ 044E 5300              mov [__r3],A
+ 0450 18                pop A
+ 0451 5300              mov [__r2],A
+ 0453 18                pop A
+ 0454 18                pop A
+ 0455 38FC              add SP,-4
+ 0457 5100              mov A,[__r3]
+ 0459 5300              mov [__r1],A
+ 045B 5100              mov A,[__r2]
+ 045D 5300              mov [__r0],A
+ 045F 5100              mov A,[__r1]
+ 0461 5402              mov [X+2],A
+ 0463 5100              mov A,[__r0]
+ 0465 5401              mov [X+1],A
+ 0467                   .dbline 156
+ 0467           ;                               bMinCount++;
+ 0467 7700              inc [X+0]
+ 0469                   .dbline 157
+ 0469           ;                               Screen_Frequency(Display_kHz);
+ 0469 5001              mov A,1
+ 046B 08                push A
+ 046C 7C0000            xcall _Screen_Frequency
+ 046F 38FF              add SP,-1
+ 0471                   .dbline 158
+ 0471           ;                       }
+ 0471           L22:
+ 0471                   .dbline 159
+ 0471           ;                       g_dwCurrHz += STEPHZ*2; // start the next min search above the current minimum
+ 0471 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0474 060350            add [_g_dwCurrHz+3],80
+ 0477 0E021C            adc [_g_dwCurrHz+2],28
+ 047A 0E0107            adc [_g_dwCurrHz+1],7
+ 047D 0E0000            adc [_g_dwCurrHz],0
+ 0480                   .dbline 161
+ 0480           ; 
+ 0480           ;               } while (g_dwCurrHz <= FREQ_MAX_Hz) ;
+ 0480           L20:
+ 0480                   .dbline 161
+ 0480 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0483 5000              mov A,0
+ 0485 1203              sub A,[_g_dwCurrHz+3]
+ 0487 5087              mov A,-121
+ 0489 1A02              sbb A,[_g_dwCurrHz+2]
+ 048B 5093              mov A,-109
+ 048D 1A01              sbb A,[_g_dwCurrHz+1]
+ 048F 5003              mov A,3
+ 0491 1A00              sbb A,[_g_dwCurrHz]
+ 0493 DF71              jnc L19
+ 0495           X1:
+ 0495                   .dbline 163
+ 0495           ;               
+ 0495           ;               Screen_CableLength(    ( (DWORD)75000*(DWORD)g_bVF[g_xConf.bVF]*(DWORD)bMinCount ) / wLastMinFreqkHz  );
+ 0495 62D000            mov REG[0xd0],>__r0
+ 0498 5200              mov A,[X+0]
+ 049A 5300              mov [__r3],A
+ 049C 62D000            mov REG[0xd0],>_g_xConf
+ 049F 5102              mov A,[_g_xConf+2]
+ 04A1 62D000            mov REG[0xd0],>__r0
+ 04A4 5300              mov [__r5],A
+ 04A6 550000            mov [__r4],0
+ 04A9 060000            add [__r5],<_g_bVF
+ 04AC 0E0000            adc [__r4],>_g_bVF
+ 04AF 5100              mov A,[__r4]
+ 04B1 10                push X
+ 04B2 5800              mov X,[__r5]
+ 04B4 28                romx
+ 04B5 20                pop X
+ 04B6 5300              mov [__r7],A
+ 04B8 5000              mov A,0
+ 04BA 08                push A
+ 04BB 08                push A
+ 04BC 08                push A
+ 04BD 5100              mov A,[__r7]
+ 04BF 08                push A
+ 04C0 5000              mov A,0
+ 04C2 08                push A
+ 04C3 5001              mov A,1
+ 04C5 08                push A
+ 04C6 5024              mov A,36
+ 04C8 08                push A
+ 04C9 50F8              mov A,-8
+ 04CB 08                push A
+ 04CC 7C0000            xcall __mul_32X32_32
+ 04CF 38FC              add SP,-4
+ 04D1 18                pop A
+ 04D2 5300              mov [__r7],A
+ 04D4 18                pop A
+ 04D5 5300              mov [__r6],A
+ 04D7 18                pop A
+ 04D8 5300              mov [__r5],A
+ 04DA 18                pop A
+ 04DB 5300              mov [__r4],A
+ 04DD 5000              mov A,0
+ 04DF 08                push A
+ 04E0 08                push A
+ 04E1 08                push A
+ 04E2 5100              mov A,[__r3]
+ 04E4 08                push A
+ 04E5 5100              mov A,[__r4]
+ 04E7 08                push A
+ 04E8 5100              mov A,[__r5]
+ 04EA 08                push A
+ 04EB 5100              mov A,[__r6]
+ 04ED 08                push A
+ 04EE 5100              mov A,[__r7]
+ 04F0 08                push A
+ 04F1 7C0000            xcall __mul_32X32_32
+ 04F4 38FC              add SP,-4
+ 04F6 18                pop A
+ 04F7 5300              mov [__r3],A
+ 04F9 18                pop A
+ 04FA 5300              mov [__r2],A
+ 04FC 18                pop A
+ 04FD 5300              mov [__r1],A
+ 04FF 18                pop A
+ 0500 5300              mov [__r0],A
+ 0502 5202              mov A,[X+2]
+ 0504 5300              mov [__r7],A
+ 0506 5201              mov A,[X+1]
+ 0508 5300              mov [__r6],A
+ 050A 5000              mov A,0
+ 050C 08                push A
+ 050D 08                push A
+ 050E 5100              mov A,[__r6]
+ 0510 08                push A
+ 0511 5100              mov A,[__r7]
+ 0513 08                push A
+ 0514 5100              mov A,[__r0]
+ 0516 08                push A
+ 0517 5100              mov A,[__r1]
+ 0519 08                push A
+ 051A 5100              mov A,[__r2]
+ 051C 08                push A
+ 051D 5100              mov A,[__r3]
+ 051F 08                push A
+ 0520 7C0000            xcall __divmodu_32X32_32
+ 0523 18                pop A
+ 0524 5300              mov [__r3],A
+ 0526 18                pop A
+ 0527 5300              mov [__r2],A
+ 0529 18                pop A
+ 052A 18                pop A
+ 052B 38FC              add SP,-4
+ 052D 5100              mov A,[__r3]
+ 052F 5300              mov [__r1],A
+ 0531 5100              mov A,[__r2]
+ 0533 08                push A
+ 0534 5100              mov A,[__r1]
+ 0536 08                push A
+ 0537 7C0000            xcall _Screen_CableLength
+ 053A                   .dbline 164
+ 053A           ;               Morse_K();
+ 053A 7C0000            xcall _Morse_K
+ 053D                   .dbline 167
+ 053D           ;               
+ 053D           ;               // opportunity to repeat the whole process without going through menus again (press any key but UP)
+ 053D           ;               if( KEYPAD_WaitKey(TIME_WAIT_KEY_S) == KBD_UP ) break;          
+ 053D 501E              mov A,30
+ 053F 08                push A
+ 0540 7C0000            xcall _KEYPAD_WaitKey
+ 0543 38FD              add SP,-3
+ 0545 62D000            mov REG[0xd0],>__r0
+ 0548 3905              cmp A,5
+ 054A B003              jnz L25
+ 054C                   .dbline 167
+ 054C 8003              xjmp L18
+ 054E           L25:
+ 054E                   .dbline 168
+ 054E           ;       } while (TRUE);
+ 054E           L17:
+ 054E                   .dbline 168
+ 054E 8E8F              xjmp L16
+ 0550           L18:
+ 0550                   .dbline 169
+ 0550           ;       g_dwCurrHz = dwEntryFreqHz;
+ 0550 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0553 5203              mov A,[X+3]
+ 0555 5300              mov [_g_dwCurrHz],A
+ 0557 5204              mov A,[X+4]
+ 0559 5301              mov [_g_dwCurrHz+1],A
+ 055B 5205              mov A,[X+5]
+ 055D 5302              mov [_g_dwCurrHz+2],A
+ 055F 5206              mov A,[X+6]
+ 0561 5303              mov [_g_dwCurrHz+3],A
+ 0563                   .dbline -2
+ 0563           L15:
+ 0563 38F9              add SP,-7
+ 0565 20                pop X
+ 0566                   .dbline 0 ; func end
+ 0566 7F                ret
+ 0567                   .dbsym l dwEntryFreqHz 3 l
+ 0567                   .dbsym l wLastMinFreqkHz 1 i
+ 0567                   .dbsym l bMinCount 0 c
+ 0567                   .dbend
+ 0567                   .dbfunc s findGlobalMinimum _findGlobalMinimum fV
+ 0567           ;  dwEntryFreqHz -> X+8
+ 0567           ;   dwMinParamHz -> X+4
+ 0567           ; wParamGlobalMin -> X+2
+ 0567           ;         wParam -> X+0
+ 0567           ;       dwStepHz -> X-12
+ 0567           ;  dwFreqLimitHz -> X-8
+ 0567           ;     xScanParam -> X-4
+ 0567           _findGlobalMinimum:
+ 0567                   .dbline -1
+ 0567 10                push X
+ 0568 4F                mov X,SP
+ 0569 3810              add SP,16
+ 056B                   .dbline 185
+ 056B           ; }     
+ 056B           ; 
+ 056B           ; 
+ 056B           ; //-----------------------------------------------------------------------------
+ 056B           ; //  FUNCTION NAME:    findGlobalMinimum
+ 056B           ; //  DESCRIPTION:      Scan up in frequency and stop at dwFreqLimitHz
+ 056B           ; //                                    Return with g_dwCurrHz set to frequency of lowest value of specified parameter
+ 056B           ; //
+ 056B           ; //  ARGUMENTS:                SCAN_SCANPARAM          = SCANPARAM_SWR | SCANPARAM_Vruc | SCANPARAM_Vzuc | SCANPARAM_Vauc | SCANPARAM_VzucORVauc
+ 056B           ; //                                                                            NOTE: scanning on a single voltage gives a speed increase of approx 3:1 at the expense of using 
+ 056B           ; //                                                                            the uncalibrated proxy
+ 056B           ; //                                    WORD bStepStepHz        -> scan step in Hz
+ 056B           ; //
+ 056B           ; //  RETURNS:          nothing
+ 056B           ; static void findGlobalMinimum(SCAN_SCANPARAM xScanParam, DWORD dwFreqLimitHz, DWORD dwStepHz)
+ 056B           ; {
+ 056B                   .dbline 187
+ 056B           ;       
+ 056B           ;       DWORD   dwEntryFreqHz=g_dwCurrHz;
+ 056B 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 056E 5100              mov A,[_g_dwCurrHz]
+ 0570 5408              mov [X+8],A
+ 0572 5101              mov A,[_g_dwCurrHz+1]
+ 0574 5409              mov [X+9],A
+ 0576 5102              mov A,[_g_dwCurrHz+2]
+ 0578 540A              mov [X+10],A
+ 057A 5103              mov A,[_g_dwCurrHz+3]
+ 057C 540B              mov [X+11],A
+ 057E                   .dbline 189
+ 057E           ;       WORD    wParam;
+ 057E           ;       WORD    wParamGlobalMin=WORD_MAX;
+ 057E 5603FF            mov [X+3],-1
+ 0581 5602FF            mov [X+2],-1
+ 0584                   .dbline 192
+ 0584           ;       DWORD   dwMinParamHz;
+ 0584           ;       
+ 0584           ;       g_dwCurrHz -= dwStepHz; // reverse so that we have a delta for the first frequency
+ 0584 52F7              mov A,[X-9]
+ 0586 1403              sub [_g_dwCurrHz+3],A
+ 0588 52F6              mov A,[X-10]
+ 058A 1C02              sbb [_g_dwCurrHz+2],A
+ 058C 52F5              mov A,[X-11]
+ 058E 1C01              sbb [_g_dwCurrHz+1],A
+ 0590 52F4              mov A,[X-12]
+ 0592 1C00              sbb [_g_dwCurrHz],A
+ 0594           L28:
+ 0594                   .dbline 194
+ 0594           ;       
+ 0594           ;       do {
+ 0594                   .dbline 195
+ 0594           ;               Set_DDS(g_dwCurrHz);
+ 0594 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0597 5100              mov A,[_g_dwCurrHz]
+ 0599 08                push A
+ 059A 5101              mov A,[_g_dwCurrHz+1]
+ 059C 08                push A
+ 059D 5102              mov A,[_g_dwCurrHz+2]
+ 059F 08                push A
+ 05A0 5103              mov A,[_g_dwCurrHz+3]
+ 05A2 08                push A
+ 05A3 7C0000            xcall _Set_DDS
+ 05A6 38FC              add SP,-4
+ 05A8                   .dbline 196
+ 05A8           ;               if(xScanParam == SCANPARAM_VzucORVauc) {
+ 05A8 3DFC04            cmp [X-4],4
+ 05AB B057              jnz L31
+ 05AD                   .dbline 196
+ 05AD                   .dbline 198
+ 05AD           ;                       #define min(a, b) ((a<b)? a:b)
+ 05AD           ;                       wParam=min(wRead_ADC_DDSUNCHANGED(VaPort), wRead_ADC_DDSUNCHANGED(VzPort));
+ 05AD 5003              mov A,3
+ 05AF 08                push A
+ 05B0 7C0000            xcall _wRead_ADC_DDSUNCHANGED
+ 05B3 62D000            mov REG[0xd0],>__r0
+ 05B6 5100              mov A,[__r1]
+ 05B8 540F              mov [X+15],A
+ 05BA 5100              mov A,[__r0]
+ 05BC 540E              mov [X+14],A
+ 05BE 5002              mov A,2
+ 05C0 08                push A
+ 05C1 7C0000            xcall _wRead_ADC_DDSUNCHANGED
+ 05C4 38FE              add SP,-2
+ 05C6 62D000            mov REG[0xd0],>__r0
+ 05C9 520F              mov A,[X+15]
+ 05CB 1200              sub A,[__r1]
+ 05CD 520E              mov A,[X+14]
+ 05CF 1A00              sbb A,[__r0]
+ 05D1 D016              jnc L34
+ 05D3           X2:
+ 05D3 5003              mov A,3
+ 05D5 08                push A
+ 05D6 7C0000            xcall _wRead_ADC_DDSUNCHANGED
+ 05D9 38FF              add SP,-1
+ 05DB 62D000            mov REG[0xd0],>__r0
+ 05DE 5100              mov A,[__r1]
+ 05E0 540D              mov [X+13],A
+ 05E2 5100              mov A,[__r0]
+ 05E4 540C              mov [X+12],A
+ 05E6 8014              xjmp L35
+ 05E8           L34:
+ 05E8 5002              mov A,2
+ 05EA 08                push A
+ 05EB 7C0000            xcall _wRead_ADC_DDSUNCHANGED
+ 05EE 38FF              add SP,-1
+ 05F0 62D000            mov REG[0xd0],>__r0
+ 05F3 5100              mov A,[__r1]
+ 05F5 540D              mov [X+13],A
+ 05F7 5100              mov A,[__r0]
+ 05F9 540C              mov [X+12],A
+ 05FB           L35:
+ 05FB 520D              mov A,[X+13]
+ 05FD 5401              mov [X+1],A
+ 05FF 520C              mov A,[X+12]
+ 0601 5400              mov [X+0],A
+ 0603                   .dbline 199
+ 0603           ;               } 
+ 0603           L31:
+ 0603                   .dbline 200
+ 0603           ;               if(xScanParam == SCANPARAM_Vruc){
+ 0603 3DFC01            cmp [X-4],1
+ 0606 B014              jnz L36
+ 0608                   .dbline 200
+ 0608                   .dbline 201
+ 0608           ;                       wParam = wRead_ADC_DDSUNCHANGED(VrPort);
+ 0608 5001              mov A,1
+ 060A 08                push A
+ 060B 7C0000            xcall _wRead_ADC_DDSUNCHANGED
+ 060E 38FF              add SP,-1
+ 0610 62D000            mov REG[0xd0],>__r0
+ 0613 5100              mov A,[__r1]
+ 0615 5401              mov [X+1],A
+ 0617 5100              mov A,[__r0]
+ 0619 5400              mov [X+0],A
+ 061B                   .dbline 202
+ 061B           ;               }
+ 061B           L36:
+ 061B                   .dbline 203
+ 061B           ;               if(xScanParam == SCANPARAM_SWR){
+ 061B 3DFC00            cmp [X-4],0
+ 061E B00F              jnz L38
+ 0620                   .dbline 203
+ 0620                   .dbline 204
+ 0620           ;                       MeasureCorrectCalc();
+ 0620 7C0000            xcall _MeasureCorrectCalc
+ 0623                   .dbline 205
+ 0623           ;                       wParam = g_wSwr100;                     
+ 0623 62D000            mov REG[0xd0],>_g_wSwr100
+ 0626 5101              mov A,[_g_wSwr100+1]
+ 0628 5401              mov [X+1],A
+ 062A 5100              mov A,[_g_wSwr100]
+ 062C 5400              mov [X+0],A
+ 062E                   .dbline 206
+ 062E           ;               }       
+ 062E           L38:
+ 062E                   .dbline 207
+ 062E           ;               if(wParam < wParamGlobalMin) {
+ 062E 5201              mov A,[X+1]
+ 0630 1303              sub A,[X+3]
+ 0632 5200              mov A,[X+0]
+ 0634 1B02              sbb A,[X+2]
+ 0636 D01C              jnc L40
+ 0638           X3:
+ 0638                   .dbline 207
+ 0638                   .dbline 208
+ 0638           ;                       dwMinParamHz    = g_dwCurrHz;
+ 0638 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 063B 5100              mov A,[_g_dwCurrHz]
+ 063D 5404              mov [X+4],A
+ 063F 5101              mov A,[_g_dwCurrHz+1]
+ 0641 5405              mov [X+5],A
+ 0643 5102              mov A,[_g_dwCurrHz+2]
+ 0645 5406              mov [X+6],A
+ 0647 5103              mov A,[_g_dwCurrHz+3]
+ 0649 5407              mov [X+7],A
+ 064B                   .dbline 209
+ 064B           ;                       wParamGlobalMin = wParam;
+ 064B 5201              mov A,[X+1]
+ 064D 5403              mov [X+3],A
+ 064F 5200              mov A,[X+0]
+ 0651 5402              mov [X+2],A
+ 0653                   .dbline 210
+ 0653           ;               }
+ 0653           L40:
+ 0653                   .dbline 211
+ 0653           ;               g_dwCurrHz += dwStepHz; 
+ 0653 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0656 52F7              mov A,[X-9]
+ 0658 0403              add [_g_dwCurrHz+3],A
+ 065A 52F6              mov A,[X-10]
+ 065C 0C02              adc [_g_dwCurrHz+2],A
+ 065E 52F5              mov A,[X-11]
+ 0660 0C01              adc [_g_dwCurrHz+1],A
+ 0662 52F4              mov A,[X-12]
+ 0664 0C00              adc [_g_dwCurrHz],A
+ 0666                   .dbline 212
+ 0666           ;       } while ( g_dwCurrHz <= dwFreqLimitHz ) ;
+ 0666           L29:
+ 0666                   .dbline 212
+ 0666 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0669 52FB              mov A,[X-5]
+ 066B 1203              sub A,[_g_dwCurrHz+3]
+ 066D 52FA              mov A,[X-6]
+ 066F 1A02              sbb A,[_g_dwCurrHz+2]
+ 0671 52F9              mov A,[X-7]
+ 0673 1A01              sbb A,[_g_dwCurrHz+1]
+ 0675 52F8              mov A,[X-8]
+ 0677 1A00              sbb A,[_g_dwCurrHz]
+ 0679 DF1A              jnc L28
+ 067B           X4:
+ 067B                   .dbline 214
+ 067B           ;       
+ 067B           ;       g_dwCurrHz=dwMinParamHz;
+ 067B 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 067E 5204              mov A,[X+4]
+ 0680 5300              mov [_g_dwCurrHz],A
+ 0682 5205              mov A,[X+5]
+ 0684 5301              mov [_g_dwCurrHz+1],A
+ 0686 5206              mov A,[X+6]
+ 0688 5302              mov [_g_dwCurrHz+2],A
+ 068A 5207              mov A,[X+7]
+ 068C 5303              mov [_g_dwCurrHz+3],A
+ 068E                   .dbline -2
+ 068E           L27:
+ 068E 38F0              add SP,-16
+ 0690 20                pop X
+ 0691                   .dbline 0 ; func end
+ 0691 7F                ret
+ 0692                   .dbsym l dwEntryFreqHz 8 l
+ 0692                   .dbsym l dwMinParamHz 4 l
+ 0692                   .dbsym l wParamGlobalMin 2 i
+ 0692                   .dbsym l wParam 0 i
+ 0692                   .dbsym l dwStepHz -12 l
+ 0692                   .dbsym l dwFreqLimitHz -8 l
+ 0692                   .dbsym l xScanParam -4 c
+ 0692                   .dbend
+ 0692                   .dbfunc s findNextGoodNotch _findNextGoodNotch fc
+ 0692           ;  dwEntryFreqHz -> X+5
+ 0692           ;     wParamPrev -> X+3
+ 0692           ;         wParam -> X+1
+ 0692           ;     bDeltaHist -> X+0
+ 0692           ;       dwStepHz -> X-12
+ 0692           ;  dwFreqLimitHz -> X-8
+ 0692           ;     xScanParam -> X-4
+ 0692           _findNextGoodNotch:
+ 0692                   .dbline -1
+ 0692 10                push X
+ 0693 4F                mov X,SP
+ 0694 380D              add SP,13
+ 0696                   .dbline 236
+ 0696           ; }
+ 0696           ; 
+ 0696           ; 
+ 0696           ; 
+ 0696           ; //-----------------------------------------------------------------------------
+ 0696           ; //  FUNCTION NAME:    findNextGoodNotch
+ 0696           ; //  DESCRIPTION:      Scan up in frequency and stop as specified by 
+ 0696           ; //                                    arguments leaving final frequency and measurement in global measurement variables
+ 0696           ; //                                    In all cases, a full measurement and calculation is done prior to return.
+ 0696           ; //                                    The final frequency is that of the condition that triggered the return: (lowest) minimum or the band edge or global limit
+ 0696           ; //                                    Frequency and impedance etc is displayed, but only if SCAN_SCANPARAM == SCANPARAM_SWR
+ 0696           ; //                                    Currently, searching for maxima is not coded.
+ 0696           ; //
+ 0696           ; //  ARGUMENTS:                SCAN_SCANPARAM          = SCANPARAM_SWR | SCANPARAM_Vruc | SCANPARAM_Vzuc | SCANPARAM_Vauc | SCANPARAM_VzucORVauc
+ 0696           ; //                                                                            -> parameter to trigger return TRUE 
+ 0696           ; //                                                                            NOTE: scanning on a single voltage gives a speed increase of approx 3:1 at the expense of using 
+ 0696           ; //                                                                            the uncalibrated proxy
+ 0696           ; //                                    WORD bStepStepHz        -> scan step in Hz
+ 0696           ; //
+ 0696           ; //  RETURNS:          TRUE if minimum found before wFreqLimitHz, otherwise FALSE
+ 0696           ; static BYTE findNextGoodNotch(SCAN_SCANPARAM xScanParam, DWORD dwFreqLimitHz, DWORD dwStepHz)
+ 0696           ; {
+ 0696                   .dbline 244
+ 0696           ;       #define HISTLEN 8
+ 0696           ;       #define HISTPAT0 240
+ 0696           ;       #define HISTPAT1 242
+ 0696           ;       #define HISTPAT2 184
+ 0696           ;       
+ 0696           ;       //#define DEBUG true
+ 0696           ;       
+ 0696           ;       DWORD   dwEntryFreqHz=g_dwCurrHz;
+ 0696 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0699 5100              mov A,[_g_dwCurrHz]
+ 069B 5405              mov [X+5],A
+ 069D 5101              mov A,[_g_dwCurrHz+1]
+ 069F 5406              mov [X+6],A
+ 06A1 5102              mov A,[_g_dwCurrHz+2]
+ 06A3 5407              mov [X+7],A
+ 06A5 5103              mov A,[_g_dwCurrHz+3]
+ 06A7 5408              mov [X+8],A
+ 06A9                   .dbline 246
+ 06A9           ;       WORD    wParam;
+ 06A9           ;       WORD    wParamPrev=WORD_MAX;
+ 06A9 5604FF            mov [X+4],-1
+ 06AC 5603FF            mov [X+3],-1
+ 06AF                   .dbline 257
+ 06AF           ;       BYTE    bDeltaHist;
+ 06AF           ; 
+ 06AF           ;       #ifdef DEBUG 
+ 06AF           ;               UART_CmdReset();                                        // Initialize receiver/cmd buffer
+ 06AF           ;               UART_IntCntl(UART_ENABLE_RX_INT);       // Enable RX interrupts
+ 06AF           ;               UART_Start(UART_PARITY_NONE);           // Enable UART
+ 06AF           ;               M8C_EnableGInt ;
+ 06AF           ;               UART_PutCRLF();UART_PutCRLF();UART_PutCRLF();UART_PutCRLF();UART_PutCRLF();UART_PutCRLF();UART_PutCRLF();UART_PutCRLF();
+ 06AF           ;       #endif
+ 06AF           ;       
+ 06AF           ;       if(dwStepHz == 0) return FALSE;
+ 06AF 3DF400            cmp [X-12],0
+ 06B2 B017              jnz L43
+ 06B4 3DF500            cmp [X-11],0
+ 06B7 B012              jnz L43
+ 06B9 3DF600            cmp [X-10],0
+ 06BC B00D              jnz L43
+ 06BE 3DF700            cmp [X-9],0
+ 06C1 B008              jnz L43
+ 06C3           X5:
+ 06C3                   .dbline 257
+ 06C3 62D000            mov REG[0xd0],>__r0
+ 06C6 5000              mov A,0
+ 06C8 81C4              xjmp L42
+ 06CA           L43:
+ 06CA                   .dbline 259
+ 06CA           ;       
+ 06CA           ;       g_dwCurrHz -= dwStepHz*(HISTLEN/2-1); // reverse so that the history buffer can gather data before the start frequency
+ 06CA 62D000            mov REG[0xd0],>__r0
+ 06CD 52F4              mov A,[X-12]
+ 06CF 08                push A
+ 06D0 52F5              mov A,[X-11]
+ 06D2 08                push A
+ 06D3 52F6              mov A,[X-10]
+ 06D5 08                push A
+ 06D6 52F7              mov A,[X-9]
+ 06D8 08                push A
+ 06D9 5000              mov A,0
+ 06DB 08                push A
+ 06DC 08                push A
+ 06DD 08                push A
+ 06DE 5003              mov A,3
+ 06E0 08                push A
+ 06E1 7C0000            xcall __mul_32X32_32
+ 06E4 38FC              add SP,-4
+ 06E6 18                pop A
+ 06E7 5300              mov [__r3],A
+ 06E9 18                pop A
+ 06EA 5300              mov [__r2],A
+ 06EC 18                pop A
+ 06ED 5300              mov [__r1],A
+ 06EF 18                pop A
+ 06F0 5300              mov [__r0],A
+ 06F2 5100              mov A,[__r3]
+ 06F4 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 06F7 1403              sub [_g_dwCurrHz+3],A
+ 06F9 62D000            mov REG[0xd0],>__r0
+ 06FC 5100              mov A,[__r2]
+ 06FE 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0701 1C02              sbb [_g_dwCurrHz+2],A
+ 0703 62D000            mov REG[0xd0],>__r0
+ 0706 5100              mov A,[__r1]
+ 0708 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 070B 1C01              sbb [_g_dwCurrHz+1],A
+ 070D 62D000            mov REG[0xd0],>__r0
+ 0710 5100              mov A,[__r0]
+ 0712 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0715 1C00              sbb [_g_dwCurrHz],A
+ 0717                   .dbline 260
+ 0717           ;       bDeltaHist=0;
+ 0717 560000            mov [X+0],0
+ 071A           L45:
+ 071A                   .dbline 262
+ 071A           ;       
+ 071A           ;       do {
+ 071A                   .dbline 263
+ 071A           ;               Set_DDS(g_dwCurrHz);
+ 071A 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 071D 5100              mov A,[_g_dwCurrHz]
+ 071F 08                push A
+ 0720 5101              mov A,[_g_dwCurrHz+1]
+ 0722 08                push A
+ 0723 5102              mov A,[_g_dwCurrHz+2]
+ 0725 08                push A
+ 0726 5103              mov A,[_g_dwCurrHz+3]
+ 0728 08                push A
+ 0729 7C0000            xcall _Set_DDS
+ 072C 38FC              add SP,-4
+ 072E                   .dbline 264
+ 072E           ;               if(xScanParam == SCANPARAM_VzucORVauc) {
+ 072E 3DFC04            cmp [X-4],4
+ 0731 B057              jnz L48
+ 0733                   .dbline 264
+ 0733                   .dbline 266
+ 0733           ;                       #define min(a, b) ((a<b)? a:b)
+ 0733           ;                       wParam=min(wRead_ADC_DDSUNCHANGED(VaPort), wRead_ADC_DDSUNCHANGED(VzPort));
+ 0733 5003              mov A,3
+ 0735 08                push A
+ 0736 7C0000            xcall _wRead_ADC_DDSUNCHANGED
+ 0739 62D000            mov REG[0xd0],>__r0
+ 073C 5100              mov A,[__r1]
+ 073E 540C              mov [X+12],A
+ 0740 5100              mov A,[__r0]
+ 0742 540B              mov [X+11],A
+ 0744 5002              mov A,2
+ 0746 08                push A
+ 0747 7C0000            xcall _wRead_ADC_DDSUNCHANGED
+ 074A 38FE              add SP,-2
+ 074C 62D000            mov REG[0xd0],>__r0
+ 074F 520C              mov A,[X+12]
+ 0751 1200              sub A,[__r1]
+ 0753 520B              mov A,[X+11]
+ 0755 1A00              sbb A,[__r0]
+ 0757 D016              jnc L51
+ 0759           X6:
+ 0759 5003              mov A,3
+ 075B 08                push A
+ 075C 7C0000            xcall _wRead_ADC_DDSUNCHANGED
+ 075F 38FF              add SP,-1
+ 0761 62D000            mov REG[0xd0],>__r0
+ 0764 5100              mov A,[__r1]
+ 0766 540A              mov [X+10],A
+ 0768 5100              mov A,[__r0]
+ 076A 5409              mov [X+9],A
+ 076C 8014              xjmp L52
+ 076E           L51:
+ 076E 5002              mov A,2
+ 0770 08                push A
+ 0771 7C0000            xcall _wRead_ADC_DDSUNCHANGED
+ 0774 38FF              add SP,-1
+ 0776 62D000            mov REG[0xd0],>__r0
+ 0779 5100              mov A,[__r1]
+ 077B 540A              mov [X+10],A
+ 077D 5100              mov A,[__r0]
+ 077F 5409              mov [X+9],A
+ 0781           L52:
+ 0781 520A              mov A,[X+10]
+ 0783 5402              mov [X+2],A
+ 0785 5209              mov A,[X+9]
+ 0787 5401              mov [X+1],A
+ 0789                   .dbline 267
+ 0789           ;               } 
+ 0789           L48:
+ 0789                   .dbline 268
+ 0789           ;               if(xScanParam == SCANPARAM_Vruc){
+ 0789 3DFC01            cmp [X-4],1
+ 078C B014              jnz L53
+ 078E                   .dbline 268
+ 078E                   .dbline 269
+ 078E           ;                       wParam = wRead_ADC_DDSUNCHANGED(VrPort);
+ 078E 5001              mov A,1
+ 0790 08                push A
+ 0791 7C0000            xcall _wRead_ADC_DDSUNCHANGED
+ 0794 38FF              add SP,-1
+ 0796 62D000            mov REG[0xd0],>__r0
+ 0799 5100              mov A,[__r1]
+ 079B 5402              mov [X+2],A
+ 079D 5100              mov A,[__r0]
+ 079F 5401              mov [X+1],A
+ 07A1                   .dbline 270
+ 07A1           ;               }
+ 07A1           L53:
+ 07A1                   .dbline 271
+ 07A1           ;               if(xScanParam == SCANPARAM_SWR){
+ 07A1 3DFC00            cmp [X-4],0
+ 07A4 B00F              jnz L55
+ 07A6                   .dbline 271
+ 07A6                   .dbline 272
+ 07A6           ;                       MeasureCorrectCalc();
+ 07A6 7C0000            xcall _MeasureCorrectCalc
+ 07A9                   .dbline 273
+ 07A9           ;                       wParam = g_wSwr100;                     
+ 07A9 62D000            mov REG[0xd0],>_g_wSwr100
+ 07AC 5101              mov A,[_g_wSwr100+1]
+ 07AE 5402              mov [X+2],A
+ 07B0 5100              mov A,[_g_wSwr100]
+ 07B2 5401              mov [X+1],A
+ 07B4                   .dbline 274
+ 07B4           ;               }       
+ 07B4           L55:
+ 07B4                   .dbline 275
+ 07B4           ;               bDeltaHist <<= 1;
+ 07B4 6600              asl [X+0]
+ 07B6                   .dbline 276
+ 07B6           ;               bDeltaHist |= (wParamPrev >= wParam);
+ 07B6 5204              mov A,[X+4]
+ 07B8 1302              sub A,[X+2]
+ 07BA 5203              mov A,[X+3]
+ 07BC 1B01              sbb A,[X+1]
+ 07BE C009              jc L58
+ 07C0           X7:
+ 07C0 560A01            mov [X+10],1
+ 07C3 560900            mov [X+9],0
+ 07C6 8007              xjmp L59
+ 07C8           L58:
+ 07C8 560A00            mov [X+10],0
+ 07CB 560900            mov [X+9],0
+ 07CE           L59:
+ 07CE 62D000            mov REG[0xd0],>__r0
+ 07D1 5200              mov A,[X+0]
+ 07D3 5300              mov [__r1],A
+ 07D5 550000            mov [__r0],0
+ 07D8 520A              mov A,[X+10]
+ 07DA 2C00              or [__r1],A
+ 07DC 5209              mov A,[X+9]
+ 07DE 2C00              or [__r0],A
+ 07E0 5100              mov A,[__r1]
+ 07E2 5400              mov [X+0],A
+ 07E4                   .dbline 277
+ 07E4           ;               bDeltaHist &= (1 << HISTLEN) - 1;  
+ 07E4                   .dbline 278
+ 07E4           ;               wParamPrev = wParam;
+ 07E4 5202              mov A,[X+2]
+ 07E6 5404              mov [X+4],A
+ 07E8 5201              mov A,[X+1]
+ 07EA 5403              mov [X+3],A
+ 07EC                   .dbline 287
+ 07EC           ;               
+ 07EC           ;               #ifdef DEBUG
+ 07EC           ;                       ultoa(g_buffer16, g_dwCurrHz ,10); UART_PutString(g_buffer16); UART_PutChar(',');
+ 07EC           ;                       ultoa(g_buffer16, wParam ,10); UART_PutString(g_buffer16); UART_PutChar(',');
+ 07EC           ;                       ultoa(g_buffer16, bDeltaHist ,10); UART_PutString(g_buffer16);
+ 07EC           ;                       UART_PutCRLF();
+ 07EC           ;               #endif
+ 07EC           ;               
+ 07EC           ;               if((bDeltaHist == HISTPAT0) || (bDeltaHist == HISTPAT1) || (bDeltaHist == HISTPAT2))    {
+ 07EC 3D00F0            cmp [X+0],-16
+ 07EF A00B              jz L63
+ 07F1 3D00F2            cmp [X+0],-14
+ 07F4 A006              jz L63
+ 07F6 3D00B8            cmp [X+0],-72
+ 07F9 B053              jnz L60
+ 07FB           L63:
+ 07FB                   .dbline 287
+ 07FB                   .dbline 288
+ 07FB           ;                       g_dwCurrHz -= dwStepHz*(HISTLEN/2); // reverse to the min of the search pattern
+ 07FB 62D000            mov REG[0xd0],>__r0
+ 07FE 52F4              mov A,[X-12]
+ 0800 5300              mov [__r0],A
+ 0802 52F5              mov A,[X-11]
+ 0804 5300              mov [__r1],A
+ 0806 52F6              mov A,[X-10]
+ 0808 5300              mov [__r2],A
+ 080A 52F7              mov A,[X-9]
+ 080C 5300              mov [__r3],A
+ 080E 5002              mov A,2
+ 0810           X8:
+ 0810 62D000            mov REG[0xd0],>__r0
+ 0813 6500              asl [__r3]
+ 0815 6B00              rlc [__r2]
+ 0817 6B00              rlc [__r1]
+ 0819 6B00              rlc [__r0]
+ 081B 78                dec A
+ 081C BFF3              jnz X8
+ 081E 5100              mov A,[__r3]
+ 0820 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0823 1403              sub [_g_dwCurrHz+3],A
+ 0825 62D000            mov REG[0xd0],>__r0
+ 0828 5100              mov A,[__r2]
+ 082A 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 082D 1C02              sbb [_g_dwCurrHz+2],A
+ 082F 62D000            mov REG[0xd0],>__r0
+ 0832 5100              mov A,[__r1]
+ 0834 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0837 1C01              sbb [_g_dwCurrHz+1],A
+ 0839 62D000            mov REG[0xd0],>__r0
+ 083C 5100              mov A,[__r0]
+ 083E 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0841 1C00              sbb [_g_dwCurrHz],A
+ 0843                   .dbline 289
+ 0843           ;                       MeasureCorrectCalc();
+ 0843 7C0000            xcall _MeasureCorrectCalc
+ 0846                   .dbline 290
+ 0846           ;                       return TRUE;
+ 0846 62D000            mov REG[0xd0],>__r0
+ 0849 5001              mov A,1
+ 084B 8041              xjmp L42
+ 084D           L60:
+ 084D                   .dbline 292
+ 084D           ;               }
+ 084D           ;               g_dwCurrHz += dwStepHz; 
+ 084D 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0850 52F7              mov A,[X-9]
+ 0852 0403              add [_g_dwCurrHz+3],A
+ 0854 52F6              mov A,[X-10]
+ 0856 0C02              adc [_g_dwCurrHz+2],A
+ 0858 52F5              mov A,[X-11]
+ 085A 0C01              adc [_g_dwCurrHz+1],A
+ 085C 52F4              mov A,[X-12]
+ 085E 0C00              adc [_g_dwCurrHz],A
+ 0860                   .dbline 293
+ 0860           ;       } while ( g_dwCurrHz <= dwFreqLimitHz ) ;
+ 0860           L46:
+ 0860                   .dbline 293
+ 0860 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0863 52FB              mov A,[X-5]
+ 0865 1203              sub A,[_g_dwCurrHz+3]
+ 0867 52FA              mov A,[X-6]
+ 0869 1A02              sbb A,[_g_dwCurrHz+2]
+ 086B 52F9              mov A,[X-7]
+ 086D 1A01              sbb A,[_g_dwCurrHz+1]
+ 086F 52F8              mov A,[X-8]
+ 0871 1A00              sbb A,[_g_dwCurrHz]
+ 0873 DEA6              jnc L45
+ 0875           X9:
+ 0875                   .dbline 295
+ 0875           ;       
+ 0875           ;       g_dwCurrHz=dwEntryFreqHz;
+ 0875 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0878 5205              mov A,[X+5]
+ 087A 5300              mov [_g_dwCurrHz],A
+ 087C 5206              mov A,[X+6]
+ 087E 5301              mov [_g_dwCurrHz+1],A
+ 0880 5207              mov A,[X+7]
+ 0882 5302              mov [_g_dwCurrHz+2],A
+ 0884 5208              mov A,[X+8]
+ 0886 5303              mov [_g_dwCurrHz+3],A
+ 0888                   .dbline 296
+ 0888           ;       return FALSE;
+ 0888 62D000            mov REG[0xd0],>__r0
+ 088B 5000              mov A,0
+ 088D                   .dbline -2
+ 088D           L42:
+ 088D 38F3              add SP,-13
+ 088F 20                pop X
+ 0890                   .dbline 0 ; func end
+ 0890 7F                ret
+ 0891                   .dbsym l dwEntryFreqHz 5 l
+ 0891                   .dbsym l wParamPrev 3 i
+ 0891                   .dbsym l wParam 1 i
+ 0891                   .dbsym l bDeltaHist 0 c
+ 0891                   .dbsym l dwStepHz -12 l
+ 0891                   .dbsym l dwFreqLimitHz -8 l
+ 0891                   .dbsym l xScanParam -4 c
+ 0891                   .dbend
+ 0891                   .dbfunc s findSWRThreshold _findSWRThreshold fV
+ 0891           ;       dwStepHz -> X-12
+ 0891           ;  dwFreqLimitHz -> X-8
+ 0891           ; xScanDirection -> X-4
+ 0891           _findSWRThreshold:
+ 0891                   .dbline -1
+ 0891 10                push X
+ 0892 4F                mov X,SP
+ 0893 3806              add SP,6
+ 0895                   .dbline 307
+ 0895           ; }
+ 0895           ; 
+ 0895           ; //-----------------------------------------------------------------------------
+ 0895           ; //  FUNCTION NAME:    findSWRThreshold
+ 0895           ; //  DESCRIPTION:      Scan up or down in frequency and stop at SWR Threshold 
+ 0895           ; //    ARGUMENTS:              SCAN_DIRECTION          = SCANDIRECTION_UP | SCANDIRECTION_DOWN         -> which way to scan
+ 0895           ; //                                    WORD wStepStepHz        -> scan step in Hz
+ 0895           ; //  RETURNS:          nothing
+ 0895           ; //-----------------------------------------------------------------------------
+ 0895           ; static void findSWRThreshold(SCAN_DIRECTION xScanDirection, DWORD dwFreqLimitHz, DWORD dwStepHz)
+ 0895           ; {
+ 0895           L65:
+ 0895                   .dbline 308
+ 0895           ;       do {
+ 0895                   .dbline 309
+ 0895           ;               Set_DDS(g_dwCurrHz);
+ 0895 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0898 5100              mov A,[_g_dwCurrHz]
+ 089A 08                push A
+ 089B 5101              mov A,[_g_dwCurrHz+1]
+ 089D 08                push A
+ 089E 5102              mov A,[_g_dwCurrHz+2]
+ 08A0 08                push A
+ 08A1 5103              mov A,[_g_dwCurrHz+3]
+ 08A3 08                push A
+ 08A4 7C0000            xcall _Set_DDS
+ 08A7 38FC              add SP,-4
+ 08A9                   .dbline 310
+ 08A9           ;               MeasureCorrectCalc();
+ 08A9 7C0000            xcall _MeasureCorrectCalc
+ 08AC                   .dbline 311
+ 08AC           ;               if(xScanDirection == SCANDIRECTION_UP) {g_dwCurrHz += dwStepHz;} else {g_dwCurrHz -= dwStepHz;} 
+ 08AC 3DFC00            cmp [X-4],0
+ 08AF B016              jnz L68
+ 08B1                   .dbline 311
+ 08B1                   .dbline 311
+ 08B1 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 08B4 52F7              mov A,[X-9]
+ 08B6 0403              add [_g_dwCurrHz+3],A
+ 08B8 52F6              mov A,[X-10]
+ 08BA 0C02              adc [_g_dwCurrHz+2],A
+ 08BC 52F5              mov A,[X-11]
+ 08BE 0C01              adc [_g_dwCurrHz+1],A
+ 08C0 52F4              mov A,[X-12]
+ 08C2 0C00              adc [_g_dwCurrHz],A
+ 08C4                   .dbline 311
+ 08C4 8014              xjmp L69
+ 08C6           L68:
+ 08C6                   .dbline 311
+ 08C6                   .dbline 311
+ 08C6 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 08C9 52F7              mov A,[X-9]
+ 08CB 1403              sub [_g_dwCurrHz+3],A
+ 08CD 52F6              mov A,[X-10]
+ 08CF 1C02              sbb [_g_dwCurrHz+2],A
+ 08D1 52F5              mov A,[X-11]
+ 08D3 1C01              sbb [_g_dwCurrHz+1],A
+ 08D5 52F4              mov A,[X-12]
+ 08D7 1C00              sbb [_g_dwCurrHz],A
+ 08D9                   .dbline 311
+ 08D9           L69:
+ 08D9                   .dbline 312
+ 08D9           ;       } while ( (g_wSwr100 < SWR_BW_THRESH) && ( (xScanDirection == SCANDIRECTION_UP)? (g_dwCurrHz <= dwFreqLimitHz):(g_dwCurrHz >= dwFreqLimitHz))  ) ;
+ 08D9           L66:
+ 08D9                   .dbline 312
+ 08D9 62D000            mov REG[0xd0],>_g_wSwr100
+ 08DC 5101              mov A,[_g_wSwr100+1]
+ 08DE 11C8              sub A,-56
+ 08E0 5100              mov A,[_g_wSwr100]
+ 08E2 1900              sbb A,0
+ 08E4 D068              jnc L73
+ 08E6           X10:
+ 08E6 3DFC00            cmp [X-4],0
+ 08E9 B02E              jnz L74
+ 08EB 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 08EE 52FB              mov A,[X-5]
+ 08F0 1203              sub A,[_g_dwCurrHz+3]
+ 08F2 52FA              mov A,[X-6]
+ 08F4 1A02              sbb A,[_g_dwCurrHz+2]
+ 08F6 52F9              mov A,[X-7]
+ 08F8 1A01              sbb A,[_g_dwCurrHz+1]
+ 08FA 52F8              mov A,[X-8]
+ 08FC 1A00              sbb A,[_g_dwCurrHz]
+ 08FE C009              jc L76
+ 0900           X11:
+ 0900 560301            mov [X+3],1
+ 0903 560200            mov [X+2],0
+ 0906 8007              xjmp L77
+ 0908           L76:
+ 0908 560300            mov [X+3],0
+ 090B 560200            mov [X+2],0
+ 090E           L77:
+ 090E 5203              mov A,[X+3]
+ 0910 5401              mov [X+1],A
+ 0912 5202              mov A,[X+2]
+ 0914 5400              mov [X+0],A
+ 0916 802C              xjmp L75
+ 0918           L74:
+ 0918 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 091B 5103              mov A,[_g_dwCurrHz+3]
+ 091D 13FB              sub A,[X-5]
+ 091F 5102              mov A,[_g_dwCurrHz+2]
+ 0921 1BFA              sbb A,[X-6]
+ 0923 5101              mov A,[_g_dwCurrHz+1]
+ 0925 1BF9              sbb A,[X-7]
+ 0927 5100              mov A,[_g_dwCurrHz]
+ 0929 1BF8              sbb A,[X-8]
+ 092B C009              jc L78
+ 092D           X12:
+ 092D 560501            mov [X+5],1
+ 0930 560400            mov [X+4],0
+ 0933 8007              xjmp L79
+ 0935           L78:
+ 0935 560500            mov [X+5],0
+ 0938 560400            mov [X+4],0
+ 093B           L79:
+ 093B 5205              mov A,[X+5]
+ 093D 5401              mov [X+1],A
+ 093F 5204              mov A,[X+4]
+ 0941 5400              mov [X+0],A
+ 0943           L75:
+ 0943 3D0000            cmp [X+0],0
+ 0946 BF4E              jnz L65
+ 0948 3D0100            cmp [X+1],0
+ 094B BF49              jnz L65
+ 094D           X13:
+ 094D           L73:
+ 094D                   .dbline -2
+ 094D           L64:
+ 094D 38FA              add SP,-6
+ 094F 20                pop X
+ 0950                   .dbline 0 ; func end
+ 0950 7F                ret
+ 0951                   .dbsym l dwStepHz -12 l
+ 0951                   .dbsym l dwFreqLimitHz -8 l
+ 0951                   .dbsym l xScanDirection -4 c
+ 0951                   .dbend

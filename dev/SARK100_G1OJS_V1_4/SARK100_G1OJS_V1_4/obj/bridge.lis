@@ -1,0 +1,681 @@
+ 0000                   cpu LMM
+                        .module bridge.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./bridge.c
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\bridge.c
+ 0000                   .dbfunc e MeasureBrgRts _MeasureBrgRts fV
+ 0000           _MeasureBrgRts::
+ 0000                   .dbline -1
+ 0000 10                push X
+ 0001 4F                mov X,SP
+ 0002 3808              add SP,8
+ 0004                   .dbline 64
+ 0004           ; //*****************************************************************************/
+ 0004           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0004           ; //
+ 0004           ; //    Copyright © 2025 Alan Robinson G1OJS Hampshire England G1OJS@yahoo.com with 
+ 0004           ; //  acknowledgement & thanks to Melchor Varela © 2010, EA4FRB Madrid, Spain 
+ 0004           ; //    (melchor.varela@gmail.com) for the overall software and ideas.
+ 0004           ; //  
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0004           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0004           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0004           ; //  or (at your option) any later version.
+ 0004           ; //
+ 0004           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0004           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0004           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0004           ; //  GNU General Public License for more details.
+ 0004           ; //
+ 0004           ; //  You should have received a copy of the GNU General Public License
+ 0004           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0004           ; //  see <http://www.gnu.org/licenses/>.
+ 0004           ; //*****************************************************************************/
+ 0004           ; //*****************************************************************************/
+ 0004           ; //
+ 0004           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0004           ; //    FILE NAME:      bridge.c
+ 0004           ; //    AUTHOR:         G1OJS - Alan Robinson
+ 0004           ; //    DESCRIPTION     Bridge measurement routines
+ 0004           ; //    HISTORY
+ 0004           ; //    NAME            DATE            REMARKS
+ 0004           ; //    AJR                     Feb 2025        G1OJS  - creation
+ 0004           ; //*****************************************************************************/
+ 0004           ; #include "bridge.h"
+ 0004           ; 
+ 0004           ; #include "PSoCAPI.h"
+ 0004           ; #include "glb_data.h"
+ 0004           ; #include "dds.h"
+ 0004           ; #include "timers.h"
+ 0004           ; 
+ 0004           ; 
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; //  Prototypes
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; 
+ 0004           ; 
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; //  FUNCTION NAME:    MeasureBrgRts
+ 0004           ; //  DESCRIPTION: Read all bridge voltages and set global ratios Vr/Vf and Vz/Va
+ 0004           ; //  NOTES:
+ 0004           ; //    - WORD with wUNITY=1000 can encode ratios from 0.001 to 65.535 
+ 0004           ; //        which represents impedance from zero via 0.05 to 3276.75 ohms and 
+ 0004           ; //        VSWR from 1.00:1 via 1.002:1 in 2% steps to ~8000:1 where Vr=3999 and Vf=4000 
+ 0004           ; //    - 3k ohms can be seen on open circuit at lower frequencies, so we need to 
+ 0004           ; //      cap the ratio 1000*Vz/Va at WORD_MAX, which is done in wDivide(WORD w1, WORD w2)
+ 0004           ; //    - Vr can sometimes slightly exceed Vf due to measurement error, but
+ 0004           ; //      this is capped after correction in CorrectBrgRts and the raw (uncorrected)
+ 0004           ; //      ratio is only ever seen if verbose pcLink is used in which case assume expert user 
+ 0004           ; //      and don't hide the measurement errors, but still use wDivide for WORD_MAX safety
+ 0004           ; //  ARGUMENTS: None
+ 0004           ; //  RETURNS: Nothing, but sets global variables:
+ 0004           ; //     g_xBridge.wVzVa (wUNITY x "Vz/Va")
+ 0004           ; //     g_xBridge.wVrVf (wUNITY x "Vr/Vf")
+ 0004           ; //-----------------------------------------------------------------------------
+ 0004           ; void MeasureBrgRts ( void )
+ 0004           ; {
+ 0004                   .dbline 65
+ 0004           ;       DDS_Set(g_dwCurrHz);  // DDS is off by default, so turn it on to correct freq
+ 0004 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0007 5100              mov A,[_g_dwCurrHz]
+ 0009 08                push A
+ 000A 5101              mov A,[_g_dwCurrHz+1]
+ 000C 08                push A
+ 000D 5102              mov A,[_g_dwCurrHz+2]
+ 000F 08                push A
+ 0010 5103              mov A,[_g_dwCurrHz+3]
+ 0012 08                push A
+ 0013 7C0000            xcall _DDS_Set
+ 0016                   .dbline 67
+ 0016           ;       //DDS_Autolevel();
+ 0016           ;       Delay_64ths(1);   // Bridge capacitor settling time
+ 0016 5001              mov A,1
+ 0018 08                push A
+ 0019 7C0000            xcall _Delay_64ths
+ 001C 38FB              add SP,-5
+ 001E                   .dbline 69
+ 001E           ;       #define pos(n) (n==0)? 1:n
+ 001E           ;       g_wBrgRts[MODZ]                 = wDivide( wRead_ADC_DDSUNCHANGED(VzPort), pos(wRead_ADC_DDSUNCHANGED(VaPort)) );
+ 001E 5002              mov A,2
+ 0020 08                push A
+ 0021 919E              xcall _wRead_ADC_DDSUNCHANGED
+ 0023 62D000            mov REG[0xd0],>__r0
+ 0026 5100              mov A,[__r1]
+ 0028 5403              mov [X+3],A
+ 002A 5100              mov A,[__r0]
+ 002C 5402              mov [X+2],A
+ 002E 5003              mov A,3
+ 0030 08                push A
+ 0031 918E              xcall _wRead_ADC_DDSUNCHANGED
+ 0033 38FE              add SP,-2
+ 0035 62D000            mov REG[0xd0],>__r0
+ 0038 3C0000            cmp [__r0],0
+ 003B B00E              jnz L11
+ 003D 3C0000            cmp [__r1],0
+ 0040 B009              jnz L11
+ 0042           X0:
+ 0042 560101            mov [X+1],1
+ 0045 560000            mov [X+0],0
+ 0048 8013              xjmp L12
+ 004A           L11:
+ 004A 5003              mov A,3
+ 004C 08                push A
+ 004D 9172              xcall _wRead_ADC_DDSUNCHANGED
+ 004F 38FF              add SP,-1
+ 0051 62D000            mov REG[0xd0],>__r0
+ 0054 5100              mov A,[__r1]
+ 0056 5401              mov [X+1],A
+ 0058 5100              mov A,[__r0]
+ 005A 5400              mov [X+0],A
+ 005C           L12:
+ 005C 5200              mov A,[X+0]
+ 005E 08                push A
+ 005F 5201              mov A,[X+1]
+ 0061 08                push A
+ 0062 62D000            mov REG[0xd0],>__r0
+ 0065 5202              mov A,[X+2]
+ 0067 08                push A
+ 0068 5203              mov A,[X+3]
+ 006A 08                push A
+ 006B 91B2              xcall _wDivide
+ 006D 38FC              add SP,-4
+ 006F 62D000            mov REG[0xd0],>__r0
+ 0072 5100              mov A,[__r1]
+ 0074 08                push A
+ 0075 5100              mov A,[__r0]
+ 0077 62D000            mov REG[0xd0],>_g_wBrgRts
+ 007A 5300              mov [_g_wBrgRts],A
+ 007C 18                pop A
+ 007D 5301              mov [_g_wBrgRts+1],A
+ 007F                   .dbline 70
+ 007F           ;       g_wBrgRts[MODGAMMA]     = wDivide( wRead_ADC_DDSUNCHANGED(VrPort), pos(wRead_ADC_DDSUNCHANGED(VfPort)) );
+ 007F 5001              mov A,1
+ 0081 08                push A
+ 0082 913D              xcall _wRead_ADC_DDSUNCHANGED
+ 0084 62D000            mov REG[0xd0],>__r0
+ 0087 5100              mov A,[__r1]
+ 0089 5407              mov [X+7],A
+ 008B 5100              mov A,[__r0]
+ 008D 5406              mov [X+6],A
+ 008F 5000              mov A,0
+ 0091 08                push A
+ 0092 912D              xcall _wRead_ADC_DDSUNCHANGED
+ 0094 38FE              add SP,-2
+ 0096 62D000            mov REG[0xd0],>__r0
+ 0099 3C0000            cmp [__r0],0
+ 009C B00E              jnz L15
+ 009E 3C0000            cmp [__r1],0
+ 00A1 B009              jnz L15
+ 00A3           X1:
+ 00A3 560501            mov [X+5],1
+ 00A6 560400            mov [X+4],0
+ 00A9 8013              xjmp L16
+ 00AB           L15:
+ 00AB 5000              mov A,0
+ 00AD 08                push A
+ 00AE 9111              xcall _wRead_ADC_DDSUNCHANGED
+ 00B0 38FF              add SP,-1
+ 00B2 62D000            mov REG[0xd0],>__r0
+ 00B5 5100              mov A,[__r1]
+ 00B7 5405              mov [X+5],A
+ 00B9 5100              mov A,[__r0]
+ 00BB 5404              mov [X+4],A
+ 00BD           L16:
+ 00BD 5204              mov A,[X+4]
+ 00BF 08                push A
+ 00C0 5205              mov A,[X+5]
+ 00C2 08                push A
+ 00C3 62D000            mov REG[0xd0],>__r0
+ 00C6 5206              mov A,[X+6]
+ 00C8 08                push A
+ 00C9 5207              mov A,[X+7]
+ 00CB 08                push A
+ 00CC 9151              xcall _wDivide
+ 00CE 38FC              add SP,-4
+ 00D0 62D000            mov REG[0xd0],>__r0
+ 00D3 5100              mov A,[__r1]
+ 00D5 08                push A
+ 00D6 5100              mov A,[__r0]
+ 00D8 62D000            mov REG[0xd0],>_g_wBrgRts
+ 00DB 5302              mov [_g_wBrgRts+2],A
+ 00DD 18                pop A
+ 00DE 5303              mov [_g_wBrgRts+2+1],A
+ 00E0                   .dbline 71
+ 00E0           ;       DDS_Set(0); // Turn DDS off (this function isn't called from VFO mode)
+ 00E0 5000              mov A,0
+ 00E2 08                push A
+ 00E3 08                push A
+ 00E4 08                push A
+ 00E5 08                push A
+ 00E6 7C0000            xcall _DDS_Set
+ 00E9 38FC              add SP,-4
+ 00EB                   .dbline 73
+ 00EB           ;       // cap g_wBrgRts[MODGAMMA] so that g_wSwr100 won't overflow in WORD (this cap is also applied after correction)
+ 00EB           ;       if(g_wBrgRts[MODGAMMA] > VR_OVER_VF_MAX) g_wBrgRts[MODGAMMA] = VR_OVER_VF_MAX;
+ 00EB 62D000            mov REG[0xd0],>_g_wBrgRts
+ 00EE 50E4              mov A,-28
+ 00F0 1203              sub A,[_g_wBrgRts+2+1]
+ 00F2 5003              mov A,3
+ 00F4 1A02              sbb A,[_g_wBrgRts+2]
+ 00F6 D00A              jnc L17
+ 00F8           X2:
+ 00F8                   .dbline 73
+ 00F8 62D000            mov REG[0xd0],>_g_wBrgRts
+ 00FB 5503E4            mov [_g_wBrgRts+2+1],-28
+ 00FE 550203            mov [_g_wBrgRts+2],3
+ 0101           L17:
+ 0101                   .dbline -2
+ 0101           L9:
+ 0101 38F8              add SP,-8
+ 0103 20                pop X
+ 0104                   .dbline 0 ; func end
+ 0104 7F                ret
+ 0105                   .dbend
+ 0105                   .dbfunc e DDS_Autolevel _DDS_Autolevel fV
+ 0105           _DDS_Autolevel::
+ 0105                   .dbline -1
+ 0105                   .dbline 77
+ 0105           ; }
+ 0105           ; 
+ 0105           ; void DDS_Autolevel(void)
+ 0105           ; {
+ 0105                   .dbline 78
+ 0105           ;       for (g_bDDS_GainStep=0; g_bDDS_GainStep<GAIN_SETTINGS_NUM; g_bDDS_GainStep++)
+ 0105 62D000            mov REG[0xd0],>_g_bDDS_GainStep
+ 0108 550000            mov [_g_bDDS_GainStep],0
+ 010B 806A              xjmp L25
+ 010D           L22:
+ 010D                   .dbline 79
+ 010D           ;       {
+ 010D                   .dbline 80
+ 010D           ;               PGA_DDS_1_SetGain(g_xGainDds[g_bDDS_GainStep].bGain1);
+ 010D 62D000            mov REG[0xd0],>_g_bDDS_GainStep
+ 0110 5100              mov A,[_g_bDDS_GainStep]
+ 0112 62D000            mov REG[0xd0],>__r0
+ 0115 5300              mov [__r1],A
+ 0117 550000            mov [__r0],0
+ 011A 6500              asl [__r1]
+ 011C 6B00              rlc [__r0]
+ 011E 060000            add [__r1],<_g_xGainDds
+ 0121 0E0000            adc [__r0],>_g_xGainDds
+ 0124 5100              mov A,[__r0]
+ 0126 10                push X
+ 0127 5800              mov X,[__r1]
+ 0129 28                romx
+ 012A 20                pop X
+ 012B 10                push X
+ 012C 7C0000            xcall _PGA_DDS_1_SetGain
+ 012F 20                pop X
+ 0130                   .dbline 81
+ 0130           ;               PGA_DDS_2_SetGain(g_xGainDds[g_bDDS_GainStep].bGain2);
+ 0130 62D000            mov REG[0xd0],>_g_bDDS_GainStep
+ 0133 5100              mov A,[_g_bDDS_GainStep]
+ 0135 62D000            mov REG[0xd0],>__r0
+ 0138 5300              mov [__r1],A
+ 013A 550000            mov [__r0],0
+ 013D 6500              asl [__r1]
+ 013F 6B00              rlc [__r0]
+ 0141 060001            add [__r1],<_g_xGainDds+1
+ 0144 0E0001            adc [__r0],>_g_xGainDds+1
+ 0147 5100              mov A,[__r0]
+ 0149 10                push X
+ 014A 5800              mov X,[__r1]
+ 014C 28                romx
+ 014D 20                pop X
+ 014E 10                push X
+ 014F 7C0000            xcall _PGA_DDS_2_SetGain
+ 0152 20                pop X
+ 0153                   .dbline 82
+ 0153           ;               if ( (wRead_ADC_DDSUNCHANGED(VfPort) >= VF_REFERENCE_LEVEL) || (g_bDDS_GainStep==(GAIN_SETTINGS_NUM-1) ) ) break;
+ 0153 5000              mov A,0
+ 0155 08                push A
+ 0156 9069              xcall _wRead_ADC_DDSUNCHANGED
+ 0158 38FF              add SP,-1
+ 015A 62D000            mov REG[0xd0],>__r0
+ 015D 5100              mov A,[__r1]
+ 015F 113C              sub A,60
+ 0161 5100              mov A,[__r0]
+ 0163 190F              sbb A,15
+ 0165 D009              jnc L29
+ 0167           X3:
+ 0167 62D000            mov REG[0xd0],>_g_bDDS_GainStep
+ 016A 3C0010            cmp [_g_bDDS_GainStep],16
+ 016D B003              jnz L27
+ 016F           L29:
+ 016F                   .dbline 82
+ 016F 800E              xjmp L24
+ 0171           L27:
+ 0171                   .dbline 83
+ 0171           ;       }
+ 0171           L23:
+ 0171                   .dbline 78
+ 0171 62D000            mov REG[0xd0],>_g_bDDS_GainStep
+ 0174 7600              inc [_g_bDDS_GainStep]
+ 0176           L25:
+ 0176                   .dbline 78
+ 0176 62D000            mov REG[0xd0],>_g_bDDS_GainStep
+ 0179 3C0011            cmp [_g_bDDS_GainStep],17
+ 017C CF90              jc L22
+ 017E           X4:
+ 017E           L24:
+ 017E                   .dbline -2
+ 017E           L21:
+ 017E                   .dbline 0 ; func end
+ 017E 7F                ret
+ 017F                   .dbend
+ 017F                   .dbfunc e wRead_ADC_DDSON _wRead_ADC_DDSON fi
+ 017F           ;           wVal -> X+0
+ 017F           ;         VxPort -> X-4
+ 017F           _wRead_ADC_DDSON::
+ 017F                   .dbline -1
+ 017F 10                push X
+ 0180 4F                mov X,SP
+ 0181 3802              add SP,2
+ 0183                   .dbline 92
+ 0183           ; }
+ 0183           ; 
+ 0183           ; //-----------------------------------------------------------------------------
+ 0183           ; //  FUNCTION NAME:    wRead_ADC_DDSON
+ 0183           ; //  DESCRIPTION:      Turn on DDS and read ADC, then turn DDS Off
+ 0183           ; //  ARGUMENTS:                None
+ 0183           ; //  RETURNS:          WORD = Vx
+ 0183           ; //-----------------------------------------------------------------------------
+ 0183           ; WORD wRead_ADC_DDSON(BYTE VxPort) {   
+ 0183                   .dbline 94
+ 0183           ;       WORD wVal;
+ 0183           ;       DDS_Set(g_dwCurrHz);  
+ 0183 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0186 5100              mov A,[_g_dwCurrHz]
+ 0188 08                push A
+ 0189 5101              mov A,[_g_dwCurrHz+1]
+ 018B 08                push A
+ 018C 5102              mov A,[_g_dwCurrHz+2]
+ 018E 08                push A
+ 018F 5103              mov A,[_g_dwCurrHz+3]
+ 0191 08                push A
+ 0192 7C0000            xcall _DDS_Set
+ 0195 38FC              add SP,-4
+ 0197                   .dbline 95
+ 0197           ;       wVal=wRead_ADC_DDSUNCHANGED(VxPort);
+ 0197 52FC              mov A,[X-4]
+ 0199 08                push A
+ 019A 9025              xcall _wRead_ADC_DDSUNCHANGED
+ 019C 62D000            mov REG[0xd0],>__r0
+ 019F 5100              mov A,[__r1]
+ 01A1 5401              mov [X+1],A
+ 01A3 5100              mov A,[__r0]
+ 01A5 5400              mov [X+0],A
+ 01A7                   .dbline 96
+ 01A7           ;       DDS_Set(0);
+ 01A7 5000              mov A,0
+ 01A9 08                push A
+ 01AA 08                push A
+ 01AB 08                push A
+ 01AC 08                push A
+ 01AD 7C0000            xcall _DDS_Set
+ 01B0 38FB              add SP,-5
+ 01B2                   .dbline 97
+ 01B2           ;       return wVal;
+ 01B2 62D000            mov REG[0xd0],>__r0
+ 01B5 5201              mov A,[X+1]
+ 01B7 5300              mov [__r1],A
+ 01B9 5200              mov A,[X+0]
+ 01BB 5300              mov [__r0],A
+ 01BD                   .dbline -2
+ 01BD           L30:
+ 01BD 38FE              add SP,-2
+ 01BF 20                pop X
+ 01C0                   .dbline 0 ; func end
+ 01C0 7F                ret
+ 01C1                   .dbsym l wVal 0 i
+ 01C1                   .dbsym l VxPort -4 c
+ 01C1                   .dbend
+ 01C1                   .dbfunc e wRead_ADC_DDSUNCHANGED _wRead_ADC_DDSUNCHANGED fi
+ 01C1           ;           wVal -> X+0
+ 01C1           ;         VxPort -> X-4
+ 01C1           _wRead_ADC_DDSUNCHANGED::
+ 01C1                   .dbline -1
+ 01C1 10                push X
+ 01C2 4F                mov X,SP
+ 01C3 3802              add SP,2
+ 01C5                   .dbline 111
+ 01C5           ; }
+ 01C5           ; //-----------------------------------------------------------------------------
+ 01C5           ; //  FUNCTION NAME:    wRead_ADC
+ 01C5           ; //  DESCRIPTION:      Set the specified port and read the ADC
+ 01C5           ; //                                    Note that Vf is measured at the top of the bridge, so 
+ 01C5           ; //                                    is double that in the common definition of the input
+ 01C5           ; //                                    divider. Hence we have to double Vr too, which is 
+ 01C5           ; //                                    convenient because it allows doubling the gain to 
+ 01C5           ; //                                    reflect the halved 'rail' swing of Vr (better S/N)
+ 01C5           ; //  ARGUMENTS:                BYTE VxPort - which port (see #defines in glb_data.h)
+ 01C5           ; //  RETURNS:          Measured value
+ 01C5           ; //-----------------------------------------------------------------------------
+ 01C5           ; WORD wRead_ADC_DDSUNCHANGED(BYTE VxPort)
+ 01C5           ; {
+ 01C5                   .dbline 114
+ 01C5           ;       WORD wVal;
+ 01C5           ;       
+ 01C5           ;       AMUX4_ADC_InputSelect(VxPort);                                  // Select the input port needed to be read
+ 01C5 10                push X
+ 01C6 52FC              mov A,[X-4]
+ 01C8 7C0000            xcall _AMUX4_ADC_InputSelect
+ 01CB 20                pop X
+ 01CC                   .dbline 115
+ 01CC           ;       if(VxPort==VrPort) PGA_ADC_SetGain(PGA_ADC_G5_33);      // double detector amp gain for Vr
+ 01CC 3DFC01            cmp [X-4],1
+ 01CF B008              jnz L32
+ 01D1                   .dbline 115
+ 01D1 10                push X
+ 01D2 5028              mov A,40
+ 01D4 7C0000            xcall _PGA_ADC_SetGain
+ 01D7 20                pop X
+ 01D8           L32:
+ 01D8                   .dbline 116
+ 01D8           ;       ADCINC12_GetSamples(1);                         // Ask for 1 sample
+ 01D8 10                push X
+ 01D9 5001              mov A,1
+ 01DB 7C0000            xcall _ADCINC12_GetSamples
+ 01DE 20                pop X
+ 01DF           L34:
+ 01DF                   .dbline 117
+ 01DF           ;     while(ADCINC12_fIsDataAvailable() == 0);          // Wait until next reading ready  
+ 01DF           L35:
+ 01DF                   .dbline 117
+ 01DF 10                push X
+ 01E0 7C0000            xcall _ADCINC12_fIsDataAvailable
+ 01E3 62D000            mov REG[0xd0],>__r0
+ 01E6 20                pop X
+ 01E7 3900              cmp A,0
+ 01E9 AFF5              jz L34
+ 01EB                   .dbline 118
+ 01EB           ;       wVal=(WORD)ADCINC12_iGetData()+2048;                    // Take the reading
+ 01EB 10                push X
+ 01EC 7C0000            xcall _ADCINC12_iGetData
+ 01EF 62D000            mov REG[0xd0],>__r0
+ 01F2 5A00              mov [__r0],X
+ 01F4 20                pop X
+ 01F5 0100              add A,0
+ 01F7 5401              mov [X+1],A
+ 01F9 5100              mov A,[__r0]
+ 01FB 0908              adc A,8
+ 01FD 5400              mov [X+0],A
+ 01FF                   .dbline 119
+ 01FF           ;     ADCINC12_ClearFlag();                             // Clear ADC flag  
+ 01FF 10                push X
+ 0200 7C0000            xcall _ADCINC12_ClearFlag
+ 0203 20                pop X
+ 0204                   .dbline 120
+ 0204           ;       if(VxPort==VrPort) PGA_ADC_SetGain(PGA_ADC_G2_67);      // set detector amp gain back to nominal
+ 0204 3DFC01            cmp [X-4],1
+ 0207 B008              jnz L37
+ 0209                   .dbline 120
+ 0209 10                push X
+ 020A 5058              mov A,88
+ 020C 7C0000            xcall _PGA_ADC_SetGain
+ 020F 20                pop X
+ 0210           L37:
+ 0210                   .dbline 122
+ 0210           ;       
+ 0210           ;       return wVal;    // Return the reading
+ 0210 62D000            mov REG[0xd0],>__r0
+ 0213 5201              mov A,[X+1]
+ 0215 5300              mov [__r1],A
+ 0217 5200              mov A,[X+0]
+ 0219 5300              mov [__r0],A
+ 021B                   .dbline -2
+ 021B           L31:
+ 021B 38FE              add SP,-2
+ 021D 20                pop X
+ 021E                   .dbline 0 ; func end
+ 021E 7F                ret
+ 021F                   .dbsym l wVal 0 i
+ 021F                   .dbsym l VxPort -4 c
+ 021F                   .dbend
+ 021F                   .dbfunc e wDivide _wDivide fi
+ 021F           ;          denom -> X-7
+ 021F           ;            num -> X-5
+ 021F           _wDivide::
+ 021F                   .dbline -1
+ 021F 10                push X
+ 0220 4F                mov X,SP
+ 0221 3806              add SP,6
+ 0223                   .dbline 133
+ 0223           ; }
+ 0223           ; 
+ 0223           ; //-----------------------------------------------------------------------------
+ 0223           ; //  FUNCTION NAME:    wDivide(WORD num, WORD denom)
+ 0223           ; //  DESCRIPTION:      Returns (num*wUNITY)/denom capped at WORD_MAX
+ 0223           ; //                                    Note that the capping logic also excludes divide by zero
+ 0223           ; //  ARGUMENTS:        WORD num, WORD denom
+ 0223           ; //  RETURNS:                  (WORD)((num*wUNITY)/denom)
+ 0223           ; //-----------------------------------------------------------------------------
+ 0223           ; WORD wDivide(WORD num, WORD denom)
+ 0223           ; {
+ 0223                   .dbline 134
+ 0223           ;       return (WORD)((DWORD)wUNITY*num >= (DWORD)WORD_MAX*denom)? WORD_MAX:((WORD)(((DWORD)wUNITY*num)/denom));
+ 0223 62D000            mov REG[0xd0],>__r0
+ 0226 52FC              mov A,[X-4]
+ 0228 5300              mov [__r3],A
+ 022A 52FB              mov A,[X-5]
+ 022C 5300              mov [__r2],A
+ 022E 5000              mov A,0
+ 0230 08                push A
+ 0231 08                push A
+ 0232 5100              mov A,[__r2]
+ 0234 08                push A
+ 0235 5100              mov A,[__r3]
+ 0237 08                push A
+ 0238 5000              mov A,0
+ 023A 08                push A
+ 023B 08                push A
+ 023C 5003              mov A,3
+ 023E 08                push A
+ 023F 50E8              mov A,-24
+ 0241 08                push A
+ 0242 7C0000            xcall __mul_32X32_32
+ 0245 38FC              add SP,-4
+ 0247 18                pop A
+ 0248 5300              mov [__r3],A
+ 024A 18                pop A
+ 024B 5300              mov [__r2],A
+ 024D 18                pop A
+ 024E 5300              mov [__r1],A
+ 0250 18                pop A
+ 0251 5300              mov [__r0],A
+ 0253 52FA              mov A,[X-6]
+ 0255 5300              mov [__r7],A
+ 0257 52F9              mov A,[X-7]
+ 0259 5300              mov [__r6],A
+ 025B 5000              mov A,0
+ 025D 08                push A
+ 025E 08                push A
+ 025F 5100              mov A,[__r6]
+ 0261 08                push A
+ 0262 5100              mov A,[__r7]
+ 0264 08                push A
+ 0265 5000              mov A,0
+ 0267 08                push A
+ 0268 08                push A
+ 0269 50FF              mov A,-1
+ 026B 08                push A
+ 026C 08                push A
+ 026D 7C0000            xcall __mul_32X32_32
+ 0270 38FC              add SP,-4
+ 0272 18                pop A
+ 0273 5300              mov [__r7],A
+ 0275 18                pop A
+ 0276 5300              mov [__r6],A
+ 0278 18                pop A
+ 0279 5300              mov [__r5],A
+ 027B 18                pop A
+ 027C 5300              mov [__r4],A
+ 027E 5100              mov A,[__r3]
+ 0280 1200              sub A,[__r7]
+ 0282 5100              mov A,[__r2]
+ 0284 1A00              sbb A,[__r6]
+ 0286 5100              mov A,[__r1]
+ 0288 1A00              sbb A,[__r5]
+ 028A 5100              mov A,[__r0]
+ 028C 1A00              sbb A,[__r4]
+ 028E C009              jc L44
+ 0290           X5:
+ 0290 560501            mov [X+5],1
+ 0293 560400            mov [X+4],0
+ 0296 8007              xjmp L45
+ 0298           L44:
+ 0298 560500            mov [X+5],0
+ 029B 560400            mov [X+4],0
+ 029E           L45:
+ 029E 3D0400            cmp [X+4],0
+ 02A1 B006              jnz X6
+ 02A3 3D0500            cmp [X+5],0
+ 02A6 A00F              jz L42
+ 02A8           X6:
+ 02A8 560000            mov [X+0],0
+ 02AB 560100            mov [X+1],0
+ 02AE 5602FF            mov [X+2],-1
+ 02B1 5603FF            mov [X+3],-1
+ 02B4 8072              xjmp L43
+ 02B6           L42:
+ 02B6 62D000            mov REG[0xd0],>__r0
+ 02B9 52FC              mov A,[X-4]
+ 02BB 5300              mov [__r3],A
+ 02BD 52FB              mov A,[X-5]
+ 02BF 5300              mov [__r2],A
+ 02C1 5000              mov A,0
+ 02C3 08                push A
+ 02C4 08                push A
+ 02C5 5100              mov A,[__r2]
+ 02C7 08                push A
+ 02C8 5100              mov A,[__r3]
+ 02CA 08                push A
+ 02CB 5000              mov A,0
+ 02CD 08                push A
+ 02CE 08                push A
+ 02CF 5003              mov A,3
+ 02D1 08                push A
+ 02D2 50E8              mov A,-24
+ 02D4 08                push A
+ 02D5 7C0000            xcall __mul_32X32_32
+ 02D8 38FC              add SP,-4
+ 02DA 18                pop A
+ 02DB 5300              mov [__r3],A
+ 02DD 18                pop A
+ 02DE 5300              mov [__r2],A
+ 02E0 18                pop A
+ 02E1 5300              mov [__r1],A
+ 02E3 18                pop A
+ 02E4 5300              mov [__r0],A
+ 02E6 52FA              mov A,[X-6]
+ 02E8 5300              mov [__r7],A
+ 02EA 52F9              mov A,[X-7]
+ 02EC 5300              mov [__r6],A
+ 02EE 5000              mov A,0
+ 02F0 08                push A
+ 02F1 08                push A
+ 02F2 5100              mov A,[__r6]
+ 02F4 08                push A
+ 02F5 5100              mov A,[__r7]
+ 02F7 08                push A
+ 02F8 5100              mov A,[__r0]
+ 02FA 08                push A
+ 02FB 5100              mov A,[__r1]
+ 02FD 08                push A
+ 02FE 5100              mov A,[__r2]
+ 0300 08                push A
+ 0301 5100              mov A,[__r3]
+ 0303 08                push A
+ 0304 7C0000            xcall __divmodu_32X32_32
+ 0307 18                pop A
+ 0308 5300              mov [__r3],A
+ 030A 18                pop A
+ 030B 5300              mov [__r2],A
+ 030D 18                pop A
+ 030E 18                pop A
+ 030F 38FC              add SP,-4
+ 0311 5100              mov A,[__r3]
+ 0313 5300              mov [__r1],A
+ 0315 5100              mov A,[__r2]
+ 0317 5300              mov [__r0],A
+ 0319 5100              mov A,[__r1]
+ 031B 5403              mov [X+3],A
+ 031D 5100              mov A,[__r0]
+ 031F 5402              mov [X+2],A
+ 0321 560100            mov [X+1],0
+ 0324 560000            mov [X+0],0
+ 0327           L43:
+ 0327 62D000            mov REG[0xd0],>__r0
+ 032A 5203              mov A,[X+3]
+ 032C 5300              mov [__r1],A
+ 032E 5202              mov A,[X+2]
+ 0330 5300              mov [__r0],A
+ 0332                   .dbline -2
+ 0332           L39:
+ 0332 38FA              add SP,-6
+ 0334 20                pop X
+ 0335                   .dbline 0 ; func end
+ 0335 7F                ret
+ 0336                   .dbsym l denom -7 i
+ 0336                   .dbsym l num -5 i
+ 0336                   .dbend

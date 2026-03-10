@@ -1,0 +1,2141 @@
+ 0000                   cpu LMM
+                        .module screens.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./screens.c
+ 0000                   .dbfile C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\screens.c
+ 0000                   .dbfunc e Screen_Clear _Screen_Clear fV
+ 0000           _Screen_Clear::
+ 0000                   .dbline -1
+ 0000                   .dbline 54
+ 0000           ; //*****************************************************************************/
+ 0000           ; //  This file is a part of the "SARK100 SWR Analyzer firmware"
+ 0000           ; //
+ 0000           ; //    Copyright © 2025 Alan Robinson G1OJS Hampshire England G1OJS@yahoo.com with 
+ 0000           ; //  acknowledgement & thanks to Melchor Varela © 2010, EA4FRB Madrid, Spain 
+ 0000           ; //    (melchor.varela@gmail.com) for the overall software and ideas.
+ 0000           ; //  
+ 0000           ; //  "SARK100 SWR Analyzer firmware" is free software: you can redistribute it
+ 0000           ; //  and/or modify it under the terms of the GNU General Public License as
+ 0000           ; //  published by the Free Software Foundation, either version 3 of the License,
+ 0000           ; //  or (at your option) any later version.
+ 0000           ; //
+ 0000           ; //  "SARK100 SWR Analyzer firmware" is distributed in the hope that it will be
+ 0000           ; //  useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ 0000           ; //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ 0000           ; //  GNU General Public License for more details.
+ 0000           ; //
+ 0000           ; //  You should have received a copy of the GNU General Public License
+ 0000           ; //  along with "SARK100 SWR Analyzer firmware".  If not,
+ 0000           ; //  see <http://www.gnu.org/licenses/>.
+ 0000           ; //*****************************************************************************/
+ 0000           ; //*****************************************************************************/
+ 0000           ; //
+ 0000           ; //    PROJECT:        SARK100 SWR Analyzer
+ 0000           ; //    FILE NAME:      screens.c
+ 0000           ; //    AUTHOR:         G1OJS - Alan Robinson
+ 0000           ; //    DESCRIPTION     Display Screens for different modes and results
+ 0000           ; //    HISTORY
+ 0000           ; //    NAME            DATE            REMARKS
+ 0000           ; //    AJR                     Feb 2025        G1OJS - creation
+ 0000           ; //*****************************************************************************/
+ 0000           ; #include "screens.h"
+ 0000           ; 
+ 0000           ; //#include <stdlib.h>
+ 0000           ; #include <string.h>
+ 0000           ; #include <m8c.h>
+ 0000           ; #include "Lcd.h"
+ 0000           ; #include "control.h"
+ 0000           ; #include "Msg_generic.h"
+ 0000           ; #include "glb_data.h"
+ 0000           ; #include "keypad.h"
+ 0000           ; #include "timers.h"
+ 0000           ; 
+ 0000           ; char FormatNumberRJ(unsigned long dwVal, unsigned char bFieldLen, unsigned char bDP);
+ 0000           ; static void FormatNumberRJ_Sliding(unsigned long dwVal, unsigned char bFieldLen, unsigned char bDP);
+ 0000           ; 
+ 0000           ; #define LCD_CLEAR                     0x01
+ 0000           ; #define LCD_ON_CURSOR         0x0e
+ 0000           ; #define LCD_ON_BLINK          0x0d
+ 0000           ; 
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; // Simpler one-line functions to pass through Clear display, Display on no cursor, write strings to LCD
+ 0000           ; //-----------------------------------------------------------------------------
+ 0000           ; void Screen_Clear(void)                                                                                                       { LCD_Control(LCD_CLEAR);                                                       }
+ 0000                   .dbline 54
+ 0000 10                push X
+ 0001 5001              mov A,1
+ 0003 7C0000            xcall _LCD_Control
+ 0006 20                pop X
+ 0007                   .dbline -2
+ 0007           L10:
+ 0007                   .dbline 0 ; func end
+ 0007 7F                ret
+ 0008                   .dbend
+ 0008                   .dbfunc e Screen_HideCursor _Screen_HideCursor fV
+ 0008           _Screen_HideCursor::
+ 0008                   .dbline -1
+ 0008                   .dbline 55
+ 0008           ; void Screen_HideCursor(void)                                                                                          { LCD_Control(LCD_CURSOR_OFF);                                                          }
+ 0008                   .dbline 55
+ 0008 10                push X
+ 0009 500C              mov A,12
+ 000B 7C0000            xcall _LCD_Control
+ 000E 20                pop X
+ 000F                   .dbline -2
+ 000F           L11:
+ 000F                   .dbline 0 ; func end
+ 000F 7F                ret
+ 0010                   .dbend
+ 0010                   .dbfunc e Screen_CStr _Screen_CStr fV
+ 0010           ;     sRomString -> X-5
+ 0010           _Screen_CStr::
+ 0010                   .dbline -1
+ 0010 10                push X
+ 0011 4F                mov X,SP
+ 0012                   .dbline 56
+ 0012           ; void Screen_CStr(const char * sRomString)                                                                     { LCD_PrCString(sRomString);}
+ 0012                   .dbline 56
+ 0012 10                push X
+ 0013 52FB              mov A,[X-5]
+ 0015 08                push A
+ 0016 52FC              mov A,[X-4]
+ 0018 5C                mov X,A
+ 0019 18                pop A
+ 001A 7C0000            xcall _LCD_PrCString
+ 001D 20                pop X
+ 001E                   .dbline -2
+ 001E           L12:
+ 001E 20                pop X
+ 001F                   .dbline 0 ; func end
+ 001F 7F                ret
+ 0020                   .dbsym l sRomString -5 pkc
+ 0020                   .dbend
+ 0020                   .dbfunc e Screen_Str _Screen_Str fV
+ 0020           ;        sString -> X-5
+ 0020           _Screen_Str::
+ 0020                   .dbline -1
+ 0020 10                push X
+ 0021 4F                mov X,SP
+ 0022                   .dbline 57
+ 0022           ; void Screen_Str(char * sString)                                                                                               { LCD_PrString(sString);        }
+ 0022                   .dbline 57
+ 0022 10                push X
+ 0023 52FB              mov A,[X-5]
+ 0025 08                push A
+ 0026 52FC              mov A,[X-4]
+ 0028 5C                mov X,A
+ 0029 18                pop A
+ 002A 7C0000            xcall _LCD_PrString
+ 002D 20                pop X
+ 002E                   .dbline -2
+ 002E           L13:
+ 002E 20                pop X
+ 002F                   .dbline 0 ; func end
+ 002F 7F                ret
+ 0030                   .dbsym l sString -5 pc
+ 0030                   .dbend
+ 0030                   .dbfunc e Screen_CStrAtRowCol _Screen_CStrAtRowCol fV
+ 0030           ;     sRomString -> X-7
+ 0030           ;           bCol -> X-5
+ 0030           ;           bRow -> X-4
+ 0030           _Screen_CStrAtRowCol::
+ 0030                   .dbline -1
+ 0030 10                push X
+ 0031 4F                mov X,SP
+ 0032                   .dbline 58
+ 0032           ; void Screen_CStrAtRowCol(BYTE bRow, BYTE bCol, const char * sRomString)               { LCD_Position(bRow, bCol); LCD_PrCString(sRomString);}
+ 0032                   .dbline 58
+ 0032 10                push X
+ 0033 52FB              mov A,[X-5]
+ 0035 08                push A
+ 0036 52FC              mov A,[X-4]
+ 0038 20                pop X
+ 0039 7C0000            xcall _LCD_Position
+ 003C 20                pop X
+ 003D                   .dbline 58
+ 003D 10                push X
+ 003E 52F9              mov A,[X-7]
+ 0040 08                push A
+ 0041 52FA              mov A,[X-6]
+ 0043 5C                mov X,A
+ 0044 18                pop A
+ 0045 7C0000            xcall _LCD_PrCString
+ 0048 20                pop X
+ 0049                   .dbline -2
+ 0049           L14:
+ 0049 20                pop X
+ 004A                   .dbline 0 ; func end
+ 004A 7F                ret
+ 004B                   .dbsym l sRomString -7 pkc
+ 004B                   .dbsym l bCol -5 c
+ 004B                   .dbsym l bRow -4 c
+ 004B                   .dbend
+ 004B                   .dbfunc e Screen_StrAtRowCol _Screen_StrAtRowCol fV
+ 004B           ;        sString -> X-7
+ 004B           ;           bCol -> X-5
+ 004B           ;           bRow -> X-4
+ 004B           _Screen_StrAtRowCol::
+ 004B                   .dbline -1
+ 004B 10                push X
+ 004C 4F                mov X,SP
+ 004D                   .dbline 59
+ 004D           ; void Screen_StrAtRowCol(BYTE bRow, BYTE bCol, char * sString)                         { LCD_Position(bRow, bCol); LCD_PrString(sString);      }
+ 004D                   .dbline 59
+ 004D 10                push X
+ 004E 52FB              mov A,[X-5]
+ 0050 08                push A
+ 0051 52FC              mov A,[X-4]
+ 0053 20                pop X
+ 0054 7C0000            xcall _LCD_Position
+ 0057 20                pop X
+ 0058                   .dbline 59
+ 0058 10                push X
+ 0059 52F9              mov A,[X-7]
+ 005B 08                push A
+ 005C 52FA              mov A,[X-6]
+ 005E 5C                mov X,A
+ 005F 18                pop A
+ 0060 7C0000            xcall _LCD_PrString
+ 0063 20                pop X
+ 0064                   .dbline -2
+ 0064           L15:
+ 0064 20                pop X
+ 0065                   .dbline 0 ; func end
+ 0065 7F                ret
+ 0066                   .dbsym l sString -7 pc
+ 0066                   .dbsym l bCol -5 c
+ 0066                   .dbsym l bRow -4 c
+ 0066                   .dbend
+ 0066                   .dbfunc e Screen_Frequency _Screen_Frequency fV
+ 0066           ;    xDisplayRes -> X-4
+ 0066           _Screen_Frequency::
+ 0066                   .dbline -1
+ 0066 10                push X
+ 0067 4F                mov X,SP
+ 0068 3802              add SP,2
+ 006A                   .dbline 72
+ 006A           ; 
+ 006A           ; 
+ 006A           ; //-----------------------------------------------------------------------------
+ 006A           ; // Longer functions
+ 006A           ; //-----------------------------------------------------------------------------
+ 006A           ; //-----------------------------------------------------------------------------
+ 006A           ; //  FUNCTION NAME:    Screen_Frequency
+ 006A           ; //  DESCRIPTION:      Display VFO frequency g_dwCurrHz in the current cursor position
+ 006A           ; //  ARGUMENTS:                none
+ 006A           ; //  RETURNS:          none.
+ 006A           ; //-----------------------------------------------------------------------------
+ 006A           ; void Screen_Frequency(SCREEN_FREQ_UNITS xDisplayRes)
+ 006A           ; {
+ 006A                   .dbline 77
+ 006A           ;       // display planner ...
+ 006A           ;       // 0123456789012345
+ 006A           ;       //        56295.350
+ 006A           ; 
+ 006A           ;       if(xDisplayRes == Display_Hz) FormatNumberRJ(g_dwCurrHz,9,3); else FormatNumberRJ(g_dwCurrHz/1000,5,0);
+ 006A 3DFC00            cmp [X-4],0
+ 006D B022              jnz L17
+ 006F                   .dbline 77
+ 006F 5003              mov A,3
+ 0071 08                push A
+ 0072 5009              mov A,9
+ 0074 08                push A
+ 0075 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0078 5100              mov A,[_g_dwCurrHz]
+ 007A 08                push A
+ 007B 5101              mov A,[_g_dwCurrHz+1]
+ 007D 08                push A
+ 007E 5102              mov A,[_g_dwCurrHz+2]
+ 0080 08                push A
+ 0081 5103              mov A,[_g_dwCurrHz+3]
+ 0083 08                push A
+ 0084 7C0000            xcall _FormatNumberRJ
+ 0087 38FA              add SP,-6
+ 0089 62D000            mov REG[0xd0],>__r0
+ 008C 5300              mov [__r0],A
+ 008E 8044              xjmp L18
+ 0090           L17:
+ 0090                   .dbline 77
+ 0090 5000              mov A,0
+ 0092 08                push A
+ 0093 5005              mov A,5
+ 0095 08                push A
+ 0096 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0099 5000              mov A,0
+ 009B 08                push A
+ 009C 08                push A
+ 009D 5003              mov A,3
+ 009F 08                push A
+ 00A0 50E8              mov A,-24
+ 00A2 08                push A
+ 00A3 5100              mov A,[_g_dwCurrHz]
+ 00A5 08                push A
+ 00A6 5101              mov A,[_g_dwCurrHz+1]
+ 00A8 08                push A
+ 00A9 5102              mov A,[_g_dwCurrHz+2]
+ 00AB 08                push A
+ 00AC 5103              mov A,[_g_dwCurrHz+3]
+ 00AE 08                push A
+ 00AF 62D000            mov REG[0xd0],>__r0
+ 00B2 7C0000            xcall __divmodu_32X32_32
+ 00B5 18                pop A
+ 00B6 5300              mov [__r3],A
+ 00B8 18                pop A
+ 00B9 5300              mov [__r2],A
+ 00BB 18                pop A
+ 00BC 5300              mov [__r1],A
+ 00BE 18                pop A
+ 00BF 38FC              add SP,-4
+ 00C1 08                push A
+ 00C2 5100              mov A,[__r1]
+ 00C4 08                push A
+ 00C5 5100              mov A,[__r2]
+ 00C7 08                push A
+ 00C8 5100              mov A,[__r3]
+ 00CA 08                push A
+ 00CB 7C0000            xcall _FormatNumberRJ
+ 00CE 38FA              add SP,-6
+ 00D0 62D000            mov REG[0xd0],>__r0
+ 00D3           L18:
+ 00D3                   .dbline 78
+ 00D3           ;       Screen_StrAtRowCol(0, (xDisplayRes == Display_Hz)? 7:11 , g_buffer16);  
+ 00D3 5000              mov A,>_g_buffer16
+ 00D5 08                push A
+ 00D6 5000              mov A,<_g_buffer16
+ 00D8 08                push A
+ 00D9 3DFC00            cmp [X-4],0
+ 00DC B009              jnz L20
+ 00DE 560107            mov [X+1],7
+ 00E1 560000            mov [X+0],0
+ 00E4 8007              xjmp L21
+ 00E6           L20:
+ 00E6 56010B            mov [X+1],11
+ 00E9 560000            mov [X+0],0
+ 00EC           L21:
+ 00EC 62D000            mov REG[0xd0],>__r0
+ 00EF 5201              mov A,[X+1]
+ 00F1 08                push A
+ 00F2 5000              mov A,0
+ 00F4 08                push A
+ 00F5 9F54              xcall _Screen_StrAtRowCol
+ 00F7 38FC              add SP,-4
+ 00F9                   .dbline 83
+ 00F9           ;       
+ 00F9           ;       // show the increment cursor unless in VFO power setting mode or 
+ 00F9           ;       // a function calling here without using full Hz resolution (this is a 
+ 00F9           ;       // shortcut in the logic & really needs separating into another argument)
+ 00F9           ;       if((!g_bUP_DOWN_SelectsVFOPower) && (xDisplayRes==Display_Hz)){
+ 00F9 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsVFOPower
+ 00FC 3C0000            cmp [_g_bUP_DOWN_SelectsVFOPower],0
+ 00FF B057              jnz L22
+ 0101 3DFC00            cmp [X-4],0
+ 0104 B052              jnz L22
+ 0106                   .dbline 83
+ 0106                   .dbline 84
+ 0106           ;               LCD_Position(0, g_xIncCtrl[g_bIncDigit].bCol);  
+ 0106 62D000            mov REG[0xd0],>_g_bIncDigit
+ 0109 5100              mov A,[_g_bIncDigit]
+ 010B 62D000            mov REG[0xd0],>__r0
+ 010E 5300              mov [__r1],A
+ 0110 5000              mov A,0
+ 0112 08                push A
+ 0113 5100              mov A,[__r1]
+ 0115 08                push A
+ 0116 5000              mov A,0
+ 0118 08                push A
+ 0119 5005              mov A,5
+ 011B 08                push A
+ 011C 7C0000            xcall __mul16
+ 011F 38FC              add SP,-4
+ 0121 5100              mov A,[__rX]
+ 0123 5300              mov [__r1],A
+ 0125 5100              mov A,[__rY]
+ 0127 5300              mov [__r0],A
+ 0129 060000            add [__r1],<_g_xIncCtrl
+ 012C 0E0000            adc [__r0],>_g_xIncCtrl
+ 012F 5100              mov A,[__r0]
+ 0131 10                push X
+ 0132 5800              mov X,[__r1]
+ 0134 28                romx
+ 0135 20                pop X
+ 0136 10                push X
+ 0137 08                push A
+ 0138 5000              mov A,0
+ 013A 20                pop X
+ 013B 7C0000            xcall _LCD_Position
+ 013E 20                pop X
+ 013F                   .dbline 85
+ 013F           ;               if (g_bUP_DOWN_SelectsIncDigit) {LCD_Control(LCD_ON_BLINK);} else {LCD_Control(LCD_ON_CURSOR);}
+ 013F 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsIncDigit
+ 0142 3C0000            cmp [_g_bUP_DOWN_SelectsIncDigit],0
+ 0145 A00A              jz L24
+ 0147                   .dbline 85
+ 0147                   .dbline 85
+ 0147 10                push X
+ 0148 500D              mov A,13
+ 014A 7C0000            xcall _LCD_Control
+ 014D 20                pop X
+ 014E                   .dbline 85
+ 014E 8008              xjmp L25
+ 0150           L24:
+ 0150                   .dbline 85
+ 0150                   .dbline 85
+ 0150 10                push X
+ 0151 500E              mov A,14
+ 0153 7C0000            xcall _LCD_Control
+ 0156 20                pop X
+ 0157                   .dbline 85
+ 0157           L25:
+ 0157                   .dbline 86
+ 0157           ;       }
+ 0157           L22:
+ 0157                   .dbline -2
+ 0157           L16:
+ 0157 38FE              add SP,-2
+ 0159 20                pop X
+ 015A                   .dbline 0 ; func end
+ 015A 7F                ret
+ 015B                   .dbsym l xDisplayRes -4 c
+ 015B                   .dbend
+ 015B                   .dbfunc e Screen_SRXZ _Screen_SRXZ fV
+ 015B           _Screen_SRXZ::
+ 015B                   .dbline -1
+ 015B 10                push X
+ 015C 4F                mov X,SP
+ 015D 3804              add SP,4
+ 015F                   .dbline 95
+ 015F           ; }
+ 015F           ; //-----------------------------------------------------------------------------
+ 015F           ; //  FUNCTION NAME:    Screen_SRXZ()
+ 015F           ; //  DESCRIPTION:      Display current SWR, R, X and |Z|
+ 015F           ; //  ARGUMENTS:                none
+ 015F           ; //  RETURNS:          nothing
+ 015F           ; //-----------------------------------------------------------------------------
+ 015F           ; void Screen_SRXZ (void)
+ 015F           ; {
+ 015F                   .dbline 102
+ 015F           ;       // display planner ...
+ 015F           ;       // SWR0.0 51000.000
+ 015F           ;       // |999-j999|o=999o
+ 015F           ;       // 0123456789012345
+ 015F           ;       
+ 015F           ;       // display top row for current mode & clear bottom row
+ 015F           ;       Screen_CStrAtRowCol(0,0, gModeStr[g_bMode]);
+ 015F 62D000            mov REG[0xd0],>_g_bMode
+ 0162 5100              mov A,[_g_bMode]
+ 0164 62D000            mov REG[0xd0],>__r0
+ 0167 5300              mov [__r1],A
+ 0169 550000            mov [__r0],0
+ 016C 6500              asl [__r1]
+ 016E 6B00              rlc [__r0]
+ 0170 060000            add [__r1],<_gModeStr
+ 0173 0E0000            adc [__r0],>_gModeStr
+ 0176 5100              mov A,[__r0]
+ 0178 60D4              mov REG[0xd4],A
+ 017A 3E00              mvi A,[__r1]
+ 017C 5300              mov [__r0],A
+ 017E 3E00              mvi A,[__r1]
+ 0180 5300              mov [__r1],A
+ 0182 5100              mov A,[__r0]
+ 0184 08                push A
+ 0185 5100              mov A,[__r1]
+ 0187 08                push A
+ 0188 5000              mov A,0
+ 018A 08                push A
+ 018B 08                push A
+ 018C 9EA2              xcall _Screen_CStrAtRowCol
+ 018E                   .dbline 103
+ 018E           ;       Screen_CStrAtRowCol(1, 0, gBlankStr_16);
+ 018E 5000              mov A,>_gBlankStr_16
+ 0190 08                push A
+ 0191 5000              mov A,<_gBlankStr_16
+ 0193 08                push A
+ 0194 5000              mov A,0
+ 0196 08                push A
+ 0197 5001              mov A,1
+ 0199 08                push A
+ 019A 9E94              xcall _Screen_CStrAtRowCol
+ 019C 38F8              add SP,-8
+ 019E                   .dbline 106
+ 019E           ;       
+ 019E           ;       // SWR top left
+ 019E           ;       FormatNumberRJ_Sliding(((DWORD)g_wSwr100+5)/10, 3, 1);
+ 019E 5001              mov A,1
+ 01A0 08                push A
+ 01A1 5003              mov A,3
+ 01A3 08                push A
+ 01A4 62D000            mov REG[0xd0],>_g_wSwr100
+ 01A7 5101              mov A,[_g_wSwr100+1]
+ 01A9 62D000            mov REG[0xd0],>__r0
+ 01AC 5300              mov [__r3],A
+ 01AE 62D000            mov REG[0xd0],>_g_wSwr100
+ 01B1 5100              mov A,[_g_wSwr100]
+ 01B3 62D000            mov REG[0xd0],>__r0
+ 01B6 5300              mov [__r2],A
+ 01B8 550000            mov [__r1],0
+ 01BB 550000            mov [__r0],0
+ 01BE 060005            add [__r3],5
+ 01C1 0E0000            adc [__r2],0
+ 01C4 0E0000            adc [__r1],0
+ 01C7 0E0000            adc [__r0],0
+ 01CA 5000              mov A,0
+ 01CC 08                push A
+ 01CD 08                push A
+ 01CE 08                push A
+ 01CF 500A              mov A,10
+ 01D1 08                push A
+ 01D2 5100              mov A,[__r0]
+ 01D4 08                push A
+ 01D5 5100              mov A,[__r1]
+ 01D7 08                push A
+ 01D8 5100              mov A,[__r2]
+ 01DA 08                push A
+ 01DB 5100              mov A,[__r3]
+ 01DD 08                push A
+ 01DE 7C0000            xcall __divmodu_32X32_32
+ 01E1 18                pop A
+ 01E2 5300              mov [__r3],A
+ 01E4 18                pop A
+ 01E5 5300              mov [__r2],A
+ 01E7 18                pop A
+ 01E8 5300              mov [__r1],A
+ 01EA 18                pop A
+ 01EB 38FC              add SP,-4
+ 01ED 08                push A
+ 01EE 5100              mov A,[__r1]
+ 01F0 08                push A
+ 01F1 5100              mov A,[__r2]
+ 01F3 08                push A
+ 01F4 5100              mov A,[__r3]
+ 01F6 08                push A
+ 01F7 972F              xcall _FormatNumberRJ_Sliding
+ 01F9                   .dbline 107
+ 01F9           ;       Screen_StrAtRowCol(0, 3, g_buffer16);
+ 01F9 5000              mov A,>_g_buffer16
+ 01FB 08                push A
+ 01FC 5000              mov A,<_g_buffer16
+ 01FE 08                push A
+ 01FF 5003              mov A,3
+ 0201 08                push A
+ 0202 5000              mov A,0
+ 0204 08                push A
+ 0205 9E44              xcall _Screen_StrAtRowCol
+ 0207 38F6              add SP,-10
+ 0209                   .dbline 109
+ 0209           ;       // R bottom left
+ 0209           ;       Screen_CStrAtRowCol(1, 0, "|");
+ 0209 502E              mov A,>L27
+ 020B 08                push A
+ 020C 502E              mov A,<L27
+ 020E 08                push A
+ 020F 5000              mov A,0
+ 0211 08                push A
+ 0212 5001              mov A,1
+ 0214 08                push A
+ 0215 9E19              xcall _Screen_CStrAtRowCol
+ 0217                   .dbline 110
+ 0217           ;       FormatNumberRJ_Sliding((DWORD)g_wR10, 3, 1);
+ 0217 5001              mov A,1
+ 0219 08                push A
+ 021A 5003              mov A,3
+ 021C 08                push A
+ 021D 62D000            mov REG[0xd0],>_g_wR10
+ 0220 5101              mov A,[_g_wR10+1]
+ 0222 62D000            mov REG[0xd0],>__r0
+ 0225 5300              mov [__r3],A
+ 0227 62D000            mov REG[0xd0],>_g_wR10
+ 022A 5100              mov A,[_g_wR10]
+ 022C 62D000            mov REG[0xd0],>__r0
+ 022F 5300              mov [__r2],A
+ 0231 5000              mov A,0
+ 0233 08                push A
+ 0234 08                push A
+ 0235 5100              mov A,[__r2]
+ 0237 08                push A
+ 0238 5100              mov A,[__r3]
+ 023A 08                push A
+ 023B 96EB              xcall _FormatNumberRJ_Sliding
+ 023D 38F6              add SP,-10
+ 023F                   .dbline 111
+ 023F           ;       Screen_Str(g_buffer16);
+ 023F 5000              mov A,>_g_buffer16
+ 0241 08                push A
+ 0242 5000              mov A,<_g_buffer16
+ 0244 08                push A
+ 0245 9DD9              xcall _Screen_Str
+ 0247                   .dbline 113
+ 0247           ;       // X bottom middle
+ 0247           ;       FormatNumberRJ_Sliding((DWORD)g_wX10, 3, 1);
+ 0247 5001              mov A,1
+ 0249 08                push A
+ 024A 5003              mov A,3
+ 024C 08                push A
+ 024D 62D000            mov REG[0xd0],>_g_wX10
+ 0250 5101              mov A,[_g_wX10+1]
+ 0252 62D000            mov REG[0xd0],>__r0
+ 0255 5300              mov [__r3],A
+ 0257 62D000            mov REG[0xd0],>_g_wX10
+ 025A 5100              mov A,[_g_wX10]
+ 025C 62D000            mov REG[0xd0],>__r0
+ 025F 5300              mov [__r2],A
+ 0261 5000              mov A,0
+ 0263 08                push A
+ 0264 08                push A
+ 0265 5100              mov A,[__r2]
+ 0267 08                push A
+ 0268 5100              mov A,[__r3]
+ 026A 08                push A
+ 026B 96BB              xcall _FormatNumberRJ_Sliding
+ 026D 38F8              add SP,-8
+ 026F                   .dbline 114
+ 026F           ;       Screen_CStr("  ");                      // placeholder for +j / -j
+ 026F 502B              mov A,>L28
+ 0271 08                push A
+ 0272 502B              mov A,<L28
+ 0274 08                push A
+ 0275 9D99              xcall _Screen_CStr
+ 0277                   .dbline 115
+ 0277           ;       Screen_Str(g_buffer16);
+ 0277 5000              mov A,>_g_buffer16
+ 0279 08                push A
+ 027A 5000              mov A,<_g_buffer16
+ 027C 08                push A
+ 027D 9DA1              xcall _Screen_Str
+ 027F 38FC              add SP,-4
+ 0281                   .dbline 116
+ 0281           ;       Screen_CStr("| =");
+ 0281 5027              mov A,>L29
+ 0283 08                push A
+ 0284 5027              mov A,<L29
+ 0286 08                push A
+ 0287 9D87              xcall _Screen_CStr
+ 0289                   .dbline 118
+ 0289           ;       // Z bottom right
+ 0289           ;       FormatNumberRJ_Sliding((DWORD)g_wZ10, 3, 1);
+ 0289 5001              mov A,1
+ 028B 08                push A
+ 028C 5003              mov A,3
+ 028E 08                push A
+ 028F 62D000            mov REG[0xd0],>_g_wZ10
+ 0292 5101              mov A,[_g_wZ10+1]
+ 0294 62D000            mov REG[0xd0],>__r0
+ 0297 5300              mov [__r3],A
+ 0299 62D000            mov REG[0xd0],>_g_wZ10
+ 029C 5100              mov A,[_g_wZ10]
+ 029E 62D000            mov REG[0xd0],>__r0
+ 02A1 5300              mov [__r2],A
+ 02A3 5000              mov A,0
+ 02A5 08                push A
+ 02A6 08                push A
+ 02A7 5100              mov A,[__r2]
+ 02A9 08                push A
+ 02AA 5100              mov A,[__r3]
+ 02AC 08                push A
+ 02AD 9679              xcall _FormatNumberRJ_Sliding
+ 02AF 38F8              add SP,-8
+ 02B1                   .dbline 119
+ 02B1           ;       Screen_Str(g_buffer16);
+ 02B1 5000              mov A,>_g_buffer16
+ 02B3 08                push A
+ 02B4 5000              mov A,<_g_buffer16
+ 02B6 08                push A
+ 02B7 9D67              xcall _Screen_Str
+ 02B9                   .dbline 120
+ 02B9           ;       Screen_CStr("\xf4");
+ 02B9 5025              mov A,>L30
+ 02BB 08                push A
+ 02BC 5025              mov A,<L30
+ 02BE 08                push A
+ 02BF 9D4F              xcall _Screen_CStr
+ 02C1 38FC              add SP,-4
+ 02C3                   .dbline 123
+ 02C3           ;       
+ 02C3           ;       // overwrite placeholder with +j / -j, moving one to the right for short numbers
+ 02C3           ;       Screen_CStrAtRowCol(1, (g_wX10>=100 && g_wX10<1000)? 5:4, (g_bSgnX=='+')? "+j":"-j");
+ 02C3 62D000            mov REG[0xd0],>_g_bSgnX
+ 02C6 3C002B            cmp [_g_bSgnX],43
+ 02C9 B009              jnz L35
+ 02CB 560122            mov [X+1],<L32
+ 02CE 560022            mov [X+0],>L32
+ 02D1 8007              xjmp L36
+ 02D3           L35:
+ 02D3 56011F            mov [X+1],<L33
+ 02D6 56001F            mov [X+0],>L33
+ 02D9           L36:
+ 02D9 5200              mov A,[X+0]
+ 02DB 08                push A
+ 02DC 5201              mov A,[X+1]
+ 02DE 08                push A
+ 02DF 62D000            mov REG[0xd0],>_g_wX10
+ 02E2 5101              mov A,[_g_wX10+1]
+ 02E4 1164              sub A,100
+ 02E6 5100              mov A,[_g_wX10]
+ 02E8 1900              sbb A,0
+ 02EA C016              jc L37
+ 02EC           X0:
+ 02EC 62D000            mov REG[0xd0],>_g_wX10
+ 02EF 5101              mov A,[_g_wX10+1]
+ 02F1 11E8              sub A,-24
+ 02F3 5100              mov A,[_g_wX10]
+ 02F5 1903              sbb A,3
+ 02F7 D009              jnc L37
+ 02F9           X1:
+ 02F9 560305            mov [X+3],5
+ 02FC 560200            mov [X+2],0
+ 02FF 8007              xjmp L38
+ 0301           L37:
+ 0301 560304            mov [X+3],4
+ 0304 560200            mov [X+2],0
+ 0307           L38:
+ 0307 62D000            mov REG[0xd0],>__r0
+ 030A 5203              mov A,[X+3]
+ 030C 08                push A
+ 030D 5001              mov A,1
+ 030F 08                push A
+ 0310 9D1E              xcall _Screen_CStrAtRowCol
+ 0312 38FC              add SP,-4
+ 0314                   .dbline -2
+ 0314           L26:
+ 0314 38FC              add SP,-4
+ 0316 20                pop X
+ 0317                   .dbline 0 ; func end
+ 0317 7F                ret
+ 0318                   .dbend
+ 0318                   .dbfunc e Screen_Capacitance _Screen_Capacitance fV
+ 0318           ;       dw_pFx10 -> X+0
+ 0318           _Screen_Capacitance::
+ 0318                   .dbline -1
+ 0318 10                push X
+ 0319 4F                mov X,SP
+ 031A 3804              add SP,4
+ 031C                   .dbline 144
+ 031C           ; }
+ 031C           ; 
+ 031C           ; 
+ 031C           ; //-----------------------------------------------------------------------------
+ 031C           ; //  FUNCTION NAME:    Screen_Capacitance
+ 031C           ; //  DESCRIPTION:      Calculate and display capacitance
+ 031C           ; //
+ 031C           ; //           C_pF      =      10^9/(2*PI*freq_kHz * X_ohms)
+ 031C           ; //
+ 031C           ; //           10*C_pF =        100*10^9/(2*PI*freq_kHz * 10*X_ohms)
+ 031C           ; //
+ 031C           ; //                                     =      10^9 / ( ((freq_Hz/1000) * 10*X_ohms) / 100 ) 
+ 031C           ; //                                            * 1000  (10*pF, 10* ohms)                               
+ 031C           ; //                                            /6282
+ 031C           ; //    ARGUMENTS:              uses global values:
+ 031C           ; //                                            WORD g_wX10             10 x (X in ohms)
+ 031C           ; //                                            WORD g_wR10             10 x (R in ohms)
+ 031C           ; //  RETURNS: none.
+ 031C           ; //-----------------------------------------------------------------------------
+ 031C           ; void Screen_Capacitance (void)
+ 031C           ; {
+ 031C                   .dbline 147
+ 031C           ;       DWORD dw_pFx10;
+ 031C           ; 
+ 031C           ;       Screen_CStrAtRowCol(0,0, gModeStr[g_bMode]);                            // display top row for current mode
+ 031C 62D000            mov REG[0xd0],>_g_bMode
+ 031F 5100              mov A,[_g_bMode]
+ 0321 62D000            mov REG[0xd0],>__r0
+ 0324 5300              mov [__r1],A
+ 0326 550000            mov [__r0],0
+ 0329 6500              asl [__r1]
+ 032B 6B00              rlc [__r0]
+ 032D 060000            add [__r1],<_gModeStr
+ 0330 0E0000            adc [__r0],>_gModeStr
+ 0333 5100              mov A,[__r0]
+ 0335 60D4              mov REG[0xd4],A
+ 0337 3E00              mvi A,[__r1]
+ 0339 5300              mov [__r0],A
+ 033B 3E00              mvi A,[__r1]
+ 033D 5300              mov [__r1],A
+ 033F 5100              mov A,[__r0]
+ 0341 08                push A
+ 0342 5100              mov A,[__r1]
+ 0344 08                push A
+ 0345 5000              mov A,0
+ 0347 08                push A
+ 0348 08                push A
+ 0349 9CE5              xcall _Screen_CStrAtRowCol
+ 034B                   .dbline 149
+ 034B           ;       // clear bottom row
+ 034B           ;       Screen_CStrAtRowCol(1, 0, gBlankStr_16);
+ 034B 5000              mov A,>_gBlankStr_16
+ 034D 08                push A
+ 034E 5000              mov A,<_gBlankStr_16
+ 0350 08                push A
+ 0351 5000              mov A,0
+ 0353 08                push A
+ 0354 5001              mov A,1
+ 0356 08                push A
+ 0357 9CD7              xcall _Screen_CStrAtRowCol
+ 0359 38F8              add SP,-8
+ 035B                   .dbline 150
+ 035B           ;       if(g_wX10==0) {
+ 035B 62D000            mov REG[0xd0],>_g_wX10
+ 035E 3C0000            cmp [_g_wX10],0
+ 0361 B018              jnz L40
+ 0363 3C0100            cmp [_g_wX10+1],0
+ 0366 B013              jnz L40
+ 0368           X2:
+ 0368                   .dbline 150
+ 0368                   .dbline 151
+ 0368           ;               Screen_CStrAtRowCol(1, 0, gZeroReactanceStr);
+ 0368 5000              mov A,>_gZeroReactanceStr
+ 036A 08                push A
+ 036B 5000              mov A,<_gZeroReactanceStr
+ 036D 08                push A
+ 036E 5000              mov A,0
+ 0370 08                push A
+ 0371 5001              mov A,1
+ 0373 08                push A
+ 0374 9CBA              xcall _Screen_CStrAtRowCol
+ 0376 38FC              add SP,-4
+ 0378                   .dbline 152
+ 0378           ;       } else {
+ 0378 816B              xjmp L41
+ 037A           L40:
+ 037A                   .dbline 152
+ 037A                   .dbline 153
+ 037A           ;               dw_pFx10 =  g_dwCurrHz / 1000;
+ 037A 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 037D 5000              mov A,0
+ 037F 08                push A
+ 0380 08                push A
+ 0381 5003              mov A,3
+ 0383 08                push A
+ 0384 50E8              mov A,-24
+ 0386 08                push A
+ 0387 5100              mov A,[_g_dwCurrHz]
+ 0389 08                push A
+ 038A 5101              mov A,[_g_dwCurrHz+1]
+ 038C 08                push A
+ 038D 5102              mov A,[_g_dwCurrHz+2]
+ 038F 08                push A
+ 0390 5103              mov A,[_g_dwCurrHz+3]
+ 0392 08                push A
+ 0393 62D000            mov REG[0xd0],>__r0
+ 0396 7C0000            xcall __divmodu_32X32_32
+ 0399 18                pop A
+ 039A 5403              mov [X+3],A
+ 039C 18                pop A
+ 039D 5402              mov [X+2],A
+ 039F 18                pop A
+ 03A0 5401              mov [X+1],A
+ 03A2 18                pop A
+ 03A3 5400              mov [X+0],A
+ 03A5 38FC              add SP,-4
+ 03A7                   .dbline 154
+ 03A7           ;               dw_pFx10 =  ((DWORD)(dw_pFx10 * (DWORD)g_wX10)) / 100;
+ 03A7 62D000            mov REG[0xd0],>_g_wX10
+ 03AA 5101              mov A,[_g_wX10+1]
+ 03AC 62D000            mov REG[0xd0],>__r0
+ 03AF 5300              mov [__r3],A
+ 03B1 62D000            mov REG[0xd0],>_g_wX10
+ 03B4 5100              mov A,[_g_wX10]
+ 03B6 62D000            mov REG[0xd0],>__r0
+ 03B9 5300              mov [__r2],A
+ 03BB 5000              mov A,0
+ 03BD 08                push A
+ 03BE 08                push A
+ 03BF 5100              mov A,[__r2]
+ 03C1 08                push A
+ 03C2 5100              mov A,[__r3]
+ 03C4 08                push A
+ 03C5 5200              mov A,[X+0]
+ 03C7 08                push A
+ 03C8 5201              mov A,[X+1]
+ 03CA 08                push A
+ 03CB 5202              mov A,[X+2]
+ 03CD 08                push A
+ 03CE 5203              mov A,[X+3]
+ 03D0 08                push A
+ 03D1 7C0000            xcall __mul_32X32_32
+ 03D4 38FC              add SP,-4
+ 03D6 18                pop A
+ 03D7 5300              mov [__r3],A
+ 03D9 18                pop A
+ 03DA 5300              mov [__r2],A
+ 03DC 18                pop A
+ 03DD 5300              mov [__r1],A
+ 03DF 18                pop A
+ 03E0 5300              mov [__r0],A
+ 03E2 5000              mov A,0
+ 03E4 08                push A
+ 03E5 08                push A
+ 03E6 08                push A
+ 03E7 5064              mov A,100
+ 03E9 08                push A
+ 03EA 5100              mov A,[__r0]
+ 03EC 08                push A
+ 03ED 5100              mov A,[__r1]
+ 03EF 08                push A
+ 03F0 5100              mov A,[__r2]
+ 03F2 08                push A
+ 03F3 5100              mov A,[__r3]
+ 03F5 08                push A
+ 03F6 7C0000            xcall __divmodu_32X32_32
+ 03F9 18                pop A
+ 03FA 5403              mov [X+3],A
+ 03FC 18                pop A
+ 03FD 5402              mov [X+2],A
+ 03FF 18                pop A
+ 0400 5401              mov [X+1],A
+ 0402 18                pop A
+ 0403 5400              mov [X+0],A
+ 0405 38FC              add SP,-4
+ 0407                   .dbline 155
+ 0407           ;               dw_pFx10 =      (DWORD)1000000000 / dw_pFx10;
+ 0407 5200              mov A,[X+0]
+ 0409 08                push A
+ 040A 5201              mov A,[X+1]
+ 040C 08                push A
+ 040D 5202              mov A,[X+2]
+ 040F 08                push A
+ 0410 5203              mov A,[X+3]
+ 0412 08                push A
+ 0413 503B              mov A,59
+ 0415 08                push A
+ 0416 509A              mov A,-102
+ 0418 08                push A
+ 0419 50CA              mov A,-54
+ 041B 08                push A
+ 041C 5000              mov A,0
+ 041E 08                push A
+ 041F 7C0000            xcall __divmodu_32X32_32
+ 0422 18                pop A
+ 0423 5403              mov [X+3],A
+ 0425 18                pop A
+ 0426 5402              mov [X+2],A
+ 0428 18                pop A
+ 0429 5401              mov [X+1],A
+ 042B 18                pop A
+ 042C 5400              mov [X+0],A
+ 042E 38FC              add SP,-4
+ 0430                   .dbline 156
+ 0430           ;               dw_pFx10 =      (dw_pFx10*1000) / 6282;
+ 0430 5200              mov A,[X+0]
+ 0432 08                push A
+ 0433 5201              mov A,[X+1]
+ 0435 08                push A
+ 0436 5202              mov A,[X+2]
+ 0438 08                push A
+ 0439 5203              mov A,[X+3]
+ 043B 08                push A
+ 043C 5000              mov A,0
+ 043E 08                push A
+ 043F 08                push A
+ 0440 5003              mov A,3
+ 0442 08                push A
+ 0443 50E8              mov A,-24
+ 0445 08                push A
+ 0446 7C0000            xcall __mul_32X32_32
+ 0449 38FC              add SP,-4
+ 044B 18                pop A
+ 044C 5300              mov [__r3],A
+ 044E 18                pop A
+ 044F 5300              mov [__r2],A
+ 0451 18                pop A
+ 0452 5300              mov [__r1],A
+ 0454 18                pop A
+ 0455 5300              mov [__r0],A
+ 0457 5000              mov A,0
+ 0459 08                push A
+ 045A 08                push A
+ 045B 5018              mov A,24
+ 045D 08                push A
+ 045E 508A              mov A,-118
+ 0460 08                push A
+ 0461 5100              mov A,[__r0]
+ 0463 08                push A
+ 0464 5100              mov A,[__r1]
+ 0466 08                push A
+ 0467 5100              mov A,[__r2]
+ 0469 08                push A
+ 046A 5100              mov A,[__r3]
+ 046C 08                push A
+ 046D 7C0000            xcall __divmodu_32X32_32
+ 0470 18                pop A
+ 0471 5403              mov [X+3],A
+ 0473 18                pop A
+ 0474 5402              mov [X+2],A
+ 0476 18                pop A
+ 0477 5401              mov [X+1],A
+ 0479 18                pop A
+ 047A 5400              mov [X+0],A
+ 047C 38FC              add SP,-4
+ 047E                   .dbline 157
+ 047E           ;               FormatNumberRJ_Sliding(dw_pFx10,4, 1);
+ 047E 5001              mov A,1
+ 0480 08                push A
+ 0481 5004              mov A,4
+ 0483 08                push A
+ 0484 5200              mov A,[X+0]
+ 0486 08                push A
+ 0487 5201              mov A,[X+1]
+ 0489 08                push A
+ 048A 5202              mov A,[X+2]
+ 048C 08                push A
+ 048D 5203              mov A,[X+3]
+ 048F 08                push A
+ 0490 9496              xcall _FormatNumberRJ_Sliding
+ 0492                   .dbline 158
+ 0492           ;               Screen_StrAtRowCol(1, 0, g_buffer16);
+ 0492 5000              mov A,>_g_buffer16
+ 0494 08                push A
+ 0495 5000              mov A,<_g_buffer16
+ 0497 08                push A
+ 0498 5000              mov A,0
+ 049A 08                push A
+ 049B 5001              mov A,1
+ 049D 08                push A
+ 049E 9BAB              xcall _Screen_StrAtRowCol
+ 04A0 38F6              add SP,-10
+ 04A2                   .dbline 159
+ 04A2           ;               Screen_CStr("pF ");
+ 04A2 501B              mov A,>L42
+ 04A4 08                push A
+ 04A5 501B              mov A,<L42
+ 04A7 08                push A
+ 04A8 9B66              xcall _Screen_CStr
+ 04AA                   .dbline 160
+ 04AA           ;               FormatNumberRJ_Sliding(g_wR10,4 ,1);
+ 04AA 5001              mov A,1
+ 04AC 08                push A
+ 04AD 5004              mov A,4
+ 04AF 08                push A
+ 04B0 62D000            mov REG[0xd0],>_g_wR10
+ 04B3 5101              mov A,[_g_wR10+1]
+ 04B5 62D000            mov REG[0xd0],>__r0
+ 04B8 5300              mov [__r3],A
+ 04BA 62D000            mov REG[0xd0],>_g_wR10
+ 04BD 5100              mov A,[_g_wR10]
+ 04BF 62D000            mov REG[0xd0],>__r0
+ 04C2 5300              mov [__r2],A
+ 04C4 5000              mov A,0
+ 04C6 08                push A
+ 04C7 08                push A
+ 04C8 5100              mov A,[__r2]
+ 04CA 08                push A
+ 04CB 5100              mov A,[__r3]
+ 04CD 08                push A
+ 04CE 9458              xcall _FormatNumberRJ_Sliding
+ 04D0 38F8              add SP,-8
+ 04D2                   .dbline 161
+ 04D2           ;               Screen_Str(g_buffer16);
+ 04D2 5000              mov A,>_g_buffer16
+ 04D4 08                push A
+ 04D5 5000              mov A,<_g_buffer16
+ 04D7 08                push A
+ 04D8 9B46              xcall _Screen_Str
+ 04DA                   .dbline 162
+ 04DA           ;               Screen_CStr("\xf4");
+ 04DA 5025              mov A,>L30
+ 04DC 08                push A
+ 04DD 5025              mov A,<L30
+ 04DF 08                push A
+ 04E0 9B2E              xcall _Screen_CStr
+ 04E2 38FC              add SP,-4
+ 04E4                   .dbline 163
+ 04E4           ;       }
+ 04E4           L41:
+ 04E4                   .dbline -2
+ 04E4           L39:
+ 04E4 38FC              add SP,-4
+ 04E6 20                pop X
+ 04E7                   .dbline 0 ; func end
+ 04E7 7F                ret
+ 04E8                   .dbsym l dw_pFx10 0 l
+ 04E8                   .dbend
+ 04E8                   .dbfunc e Screen_Inductance _Screen_Inductance fV
+ 04E8           ;         dwL_uH -> X+0
+ 04E8           _Screen_Inductance::
+ 04E8                   .dbline -1
+ 04E8 10                push X
+ 04E9 4F                mov X,SP
+ 04EA 3804              add SP,4
+ 04EC                   .dbline 184
+ 04EC           ; }
+ 04EC           ; 
+ 04EC           ; //-----------------------------------------------------------------------------
+ 04EC           ; //  FUNCTION NAME:    Screen_Inductance
+ 04EC           ; //  DESCRIPTION:      Calculate and display inductance
+ 04EC           ; //  ARGUMENTS:                uses global values:
+ 04EC           ; //                                            WORD g_wX10     10 x (X in Ohms)
+ 04EC           ; //                                            WORD g_wR10     10 x (R in Ohms)
+ 04EC           ; //
+ 04EC           ; //    L uH    =       10^6 * X / 2*PI*freq_kHz
+ 04EC           ; //    10*L uH =       10^6 * (X*10) / 2*PI*freq_kHz
+ 04EC           ; //                            = 1000
+ 04EC           ; //                              * X*10
+ 04EC           ; //                              / 6282
+ 04EC           ; //                              * 1000
+ 04EC           ; //                              / (fHz/1000)
+ 04EC           ; //
+ 04EC           ; //  RETURNS:  nothing
+ 04EC           ; //-----------------------------------------------------------------------------
+ 04EC           ; void Screen_Inductance ( void )
+ 04EC           ; {
+ 04EC                   .dbline 186
+ 04EC           ;       DWORD dwL_uH;
+ 04EC           ;       dwL_uH          =       1000 * (DWORD)g_wX10;
+ 04EC 62D000            mov REG[0xd0],>_g_wX10
+ 04EF 5101              mov A,[_g_wX10+1]
+ 04F1 62D000            mov REG[0xd0],>__r0
+ 04F4 5300              mov [__r3],A
+ 04F6 62D000            mov REG[0xd0],>_g_wX10
+ 04F9 5100              mov A,[_g_wX10]
+ 04FB 62D000            mov REG[0xd0],>__r0
+ 04FE 5300              mov [__r2],A
+ 0500 5000              mov A,0
+ 0502 08                push A
+ 0503 08                push A
+ 0504 5100              mov A,[__r2]
+ 0506 08                push A
+ 0507 5100              mov A,[__r3]
+ 0509 08                push A
+ 050A 5000              mov A,0
+ 050C 08                push A
+ 050D 08                push A
+ 050E 5003              mov A,3
+ 0510 08                push A
+ 0511 50E8              mov A,-24
+ 0513 08                push A
+ 0514 7C0000            xcall __mul_32X32_32
+ 0517 38FC              add SP,-4
+ 0519 18                pop A
+ 051A 5403              mov [X+3],A
+ 051C 18                pop A
+ 051D 5402              mov [X+2],A
+ 051F 18                pop A
+ 0520 5401              mov [X+1],A
+ 0522 18                pop A
+ 0523 5400              mov [X+0],A
+ 0525                   .dbline 187
+ 0525           ;       dwL_uH          =       dwL_uH / 6282;
+ 0525 5000              mov A,0
+ 0527 08                push A
+ 0528 08                push A
+ 0529 5018              mov A,24
+ 052B 08                push A
+ 052C 508A              mov A,-118
+ 052E 08                push A
+ 052F 5200              mov A,[X+0]
+ 0531 08                push A
+ 0532 5201              mov A,[X+1]
+ 0534 08                push A
+ 0535 5202              mov A,[X+2]
+ 0537 08                push A
+ 0538 5203              mov A,[X+3]
+ 053A 08                push A
+ 053B 7C0000            xcall __divmodu_32X32_32
+ 053E 18                pop A
+ 053F 5403              mov [X+3],A
+ 0541 18                pop A
+ 0542 5402              mov [X+2],A
+ 0544 18                pop A
+ 0545 5401              mov [X+1],A
+ 0547 18                pop A
+ 0548 5400              mov [X+0],A
+ 054A 38FC              add SP,-4
+ 054C                   .dbline 188
+ 054C           ;       dwL_uH          =       dwL_uH * 1000;
+ 054C 5200              mov A,[X+0]
+ 054E 08                push A
+ 054F 5201              mov A,[X+1]
+ 0551 08                push A
+ 0552 5202              mov A,[X+2]
+ 0554 08                push A
+ 0555 5203              mov A,[X+3]
+ 0557 08                push A
+ 0558 5000              mov A,0
+ 055A 08                push A
+ 055B 08                push A
+ 055C 5003              mov A,3
+ 055E 08                push A
+ 055F 50E8              mov A,-24
+ 0561 08                push A
+ 0562 7C0000            xcall __mul_32X32_32
+ 0565 38FC              add SP,-4
+ 0567 18                pop A
+ 0568 5403              mov [X+3],A
+ 056A 18                pop A
+ 056B 5402              mov [X+2],A
+ 056D 18                pop A
+ 056E 5401              mov [X+1],A
+ 0570 18                pop A
+ 0571 5400              mov [X+0],A
+ 0573                   .dbline 189
+ 0573           ;       dwL_uH          =       dwL_uH / ( g_dwCurrHz / 1000 );
+ 0573 62D000            mov REG[0xd0],>_g_dwCurrHz
+ 0576 5000              mov A,0
+ 0578 08                push A
+ 0579 08                push A
+ 057A 5003              mov A,3
+ 057C 08                push A
+ 057D 50E8              mov A,-24
+ 057F 08                push A
+ 0580 5100              mov A,[_g_dwCurrHz]
+ 0582 08                push A
+ 0583 5101              mov A,[_g_dwCurrHz+1]
+ 0585 08                push A
+ 0586 5102              mov A,[_g_dwCurrHz+2]
+ 0588 08                push A
+ 0589 5103              mov A,[_g_dwCurrHz+3]
+ 058B 08                push A
+ 058C 62D000            mov REG[0xd0],>__r0
+ 058F 7C0000            xcall __divmodu_32X32_32
+ 0592 18                pop A
+ 0593 5300              mov [__r3],A
+ 0595 18                pop A
+ 0596 5300              mov [__r2],A
+ 0598 18                pop A
+ 0599 5300              mov [__r1],A
+ 059B 18                pop A
+ 059C 38FC              add SP,-4
+ 059E 08                push A
+ 059F 5100              mov A,[__r1]
+ 05A1 08                push A
+ 05A2 5100              mov A,[__r2]
+ 05A4 08                push A
+ 05A5 5100              mov A,[__r3]
+ 05A7 08                push A
+ 05A8 5200              mov A,[X+0]
+ 05AA 08                push A
+ 05AB 5201              mov A,[X+1]
+ 05AD 08                push A
+ 05AE 5202              mov A,[X+2]
+ 05B0 08                push A
+ 05B1 5203              mov A,[X+3]
+ 05B3 08                push A
+ 05B4 7C0000            xcall __divmodu_32X32_32
+ 05B7 18                pop A
+ 05B8 5403              mov [X+3],A
+ 05BA 18                pop A
+ 05BB 5402              mov [X+2],A
+ 05BD 18                pop A
+ 05BE 5401              mov [X+1],A
+ 05C0 18                pop A
+ 05C1 5400              mov [X+0],A
+ 05C3 38FC              add SP,-4
+ 05C5                   .dbline 191
+ 05C5           ;       
+ 05C5           ;       Screen_CStrAtRowCol(0,0, gModeStr[g_bMode]);// display top row for current mode
+ 05C5 62D000            mov REG[0xd0],>_g_bMode
+ 05C8 5100              mov A,[_g_bMode]
+ 05CA 62D000            mov REG[0xd0],>__r0
+ 05CD 5300              mov [__r1],A
+ 05CF 550000            mov [__r0],0
+ 05D2 6500              asl [__r1]
+ 05D4 6B00              rlc [__r0]
+ 05D6 060000            add [__r1],<_gModeStr
+ 05D9 0E0000            adc [__r0],>_gModeStr
+ 05DC 5100              mov A,[__r0]
+ 05DE 60D4              mov REG[0xd4],A
+ 05E0 3E00              mvi A,[__r1]
+ 05E2 5300              mov [__r0],A
+ 05E4 3E00              mvi A,[__r1]
+ 05E6 5300              mov [__r1],A
+ 05E8 5100              mov A,[__r0]
+ 05EA 08                push A
+ 05EB 5100              mov A,[__r1]
+ 05ED 08                push A
+ 05EE 5000              mov A,0
+ 05F0 08                push A
+ 05F1 08                push A
+ 05F2 9A3C              xcall _Screen_CStrAtRowCol
+ 05F4                   .dbline 192
+ 05F4           ;       Screen_CStrAtRowCol(1, 0, gBlankStr_16);        // clear bottom row
+ 05F4 5000              mov A,>_gBlankStr_16
+ 05F6 08                push A
+ 05F7 5000              mov A,<_gBlankStr_16
+ 05F9 08                push A
+ 05FA 5000              mov A,0
+ 05FC 08                push A
+ 05FD 5001              mov A,1
+ 05FF 08                push A
+ 0600 9A2E              xcall _Screen_CStrAtRowCol
+ 0602 38F8              add SP,-8
+ 0604                   .dbline 193
+ 0604           ;       FormatNumberRJ_Sliding(dwL_uH,4, 1);
+ 0604 5001              mov A,1
+ 0606 08                push A
+ 0607 5004              mov A,4
+ 0609 08                push A
+ 060A 5200              mov A,[X+0]
+ 060C 08                push A
+ 060D 5201              mov A,[X+1]
+ 060F 08                push A
+ 0610 5202              mov A,[X+2]
+ 0612 08                push A
+ 0613 5203              mov A,[X+3]
+ 0615 08                push A
+ 0616 9310              xcall _FormatNumberRJ_Sliding
+ 0618                   .dbline 194
+ 0618           ;       Screen_StrAtRowCol(1, 0, g_buffer16);
+ 0618 5000              mov A,>_g_buffer16
+ 061A 08                push A
+ 061B 5000              mov A,<_g_buffer16
+ 061D 08                push A
+ 061E 5000              mov A,0
+ 0620 08                push A
+ 0621 5001              mov A,1
+ 0623 08                push A
+ 0624 9A25              xcall _Screen_StrAtRowCol
+ 0626 38F6              add SP,-10
+ 0628                   .dbline 195
+ 0628           ;       Screen_CStr("uH ");
+ 0628 5017              mov A,>L44
+ 062A 08                push A
+ 062B 5017              mov A,<L44
+ 062D 08                push A
+ 062E 99E0              xcall _Screen_CStr
+ 0630                   .dbline 196
+ 0630           ;       FormatNumberRJ_Sliding(g_wR10,4, 1);
+ 0630 5001              mov A,1
+ 0632 08                push A
+ 0633 5004              mov A,4
+ 0635 08                push A
+ 0636 62D000            mov REG[0xd0],>_g_wR10
+ 0639 5101              mov A,[_g_wR10+1]
+ 063B 62D000            mov REG[0xd0],>__r0
+ 063E 5300              mov [__r3],A
+ 0640 62D000            mov REG[0xd0],>_g_wR10
+ 0643 5100              mov A,[_g_wR10]
+ 0645 62D000            mov REG[0xd0],>__r0
+ 0648 5300              mov [__r2],A
+ 064A 5000              mov A,0
+ 064C 08                push A
+ 064D 08                push A
+ 064E 5100              mov A,[__r2]
+ 0650 08                push A
+ 0651 5100              mov A,[__r3]
+ 0653 08                push A
+ 0654 92D2              xcall _FormatNumberRJ_Sliding
+ 0656 38F8              add SP,-8
+ 0658                   .dbline 197
+ 0658           ;       Screen_Str(g_buffer16);
+ 0658 5000              mov A,>_g_buffer16
+ 065A 08                push A
+ 065B 5000              mov A,<_g_buffer16
+ 065D 08                push A
+ 065E 99C0              xcall _Screen_Str
+ 0660                   .dbline 198
+ 0660           ;       Screen_CStr("\xf4");
+ 0660 5025              mov A,>L30
+ 0662 08                push A
+ 0663 5025              mov A,<L30
+ 0665 08                push A
+ 0666 99A8              xcall _Screen_CStr
+ 0668 38FC              add SP,-4
+ 066A                   .dbline -2
+ 066A           L43:
+ 066A 38FC              add SP,-4
+ 066C 20                pop X
+ 066D                   .dbline 0 ; func end
+ 066D 7F                ret
+ 066E                   .dbsym l dwL_uH 0 l
+ 066E                   .dbend
+ 066E                   .dbfunc e Screen_Power _Screen_Power fV
+ 066E           ;            dBm -> X+0
+ 066E           ;            wVz -> X-5
+ 066E           _Screen_Power::
+ 066E                   .dbline -1
+ 066E 10                push X
+ 066F 4F                mov X,SP
+ 0670 3805              add SP,5
+ 0672                   .dbline 227
+ 0672           ; }
+ 0672           ; 
+ 0672           ; //-----------------------------------------------------------------------------
+ 0672           ; //  FUNCTION NAME:    Screen_Power
+ 0672           ; //  DESCRIPTION:      Display power at measurement port
+ 0672           ; //                                    Uses mVRMS = Vz / CAL_Vz_TO_mVRMS  for mVRMS display
+ 0672           ; //                                             dBm   = 20*(Vz - CAL_Vz_TO_dBm) / (Vz + CAL_Vz_TO_dBm)
+ 0672           ; //
+ 0672           ; //1 MHz                                       
+ 0672           ; //            dBm(RSP1a)      Vrms_true       Vz_ADC  Vz_ADC*1000=Vrms x              n               20*(VzADC-n)/(VzADC+n)  
+ 0672           ; //            -8.8            79.9            311             3893                                    750             -9      
+ 0672           ; //            0.0                     220.0           771             3504                                    750             0       
+ 0672           ; //            6.8                     481.3           1747    3629                                    750             7       
+ 0672           ; //                                                    
+ 0672           ; //10MHz       
+ 0672           ; //            dBm(RSP1a)      Vrms_true       Vz_ADC  Vz_ADC*1000=Vrms x              n               20*(VzADC-n)/(VzADC+n)  
+ 0672           ; //            -11.7           57.2            208             3636                                    750             -12     
+ 0672           ; //            -0.1            217.5           709             3260                                    750             -1      
+ 0672           ; //            7.2                     504.0           1677    3327                                    750             7       
+ 0672           ; //                                                    
+ 0672           ; //                                                            Average 3542                                    750             
+ 0672           ; //                                                                            = CAL_Vz_TO_mVRMS               =CAL_Vz_TO_dBm
+ 0672           ; //
+ 0672           ; //  ARGUMENTS:                WORD: Measured Vz
+ 0672           ; //  RETURNS:                  none
+ 0672           ; //-----------------------------------------------------------------------------
+ 0672           ; 
+ 0672           ; void Screen_Power(WORD wVz)
+ 0672           ; {     // display planner ...
+ 0672                   .dbline 232
+ 0672           ;       // 9999mV  +15dBm
+ 0672           ;       // 0123456789012345
+ 0672           ;       
+ 0672           ;       signed char dBm;
+ 0672           ;       Screen_CStrAtRowCol(0,0, gModeStr[g_bMode]);    // display top row for current mode
+ 0672 62D000            mov REG[0xd0],>_g_bMode
+ 0675 5100              mov A,[_g_bMode]
+ 0677 62D000            mov REG[0xd0],>__r0
+ 067A 5300              mov [__r1],A
+ 067C 550000            mov [__r0],0
+ 067F 6500              asl [__r1]
+ 0681 6B00              rlc [__r0]
+ 0683 060000            add [__r1],<_gModeStr
+ 0686 0E0000            adc [__r0],>_gModeStr
+ 0689 5100              mov A,[__r0]
+ 068B 60D4              mov REG[0xd4],A
+ 068D 3E00              mvi A,[__r1]
+ 068F 5300              mov [__r0],A
+ 0691 3E00              mvi A,[__r1]
+ 0693 5300              mov [__r1],A
+ 0695 5100              mov A,[__r0]
+ 0697 08                push A
+ 0698 5100              mov A,[__r1]
+ 069A 08                push A
+ 069B 5000              mov A,0
+ 069D 08                push A
+ 069E 08                push A
+ 069F 998F              xcall _Screen_CStrAtRowCol
+ 06A1                   .dbline 233
+ 06A1           ;       Screen_CStrAtRowCol(1, 0, gBlankStr_16);                // clear bottom row
+ 06A1 5000              mov A,>_gBlankStr_16
+ 06A3 08                push A
+ 06A4 5000              mov A,<_gBlankStr_16
+ 06A6 08                push A
+ 06A7 5000              mov A,0
+ 06A9 08                push A
+ 06AA 5001              mov A,1
+ 06AC 08                push A
+ 06AD 9981              xcall _Screen_CStrAtRowCol
+ 06AF 38F8              add SP,-8
+ 06B1                   .dbline 236
+ 06B1           ;       
+ 06B1           ;       #define CAL_Vz_TO_mVRMS         3542
+ 06B1           ;       FormatNumberRJ((INT)( ((LONG)wVz*wUNITY)/CAL_Vz_TO_mVRMS  ),4,0); 
+ 06B1 5000              mov A,0
+ 06B3 08                push A
+ 06B4 5004              mov A,4
+ 06B6 08                push A
+ 06B7 62D000            mov REG[0xd0],>__r0
+ 06BA 52FC              mov A,[X-4]
+ 06BC 5300              mov [__r3],A
+ 06BE 52FB              mov A,[X-5]
+ 06C0 5300              mov [__r2],A
+ 06C2 5000              mov A,0
+ 06C4 08                push A
+ 06C5 08                push A
+ 06C6 5100              mov A,[__r2]
+ 06C8 08                push A
+ 06C9 5100              mov A,[__r3]
+ 06CB 08                push A
+ 06CC 5000              mov A,0
+ 06CE 08                push A
+ 06CF 08                push A
+ 06D0 5003              mov A,3
+ 06D2 08                push A
+ 06D3 50E8              mov A,-24
+ 06D5 08                push A
+ 06D6 7C0000            xcall __mul_32X32_32
+ 06D9 38FC              add SP,-4
+ 06DB 18                pop A
+ 06DC 5300              mov [__r3],A
+ 06DE 18                pop A
+ 06DF 5300              mov [__r2],A
+ 06E1 18                pop A
+ 06E2 5300              mov [__r1],A
+ 06E4 18                pop A
+ 06E5 5300              mov [__r0],A
+ 06E7 5000              mov A,0
+ 06E9 08                push A
+ 06EA 08                push A
+ 06EB 500D              mov A,13
+ 06ED 08                push A
+ 06EE 50D6              mov A,-42
+ 06F0 08                push A
+ 06F1 5100              mov A,[__r0]
+ 06F3 08                push A
+ 06F4 5100              mov A,[__r1]
+ 06F6 08                push A
+ 06F7 5100              mov A,[__r2]
+ 06F9 08                push A
+ 06FA 5100              mov A,[__r3]
+ 06FC 08                push A
+ 06FD 7C0000            xcall __divmod_32X32_32
+ 0700 18                pop A
+ 0701 5300              mov [__r3],A
+ 0703 18                pop A
+ 0704 5300              mov [__r2],A
+ 0706 18                pop A
+ 0707 18                pop A
+ 0708 38FC              add SP,-4
+ 070A 5100              mov A,[__r3]
+ 070C 5300              mov [__r1],A
+ 070E 5100              mov A,[__r2]
+ 0710 5300              mov [__r0],A
+ 0712 5100              mov A,[__r1]
+ 0714 5300              mov [__r3],A
+ 0716 5100              mov A,[__r0]
+ 0718 5300              mov [__r2],A
+ 071A 470080            tst [__r2],-128
+ 071D A009              jz X3
+ 071F 5500FF            mov [__r1],-1
+ 0722 5500FF            mov [__r0],-1
+ 0725 800A              jmp X4
+ 0727           X3:
+ 0727 62D000            mov REG[0xd0],>__r0
+ 072A 550000            mov [__r1],0
+ 072D 550000            mov [__r0],0
+ 0730           X4:
+ 0730 62D000            mov REG[0xd0],>__r0
+ 0733 5100              mov A,[__r0]
+ 0735 08                push A
+ 0736 5100              mov A,[__r1]
+ 0738 08                push A
+ 0739 5100              mov A,[__r2]
+ 073B 08                push A
+ 073C 5100              mov A,[__r3]
+ 073E 08                push A
+ 073F 7C0000            xcall _FormatNumberRJ
+ 0742 38FA              add SP,-6
+ 0744 62D000            mov REG[0xd0],>__r0
+ 0747                   .dbline 237
+ 0747           ;       Screen_StrAtRowCol(1, 0, g_buffer16);
+ 0747 5000              mov A,>_g_buffer16
+ 0749 08                push A
+ 074A 5000              mov A,<_g_buffer16
+ 074C 08                push A
+ 074D 5000              mov A,0
+ 074F 08                push A
+ 0750 5001              mov A,1
+ 0752 08                push A
+ 0753 98F6              xcall _Screen_StrAtRowCol
+ 0755                   .dbline 238
+ 0755           ;       Screen_CStr("mV");
+ 0755 5014              mov A,>L46
+ 0757 08                push A
+ 0758 5014              mov A,<L46
+ 075A 08                push A
+ 075B 98B3              xcall _Screen_CStr
+ 075D 38FA              add SP,-6
+ 075F                   .dbline 242
+ 075F           ;       
+ 075F           ;       #define CAL_Vz_TO_dBm   750
+ 075F           ;       #define LOG_TO_dB               20
+ 075F           ;       dBm = (signed char)( (((long)wVz-CAL_Vz_TO_dBm)*LOG_TO_dB) / (wVz+CAL_Vz_TO_dBm) ); 
+ 075F 62D000            mov REG[0xd0],>__r0
+ 0762 52FC              mov A,[X-4]
+ 0764 01EE              add A,-18
+ 0766 5300              mov [__r1],A
+ 0768 52FB              mov A,[X-5]
+ 076A 0902              adc A,2
+ 076C 5300              mov [__r0],A
+ 076E 5100              mov A,[__r1]
+ 0770 5300              mov [__r3],A
+ 0772 5100              mov A,[__r0]
+ 0774 5300              mov [__r2],A
+ 0776 52FC              mov A,[X-4]
+ 0778 5300              mov [__r7],A
+ 077A 52FB              mov A,[X-5]
+ 077C 5300              mov [__r6],A
+ 077E 5000              mov A,0
+ 0780 08                push A
+ 0781 08                push A
+ 0782 5100              mov A,[__r6]
+ 0784 08                push A
+ 0785 5100              mov A,[__r7]
+ 0787 08                push A
+ 0788 5000              mov A,0
+ 078A 08                push A
+ 078B 08                push A
+ 078C 08                push A
+ 078D 5014              mov A,20
+ 078F 08                push A
+ 0790 7C0000            xcall __mul_32X32_32
+ 0793 38FC              add SP,-4
+ 0795 18                pop A
+ 0796 5300              mov [__r7],A
+ 0798 18                pop A
+ 0799 5300              mov [__r6],A
+ 079B 18                pop A
+ 079C 5300              mov [__r5],A
+ 079E 18                pop A
+ 079F 5300              mov [__r4],A
+ 07A1 160098            sub [__r7],-104
+ 07A4 1E003A            sbb [__r6],58
+ 07A7 1E0000            sbb [__r5],0
+ 07AA 1E0000            sbb [__r4],0
+ 07AD 5000              mov A,0
+ 07AF 08                push A
+ 07B0 08                push A
+ 07B1 5100              mov A,[__r2]
+ 07B3 08                push A
+ 07B4 5100              mov A,[__r3]
+ 07B6 08                push A
+ 07B7 5100              mov A,[__r4]
+ 07B9 08                push A
+ 07BA 5100              mov A,[__r5]
+ 07BC 08                push A
+ 07BD 5100              mov A,[__r6]
+ 07BF 08                push A
+ 07C0 5100              mov A,[__r7]
+ 07C2 08                push A
+ 07C3 7C0000            xcall __divmod_32X32_32
+ 07C6 18                pop A
+ 07C7 5300              mov [__r3],A
+ 07C9 18                pop A
+ 07CA 18                pop A
+ 07CB 18                pop A
+ 07CC 38FC              add SP,-4
+ 07CE 5100              mov A,[__r3]
+ 07D0 5400              mov [X+0],A
+ 07D2                   .dbline 243
+ 07D2           ;       Screen_CStrAtRowCol(1, 8, (dBm<0)? "-":"+"); 
+ 07D2 480080            tst [X+0],-128
+ 07D5 A009              jz L50
+ 07D7 560212            mov [X+2],<L47
+ 07DA 560112            mov [X+1],>L47
+ 07DD 8007              xjmp L51
+ 07DF           L50:
+ 07DF 560210            mov [X+2],<L48
+ 07E2 560110            mov [X+1],>L48
+ 07E5           L51:
+ 07E5 5201              mov A,[X+1]
+ 07E7 08                push A
+ 07E8 5202              mov A,[X+2]
+ 07EA 08                push A
+ 07EB 5008              mov A,8
+ 07ED 08                push A
+ 07EE 5001              mov A,1
+ 07F0 08                push A
+ 07F1 983D              xcall _Screen_CStrAtRowCol
+ 07F3 38FC              add SP,-4
+ 07F5                   .dbline 244
+ 07F5           ;       FormatNumberRJ((WORD)abs(dBm),2,0); 
+ 07F5 62D000            mov REG[0xd0],>__r0
+ 07F8 5200              mov A,[X+0]
+ 07FA 5300              mov [__r1],A
+ 07FC 550000            mov [__r0],0
+ 07FF 470080            tst [__r1],-128
+ 0802 A004              jz X5
+ 0804 5500FF            mov [__r0],-1
+ 0807           X5:
+ 0807 62D000            mov REG[0xd0],>__r0
+ 080A 5100              mov A,[__r0]
+ 080C 08                push A
+ 080D 5100              mov A,[__r1]
+ 080F 08                push A
+ 0810 7C0000            xcall _abs
+ 0813 5000              mov A,0
+ 0815 08                push A
+ 0816 5002              mov A,2
+ 0818 08                push A
+ 0819 62D000            mov REG[0xd0],>__r0
+ 081C 5100              mov A,[__r1]
+ 081E 5300              mov [__r3],A
+ 0820 5100              mov A,[__r0]
+ 0822 5300              mov [__r2],A
+ 0824 5000              mov A,0
+ 0826 08                push A
+ 0827 08                push A
+ 0828 5100              mov A,[__r2]
+ 082A 08                push A
+ 082B 5100              mov A,[__r3]
+ 082D 08                push A
+ 082E 7C0000            xcall _FormatNumberRJ
+ 0831 38F8              add SP,-8
+ 0833 62D000            mov REG[0xd0],>__r0
+ 0836                   .dbline 245
+ 0836           ;       Screen_Str(g_buffer16);
+ 0836 5000              mov A,>_g_buffer16
+ 0838 08                push A
+ 0839 5000              mov A,<_g_buffer16
+ 083B 08                push A
+ 083C 7C0020            xcall _Screen_Str
+ 083F                   .dbline 246
+ 083F           ;       Screen_CStr("dBm");
+ 083F 500C              mov A,>L52
+ 0841 08                push A
+ 0842 500C              mov A,<L52
+ 0844 08                push A
+ 0845 7C0010            xcall _Screen_CStr
+ 0848 38FC              add SP,-4
+ 084A                   .dbline 248
+ 084A           ;       
+ 084A           ;       Screen_CStrAtRowCol(1, 15, (g_bUP_DOWN_SelectsVFOPower)? "<":" ");
+ 084A 62D000            mov REG[0xd0],>_g_bUP_DOWN_SelectsVFOPower
+ 084D 3C0000            cmp [_g_bUP_DOWN_SelectsVFOPower],0
+ 0850 A009              jz L56
+ 0852 56040A            mov [X+4],<L53
+ 0855 56030A            mov [X+3],>L53
+ 0858 8007              xjmp L57
+ 085A           L56:
+ 085A 560408            mov [X+4],<L54
+ 085D 560308            mov [X+3],>L54
+ 0860           L57:
+ 0860 5203              mov A,[X+3]
+ 0862 08                push A
+ 0863 5204              mov A,[X+4]
+ 0865 08                push A
+ 0866 500F              mov A,15
+ 0868 08                push A
+ 0869 5001              mov A,1
+ 086B 08                push A
+ 086C 7C0030            xcall _Screen_CStrAtRowCol
+ 086F 38FC              add SP,-4
+ 0871                   .dbline -2
+ 0871           L45:
+ 0871 38FB              add SP,-5
+ 0873 20                pop X
+ 0874                   .dbline 0 ; func end
+ 0874 7F                ret
+ 0875                   .dbsym l dBm 0 C
+ 0875                   .dbsym l wVz -5 i
+ 0875                   .dbend
+ 0875                   .dbfunc e Screen_CableLength _Screen_CableLength fV
+ 0875           ;           bCnt -> X+0
+ 0875           ;         wLencm -> X-5
+ 0875           _Screen_CableLength::
+ 0875                   .dbline -1
+ 0875 10                push X
+ 0876 4F                mov X,SP
+ 0877 3801              add SP,1
+ 0879                   .dbline 269
+ 0879           ; 
+ 0879           ; }
+ 0879           ; 
+ 0879           ; // Test floating point version of Screen_Power 
+ 0879           ; // Uses 2,367 BYTES more than integer version!
+ 0879           ; /*
+ 0879           ; void Screen_Power_f(WORD wVz)
+ 0879           ; {
+ 0879           ;       #include <math.h>
+ 0879           ;       #define CAL_Vz_TO_mVRMS         1638
+ 0879           ;       float mVRMS = (float)wVz/CAL_Vz_TO_mVRMS;
+ 0879           ;       Screen_CStrAtRowCol(1,0, gPowerLabelsStr);
+ 0879           ;       itoa(g_buffer16,(INT)mVRMS,10); 
+ 0879           ;       Screen_StrAtRowCol(1, 3, g_buffer16);
+ 0879           ;       itoa(g_buffer16,(INT)(8.6859*log(mVRMS)-46.9897) ,10); 
+ 0879           ;       Screen_StrAtRowCol(1, 12, g_buffer16);
+ 0879           ; }
+ 0879           ; */
+ 0879           ; 
+ 0879           ; void Screen_CableLength(WORD wLencm)
+ 0879           ; {     
+ 0879                   .dbline 275
+ 0879           ;       // display planner ...
+ 0879           ;       // Cable len, cm:
+ 0879           ;       // VF81:  201.25m
+ 0879           ;       // 0123456789012345
+ 0879           ;       BYTE bCnt;
+ 0879           ;       Screen_HideCursor();
+ 0879 7C0008            xcall _Screen_HideCursor
+ 087C                   .dbline 276
+ 087C           ;       Screen_Clear();
+ 087C 7C0000            xcall _Screen_Clear
+ 087F                   .dbline 277
+ 087F           ;       Screen_CStrAtRowCol(0, 0, gCableLabels1Str);
+ 087F 5000              mov A,>_gCableLabels1Str
+ 0881 08                push A
+ 0882 5000              mov A,<_gCableLabels1Str
+ 0884 08                push A
+ 0885 5000              mov A,0
+ 0887 08                push A
+ 0888 08                push A
+ 0889 7C0030            xcall _Screen_CStrAtRowCol
+ 088C                   .dbline 278
+ 088C           ;       Screen_CStrAtRowCol(1, 0, "VF");
+ 088C 5005              mov A,>L59
+ 088E 08                push A
+ 088F 5005              mov A,<L59
+ 0891 08                push A
+ 0892 5000              mov A,0
+ 0894 08                push A
+ 0895 5001              mov A,1
+ 0897 08                push A
+ 0898 7C0030            xcall _Screen_CStrAtRowCol
+ 089B 38F8              add SP,-8
+ 089D                   .dbline 279
+ 089D           ;       FormatNumberRJ(g_bVF[g_xConf.bVF],2,0); Screen_StrAtRowCol(1, 2,  g_buffer16);
+ 089D 5000              mov A,0
+ 089F 08                push A
+ 08A0 5002              mov A,2
+ 08A2 08                push A
+ 08A3 62D000            mov REG[0xd0],>_g_xConf
+ 08A6 5102              mov A,[_g_xConf+2]
+ 08A8 62D000            mov REG[0xd0],>__r0
+ 08AB 5300              mov [__r1],A
+ 08AD 550000            mov [__r0],0
+ 08B0 060000            add [__r1],<_g_bVF
+ 08B3 0E0000            adc [__r0],>_g_bVF
+ 08B6 5100              mov A,[__r0]
+ 08B8 10                push X
+ 08B9 5800              mov X,[__r1]
+ 08BB 28                romx
+ 08BC 20                pop X
+ 08BD 5300              mov [__r3],A
+ 08BF 5000              mov A,0
+ 08C1 08                push A
+ 08C2 08                push A
+ 08C3 08                push A
+ 08C4 5100              mov A,[__r3]
+ 08C6 08                push A
+ 08C7 7C0000            xcall _FormatNumberRJ
+ 08CA 62D000            mov REG[0xd0],>__r0
+ 08CD                   .dbline 279
+ 08CD 5000              mov A,>_g_buffer16
+ 08CF 08                push A
+ 08D0 5000              mov A,<_g_buffer16
+ 08D2 08                push A
+ 08D3 5002              mov A,2
+ 08D5 08                push A
+ 08D6 5001              mov A,1
+ 08D8 08                push A
+ 08D9 7C004B            xcall _Screen_StrAtRowCol
+ 08DC 38F6              add SP,-10
+ 08DE                   .dbline 280
+ 08DE           ;       Screen_CStr(": ");
+ 08DE 5002              mov A,>L61
+ 08E0 08                push A
+ 08E1 5002              mov A,<L61
+ 08E3 08                push A
+ 08E4 7C0010            xcall _Screen_CStr
+ 08E7                   .dbline 281
+ 08E7           ;       FormatNumberRJ(wLencm,5,2); Screen_StrAtRowCol(1, 7,  g_buffer16);
+ 08E7 5002              mov A,2
+ 08E9 08                push A
+ 08EA 5005              mov A,5
+ 08EC 08                push A
+ 08ED 62D000            mov REG[0xd0],>__r0
+ 08F0 52FC              mov A,[X-4]
+ 08F2 5300              mov [__r3],A
+ 08F4 52FB              mov A,[X-5]
+ 08F6 5300              mov [__r2],A
+ 08F8 5000              mov A,0
+ 08FA 08                push A
+ 08FB 08                push A
+ 08FC 5100              mov A,[__r2]
+ 08FE 08                push A
+ 08FF 5100              mov A,[__r3]
+ 0901 08                push A
+ 0902 7C0000            xcall _FormatNumberRJ
+ 0905 38F8              add SP,-8
+ 0907 62D000            mov REG[0xd0],>__r0
+ 090A                   .dbline 281
+ 090A 5000              mov A,>_g_buffer16
+ 090C 08                push A
+ 090D 5000              mov A,<_g_buffer16
+ 090F 08                push A
+ 0910 5007              mov A,7
+ 0912 08                push A
+ 0913 5001              mov A,1
+ 0915 08                push A
+ 0916 7C004B            xcall _Screen_StrAtRowCol
+ 0919                   .dbline 282
+ 0919           ;       Screen_CStr("m");
+ 0919 5000              mov A,>L62
+ 091B 08                push A
+ 091C 5000              mov A,<L62
+ 091E 08                push A
+ 091F 7C0010            xcall _Screen_CStr
+ 0922 38FA              add SP,-6
+ 0924                   .dbline -2
+ 0924           L58:
+ 0924 38FF              add SP,-1
+ 0926 20                pop X
+ 0927                   .dbline 0 ; func end
+ 0927 7F                ret
+ 0928                   .dbsym l bCnt 0 c
+ 0928                   .dbsym l wLencm -5 i
+ 0928                   .dbend
+ 0928                   .dbfunc s FormatNumberRJ_Sliding _FormatNumberRJ_Sliding fV
+ 0928           ;          index -> X+0
+ 0928           ;            bDP -> X-9
+ 0928           ;      bFieldLen -> X-8
+ 0928           ;          dwVal -> X-7
+ 0928           _FormatNumberRJ_Sliding:
+ 0928                   .dbline -1
+ 0928 10                push X
+ 0929 4F                mov X,SP
+ 092A 3801              add SP,1
+ 092C                   .dbline 287
+ 092C           ;       
+ 092C           ; }
+ 092C           ; 
+ 092C           ; static void FormatNumberRJ_Sliding(unsigned long dwVal, unsigned char bFieldLen, unsigned char bDP)
+ 092C           ; {
+ 092C                   .dbline 289
+ 092C           ;    char index;
+ 092C           ;    if(bDP==1 && dwVal >=100)  {dwVal = (5 + dwVal)/10; bDP -=1;};
+ 092C 3DF701            cmp [X-9],1
+ 092F B055              jnz L64
+ 0931 52FC              mov A,[X-4]
+ 0933 1164              sub A,100
+ 0935 52FB              mov A,[X-5]
+ 0937 1900              sbb A,0
+ 0939 52FA              mov A,[X-6]
+ 093B 1900              sbb A,0
+ 093D 52F9              mov A,[X-7]
+ 093F 1900              sbb A,0
+ 0941 C043              jc L64
+ 0943           X6:
+ 0943                   .dbline 289
+ 0943                   .dbline 289
+ 0943 62D000            mov REG[0xd0],>__r0
+ 0946 52FC              mov A,[X-4]
+ 0948 0105              add A,5
+ 094A 5300              mov [__r3],A
+ 094C 52FB              mov A,[X-5]
+ 094E 0900              adc A,0
+ 0950 5300              mov [__r2],A
+ 0952 52FA              mov A,[X-6]
+ 0954 0900              adc A,0
+ 0956 5300              mov [__r1],A
+ 0958 52F9              mov A,[X-7]
+ 095A 0900              adc A,0
+ 095C 5300              mov [__r0],A
+ 095E 5000              mov A,0
+ 0960 08                push A
+ 0961 08                push A
+ 0962 08                push A
+ 0963 500A              mov A,10
+ 0965 08                push A
+ 0966 5100              mov A,[__r0]
+ 0968 08                push A
+ 0969 5100              mov A,[__r1]
+ 096B 08                push A
+ 096C 5100              mov A,[__r2]
+ 096E 08                push A
+ 096F 5100              mov A,[__r3]
+ 0971 08                push A
+ 0972 7C0000            xcall __divmodu_32X32_32
+ 0975 18                pop A
+ 0976 54FC              mov [X-4],A
+ 0978 18                pop A
+ 0979 54FB              mov [X-5],A
+ 097B 18                pop A
+ 097C 54FA              mov [X-6],A
+ 097E 18                pop A
+ 097F 54F9              mov [X-7],A
+ 0981 38FC              add SP,-4
+ 0983                   .dbline 289
+ 0983 7BF7              dec [X-9]
+ 0985                   .dbline 289
+ 0985           L64:
+ 0985                   .dbline 289
+ 0985                   .dbline 290
+ 0985           ;    if(bDP==2 && dwVal >=1000) {dwVal = (5 + dwVal)/10; bDP -=1;};
+ 0985 3DF702            cmp [X-9],2
+ 0988 B055              jnz L66
+ 098A 52FC              mov A,[X-4]
+ 098C 11E8              sub A,-24
+ 098E 52FB              mov A,[X-5]
+ 0990 1903              sbb A,3
+ 0992 52FA              mov A,[X-6]
+ 0994 1900              sbb A,0
+ 0996 52F9              mov A,[X-7]
+ 0998 1900              sbb A,0
+ 099A C043              jc L66
+ 099C           X7:
+ 099C                   .dbline 290
+ 099C                   .dbline 290
+ 099C 62D000            mov REG[0xd0],>__r0
+ 099F 52FC              mov A,[X-4]
+ 09A1 0105              add A,5
+ 09A3 5300              mov [__r3],A
+ 09A5 52FB              mov A,[X-5]
+ 09A7 0900              adc A,0
+ 09A9 5300              mov [__r2],A
+ 09AB 52FA              mov A,[X-6]
+ 09AD 0900              adc A,0
+ 09AF 5300              mov [__r1],A
+ 09B1 52F9              mov A,[X-7]
+ 09B3 0900              adc A,0
+ 09B5 5300              mov [__r0],A
+ 09B7 5000              mov A,0
+ 09B9 08                push A
+ 09BA 08                push A
+ 09BB 08                push A
+ 09BC 500A              mov A,10
+ 09BE 08                push A
+ 09BF 5100              mov A,[__r0]
+ 09C1 08                push A
+ 09C2 5100              mov A,[__r1]
+ 09C4 08                push A
+ 09C5 5100              mov A,[__r2]
+ 09C7 08                push A
+ 09C8 5100              mov A,[__r3]
+ 09CA 08                push A
+ 09CB 7C0000            xcall __divmodu_32X32_32
+ 09CE 18                pop A
+ 09CF 54FC              mov [X-4],A
+ 09D1 18                pop A
+ 09D2 54FB              mov [X-5],A
+ 09D4 18                pop A
+ 09D5 54FA              mov [X-6],A
+ 09D7 18                pop A
+ 09D8 54F9              mov [X-7],A
+ 09DA 38FC              add SP,-4
+ 09DC                   .dbline 290
+ 09DC 7BF7              dec [X-9]
+ 09DE                   .dbline 290
+ 09DE           L66:
+ 09DE                   .dbline 290
+ 09DE                   .dbline 291
+ 09DE           ;    if(bDP==1 && dwVal >=1000) {dwVal = (5 + dwVal)/10; bDP -=1;};
+ 09DE 3DF701            cmp [X-9],1
+ 09E1 B055              jnz L68
+ 09E3 52FC              mov A,[X-4]
+ 09E5 11E8              sub A,-24
+ 09E7 52FB              mov A,[X-5]
+ 09E9 1903              sbb A,3
+ 09EB 52FA              mov A,[X-6]
+ 09ED 1900              sbb A,0
+ 09EF 52F9              mov A,[X-7]
+ 09F1 1900              sbb A,0
+ 09F3 C043              jc L68
+ 09F5           X8:
+ 09F5                   .dbline 291
+ 09F5                   .dbline 291
+ 09F5 62D000            mov REG[0xd0],>__r0
+ 09F8 52FC              mov A,[X-4]
+ 09FA 0105              add A,5
+ 09FC 5300              mov [__r3],A
+ 09FE 52FB              mov A,[X-5]
+ 0A00 0900              adc A,0
+ 0A02 5300              mov [__r2],A
+ 0A04 52FA              mov A,[X-6]
+ 0A06 0900              adc A,0
+ 0A08 5300              mov [__r1],A
+ 0A0A 52F9              mov A,[X-7]
+ 0A0C 0900              adc A,0
+ 0A0E 5300              mov [__r0],A
+ 0A10 5000              mov A,0
+ 0A12 08                push A
+ 0A13 08                push A
+ 0A14 08                push A
+ 0A15 500A              mov A,10
+ 0A17 08                push A
+ 0A18 5100              mov A,[__r0]
+ 0A1A 08                push A
+ 0A1B 5100              mov A,[__r1]
+ 0A1D 08                push A
+ 0A1E 5100              mov A,[__r2]
+ 0A20 08                push A
+ 0A21 5100              mov A,[__r3]
+ 0A23 08                push A
+ 0A24 7C0000            xcall __divmodu_32X32_32
+ 0A27 18                pop A
+ 0A28 54FC              mov [X-4],A
+ 0A2A 18                pop A
+ 0A2B 54FB              mov [X-5],A
+ 0A2D 18                pop A
+ 0A2E 54FA              mov [X-6],A
+ 0A30 18                pop A
+ 0A31 54F9              mov [X-7],A
+ 0A33 38FC              add SP,-4
+ 0A35                   .dbline 291
+ 0A35 7BF7              dec [X-9]
+ 0A37                   .dbline 291
+ 0A37           L68:
+ 0A37                   .dbline 291
+ 0A37                   .dbline 292
+ 0A37           ;    if(!FormatNumberRJ(dwVal, bFieldLen, bDP)) {
+ 0A37 52F7              mov A,[X-9]
+ 0A39 08                push A
+ 0A3A 52F8              mov A,[X-8]
+ 0A3C 08                push A
+ 0A3D 52F9              mov A,[X-7]
+ 0A3F 08                push A
+ 0A40 52FA              mov A,[X-6]
+ 0A42 08                push A
+ 0A43 52FB              mov A,[X-5]
+ 0A45 08                push A
+ 0A46 52FC              mov A,[X-4]
+ 0A48 08                push A
+ 0A49 7C0000            xcall _FormatNumberRJ
+ 0A4C 38FA              add SP,-6
+ 0A4E 62D000            mov REG[0xd0],>__r0
+ 0A51 3900              cmp A,0
+ 0A53 B026              jnz L70
+ 0A55                   .dbline 292
+ 0A55                   .dbline 293
+ 0A55           ;        for(index=0;index<bFieldLen;index++) g_buffer16[index]='*'; 
+ 0A55 560000            mov [X+0],0
+ 0A58 801B              xjmp L75
+ 0A5A           L72:
+ 0A5A                   .dbline 293
+ 0A5A 62D000            mov REG[0xd0],>__r0
+ 0A5D 5200              mov A,[X+0]
+ 0A5F 5300              mov [__r1],A
+ 0A61 550000            mov [__r0],0
+ 0A64 060000            add [__r1],<_g_buffer16
+ 0A67 0E0000            adc [__r0],>_g_buffer16
+ 0A6A 5100              mov A,[__r0]
+ 0A6C 60D5              mov REG[0xd5],A
+ 0A6E 502A              mov A,42
+ 0A70 3F00              mvi [__r1],A
+ 0A72           L73:
+ 0A72                   .dbline 293
+ 0A72 7700              inc [X+0]
+ 0A74           L75:
+ 0A74                   .dbline 293
+ 0A74 5200              mov A,[X+0]
+ 0A76 3BF8              cmp A,[X-8]
+ 0A78 CFE1              jc L72
+ 0A7A           X9:
+ 0A7A                   .dbline 294
+ 0A7A           ;    }
+ 0A7A           L70:
+ 0A7A                   .dbline -2
+ 0A7A           L63:
+ 0A7A 38FF              add SP,-1
+ 0A7C 20                pop X
+ 0A7D                   .dbline 0 ; func end
+ 0A7D 7F                ret
+ 0A7E                   .dbsym l index 0 c
+ 0A7E                   .dbsym l bDP -9 c
+ 0A7E                   .dbsym l bFieldLen -8 c
+ 0A7E                   .dbsym l dwVal -7 l
+ 0A7E                   .dbend
+                        .area lit(rom, con, rel)
+ 0000           L62:
+ 0000 6D00              .byte 'm,0
+ 0002           L61:
+ 0002 3A2000            .byte 58,32,0
+ 0005           L59:
+ 0005 564600            .byte 'V,'F,0
+ 0008           L54:
+ 0008 2000              .byte 32,0
+ 000A           L53:
+ 000A 3C00              .byte 60,0
+ 000C           L52:
+ 000C 64426D00          .byte 'd,'B,'m,0
+ 0010           L48:
+ 0010 2B00              .byte 43,0
+ 0012           L47:
+ 0012 2D00              .byte 45,0
+ 0014           L46:
+ 0014 6D5600            .byte 'm,'V,0
+ 0017           L44:
+ 0017 75482000          .byte 'u,'H,32,0
+ 001B           L42:
+ 001B 70462000          .byte 'p,'F,32,0
+ 001F           L33:
+ 001F 2D6A00            .byte 45,'j,0
+ 0022           L32:
+ 0022 2B6A00            .byte 43,'j,0
+ 0025           L30:
+ 0025 F400              .byte 244,0
+ 0027           L29:
+ 0027 7C203D00          .byte 124,32,61,0
+ 002B           L28:
+ 002B 202000            .byte 32,32,0
+ 002E           L27:
+ 002E 7C00              .byte 124,0

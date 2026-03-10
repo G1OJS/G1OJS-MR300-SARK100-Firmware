@@ -1,0 +1,107 @@
+XH
+H 3 areas 24 global symbols
+M pwm8_buzz.asm
+A text size 0 flags 0
+dbfile lib/pwm8_buzz.asm
+dbfunc 0 ? 0 I
+dbfile memory.inc
+dbfunc 0 ? 0 I
+dbfile lib/pwm8_buzz.asm
+dbfunc 0 ? 0 I
+dbfile PWM8_BUZZ.inc
+dbfunc 0 ? 0 I
+dbfile C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.inc
+dbfunc 0 ? 0 I
+dbfile ./lib/PWM8_BUZZ.inc
+dbfunc 0 ? 0 I
+dbfile lib/pwm8_buzz.asm
+dbfunc 0 ? 0 I
+dbfile C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.inc
+dbfunc 0 ? 0 I
+A sark100_g1ojs_v1_4_RAM size 0 flags 20
+A UserModules size 46 flags 0
+dbfile lib/pwm8_buzz.asm
+dbfunc 0 ? 0 I
+dbline 5D 0
+dbline 5F 3
+dbline 79 4
+dbline 7B 7
+dbline 96 8
+dbline 98 B
+dbline B2 C
+dbline B4 F
+dbline D0 10
+dbline D2 12
+dbline EB 13
+dbline ED 15
+dbline 108 16
+dbline 10A 18
+dbline 12F 19
+dbline 130 1A
+dbline 131 1C
+dbline 132 1D
+dbline 133 20
+dbline 134 22
+dbline 135 24
+dbline 137 25
+dbline 138 28
+dbline 13A 2A
+dbline 13B 2C
+dbline 13C 2E
+dbline 13D 2F
+dbline 13E 31
+dbline 13F 33
+dbline 140 35
+dbline 141 37
+dbline 142 39
+dbline 143 3B
+dbline 144 3E
+dbline 145 3F
+dbline 146 43
+dbline 147 45
+S _PWM8_BUZZ_WritePeriod Def0010
+S _PWM8_BUZZ_EnableInt Def0000
+S $sb$PWM8_BUZZ_bReadCounter Def0019
+S $se$PWM8_BUZZ_bReadCounter Def0046
+S PWM8_BUZZ_DisableInt Def0004
+S bPWM8_BUZZ_ReadPulseWidth Def0016
+S PWM8_BUZZ_bReadPulseWidth Def0016
+S $sb$PWM8_BUZZ_DisableInt Def0004
+S $se$PWM8_BUZZ_DisableInt Def0008
+S $sb$PWM8_BUZZ_bReadPulseWidth Def0016
+S _PWM8_BUZZ_Stop Def000C
+S $se$PWM8_BUZZ_bReadPulseWidth Def0019
+S PWM8_BUZZ_Start Def0008
+S PWM8_BUZZ_WritePulseWidth Def0013
+S _bPWM8_BUZZ_ReadCounter Def0019
+S _PWM8_BUZZ_bReadCounter Def0019
+S $sb$PWM8_BUZZ_Start Def0008
+S $se$PWM8_BUZZ_Start Def000C
+S $sb$PWM8_BUZZ_WritePulseWidth Def0013
+S $se$PWM8_BUZZ_WritePulseWidth Def0016
+S _PWM8_BUZZ_DisableInt Def0004
+S _bPWM8_BUZZ_ReadPulseWidth Def0016
+S _PWM8_BUZZ_bReadPulseWidth Def0016
+S _PWM8_BUZZ_Start Def0008
+S PWM8_BUZZ_WritePeriod Def0010
+S PWM8_BUZZ_EnableInt Def0000
+S _PWM8_BUZZ_WritePulseWidth Def0013
+S $sb$PWM8_BUZZ_WritePeriod Def0010
+S $se$PWM8_BUZZ_WritePeriod Def0013
+S $sb$PWM8_BUZZ_EnableInt Def0000
+S $se$PWM8_BUZZ_EnableInt Def0004
+S PWM8_BUZZ_Stop Def000C
+S bPWM8_BUZZ_ReadCounter Def0019
+S PWM8_BUZZ_bReadCounter Def0019
+S $sb$PWM8_BUZZ_Stop Def000C
+S $se$PWM8_BUZZ_Stop Def0010
+T 00 00 43 E1 20 7F 41 E1 DF 7F 43 37 01 7F 41 37
+R 00 00 00 02
+T 00 0E FE 7F 60 35 7F 60 36 7F 5D 36 7F 4F 5D 36
+R 00 00 00 02
+T 00 1C 08 41 37 FE 71 10 5D 35 08 62 35 00 70 EF
+R 00 00 00 02
+T 00 2A 5D 34 5D 36 08 52 00 60 36 71 10 52 01 60
+R 00 00 00 02
+T 00 38 35 70 EF 43 37 01 18 38 FE 70 3F 71 C0 7F
+R 00 00 00 02

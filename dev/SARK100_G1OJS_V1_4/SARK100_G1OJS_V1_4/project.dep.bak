@@ -1,0 +1,260 @@
+# DO NOT DELETE
+./obj/boot.o : \
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.inc\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8ssc.inc\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\lib\GLOBAL~1.INC\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\memory.inc
+./obj/bootloader.o :  ./lib/BOOTLO~1.H ./lib/PSOCGP~1.H\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/FLASHB~1.H\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h
+./obj/bootloaderconfig.o :  ./lib/BOOTLO~1.INC\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.inc\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\memory.inc
+./obj/bridge.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H ./lib/PGA_DD~2.H\
+   ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\bridge.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\dds.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.h
+./obj/control.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/Lcd.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H\
+   ./lib/PGA_DD~2.H ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   ./lib/PSOCGP~1.H\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/string.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\Dds.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\control.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\keypad.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\morse.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\MSG_GE~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\screens.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.h
+./obj/correctionmodel.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H\
+   ./lib/E2PROM.h ./lib/LCD.h ./lib/Lcd.h ./lib/PGA_ADC.h\
+   ./lib/PGA_DD~1.H ./lib/PGA_DD~2.H ./lib/PSoCAPI.h ./lib/PWM8_B~1.H\
+   ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/math.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/string.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\bridge.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\control.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\CORREC~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\derive.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\keypad.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\morse.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\MSG_GE~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\PCLINK~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\screens.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\storage.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.h
+./obj/dds.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H ./lib/PGA_DD~2.H\
+   ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h ./lib/PSOCGP~1.H\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\dds.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h
+./obj/derive.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H ./lib/PGA_DD~2.H\
+   ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h ./lib/PSOCGP~1.H\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/math.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\CORREC~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\derive.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h
+./obj/flashapi.o : \
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/FLASHB~1.INC\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.inc\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\memory.inc
+./obj/glb_data.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H ./lib/PGA_DD~2.H\
+   ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h
+./obj/keypad.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H ./lib/PGA_DD~2.H\
+   ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h ./lib/PSOCGP~1.H\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\control.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\keypad.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\morse.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.h
+./obj/main.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/Lcd.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H\
+   ./lib/PGA_DD~2.H ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/math.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/string.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\bridge.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\control.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\CORREC~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\derive.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\keypad.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\morse.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\MSG_GE~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\pclink.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\scans.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\screens.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\storage.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.h
+./obj/morse.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H ./lib/PGA_DD~2.H\
+   ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\control.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\morse.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.h
+./obj/msg_eng.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H ./lib/PGA_DD~2.H\
+   ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\MSG_GE~1.H
+./obj/pclink.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/Lcd.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H\
+   ./lib/PGA_DD~2.H ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/math.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/string.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\bridge.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\control.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\CORREC~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\derive.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\keypad.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\morse.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\MSG_GE~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\pclink.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\PCLINK~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\screens.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.h
+./obj/pclink_cmds.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/Lcd.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H\
+   ./lib/PGA_DD~2.H ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/math.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/string.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\bridge.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\control.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\CORREC~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\dds.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\derive.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\keypad.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\morse.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\MSG_GE~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\PCLINK~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\screens.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.h
+./obj/scans.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/Lcd.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H\
+   ./lib/PGA_DD~2.H ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\bridge.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\control.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\CORREC~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\keypad.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\morse.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\MSG_GE~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\scans.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\screens.h
+./obj/screens.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/Lcd.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H\
+   ./lib/PGA_DD~2.H ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/math.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/string.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\MSG_GE~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\control.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\keypad.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\screens.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.h
+./obj/storage.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/Lcd.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H\
+   ./lib/PGA_DD~2.H ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/string.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\control.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\morse.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\MSG_GE~1.H\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\screens.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\storage.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\timers.h
+./obj/timers.o :  ./lib/ADCINC12.h ./lib/AMUX4_~1.H ./lib/E2PROM.h\
+   ./lib/LCD.h ./lib/PGA_ADC.h ./lib/PGA_DD~1.H ./lib/PGA_DD~2.H\
+   ./lib/PSoCAPI.h ./lib/PWM8_B~1.H ./lib/UART.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/M8C.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/_const.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/limits.h\
+   C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/stdlib.h\
+   C:\Users\drala\DOCUME~1\Radio_tools\SARK100\SARK10~2\SARK10~1\glb_data.h

@@ -1,0 +1,34 @@
+Version 4
+SymbolType BLOCK
+LINE Normal -16 -32 0 -48
+LINE Normal -16 -32 -16 -32
+LINE Normal -48 0 -32 -16
+LINE Normal -32 16 -48 0
+LINE Normal 0 48 -16 32
+LINE Normal 16 32 0 48
+LINE Normal 48 0 32 16
+LINE Normal 32 -16 48 0
+LINE Normal 0 -48 16 -32
+RECTANGLE Normal 64 -64 -64 64
+TEXT -47 -72 Left 1 SARK100 Bridge
+PIN 64 0 RIGHT 8
+PINATTR PinName Load
+PINATTR SpiceOrder 1
+PIN 0 64 BOTTOM 8
+PINATTR PinName GND
+PINATTR SpiceOrder 2
+PIN -64 -48 LEFT 8
+PINATTR PinName Drive
+PINATTR SpiceOrder 3
+PIN -64 -16 LEFT 8
+PINATTR PinName Vf
+PINATTR SpiceOrder 4
+PIN -64 0 LEFT 8
+PINATTR PinName Vr
+PINATTR SpiceOrder 5
+PIN -64 16 LEFT 8
+PINATTR PinName Vz
+PINATTR SpiceOrder 6
+PIN -64 32 LEFT 8
+PINATTR PinName Va
+PINATTR SpiceOrder 7

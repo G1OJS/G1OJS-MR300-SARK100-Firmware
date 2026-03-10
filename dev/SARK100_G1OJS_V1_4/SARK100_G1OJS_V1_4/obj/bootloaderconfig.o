@@ -1,0 +1,368 @@
+XH
+H 2 areas 32 global symbols
+M bootloaderconfig.asm
+A text size 0 flags 0
+dbfile ./bootloaderconfig.asm
+dbfunc 0 ? 0 I
+dbfile bootloader.inc
+dbfunc 0 ? 0 I
+dbfile C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.inc
+dbfunc 0 ? 0 I
+dbfile ./lib/bootloader.inc
+dbfunc 0 ? 0 I
+dbfile ./bootloaderconfig.asm
+dbfunc 0 ? 0 I
+dbfile memory.inc
+dbfunc 0 ? 0 I
+dbfile ./bootloaderconfig.asm
+dbfunc 0 ? 0 I
+dbfile C:/PROGRA~2/Cypress/Common/CYPRES~3/tools/include/CY8C29~1/m8c.inc
+dbfunc 0 ? 0 I
+A BootLoaderArea size 259 flags 0
+dbfile ./bootloaderconfig.asm
+dbfunc 0 ? 0 I
+dbline 4D 0
+dbline 4E 3
+dbline 51 6
+dbline 6A 7
+dbline 6B 8
+dbline 6C A
+dbline 6D C
+dbline 6F D
+dbline 70 F
+dbline 71 11
+dbline 73 14
+dbline 74 16
+dbline 76 17
+dbline 77 19
+dbline 78 1B
+dbline 7A 1E
+dbline 7D 1F
+dbline 93 20
+dbline 94 22
+dbline 95 23
+dbline 96 24
+dbline 97 25
+dbline 98 28
+dbline 99 2A
+dbline 9B 2D
+dbline 9C 2E
+dbline 9F 2F
+dbline A0 31
+dbline A1 34
+dbline A2 35
+dbline A3 36
+dbline A4 37
+dbline A5 39
+dbline A6 3B
+dbline A7 3C
+dbline A8 3F
+dbline A9 41
+dbline AB 43
+dbline AC 45
+dbline AD 46
+dbline AE 47
+dbline AF 48
+dbline B0 4A
+dbline B1 4B
+dbline B2 4C
+dbline B3 4D
+dbline B4 4E
+dbline B5 50
+dbline B6 52
+dbline B7 53
+dbline B8 54
+dbline B9 55
+dbline BA 57
+dbline BC 59
+dbline BD 5D
+dbline BE 5F
+dbline C2 60
+dbline C3 62
+dbline C4 65
+dbline C5 68
+dbline C6 6A
+dbline C7 6D
+dbline C8 70
+dbline C9 72
+dbline CA 75
+dbline CB 78
+dbline CC 7A
+dbline CD 7D
+dbline CE 7F
+dbline CF 82
+dbline D0 85
+dbline D1 87
+dbline D2 8A
+dbline D3 8D
+dbline D4 8F
+dbline D5 92
+dbline D6 95
+dbline D7 97
+dbline D8 9A
+dbline D9 9C
+dbline DA 9F
+dbline DB A2
+dbline DC A4
+dbline DD A7
+dbline DE AA
+dbline DF AC
+dbline E0 AF
+dbline E1 B2
+dbline E2 B4
+dbline E3 B7
+dbline E4 B9
+dbline E5 BC
+dbline E6 BF
+dbline E7 C1
+dbline E8 C4
+dbline E9 C7
+dbline EA C9
+dbline EB CC
+dbline EC CF
+dbline ED D1
+dbline EE D4
+dbline EF D6
+dbline F0 D9
+dbline F1 DC
+dbline F2 DE
+dbline F3 E1
+dbline F4 E4
+dbline F5 E6
+dbline F6 E9
+dbline F7 EC
+dbline F8 EE
+dbline F9 F1
+dbline FA F3
+dbline FB F6
+dbline FC F9
+dbline FD FB
+dbline FE FE
+dbline FF 101
+dbline 100 103
+dbline 101 106
+dbline 102 109
+dbline 103 10B
+dbline 104 10E
+dbline 105 110
+dbline 106 113
+dbline 107 116
+dbline 108 118
+dbline 109 11B
+dbline 10A 11E
+dbline 10B 120
+dbline 10C 123
+dbline 10D 126
+dbline 10E 128
+dbline 10F 12B
+dbline 110 12D
+dbline 111 130
+dbline 112 133
+dbline 113 135
+dbline 114 138
+dbline 115 13B
+dbline 116 13D
+dbline 117 140
+dbline 118 143
+dbline 119 145
+dbline 11A 148
+dbline 1AB 1ED
+dbline 1AC 1EF
+dbline 1AE 1F1
+dbline 1C6 1F2
+dbline 1C8 1F5
+dbline 1E9 1F6
+dbline 1EB 1F8
+dbline 209 1F9
+dbline 20B 1FB
+dbline 228 1FC
+dbline 229 1FE
+dbline 22B 200
+dbline 246 201
+dbline 248 203
+dbline 266 204
+dbline 268 206
+dbline 28B 207
+dbline 28D 20A
+dbline 2A8 20B
+dbline 2AA 20E
+dbline 2C6 20F
+dbline 2C7 211
+dbline 2C8 212
+dbline 2CA 214
+dbline 2E3 215
+dbline 2E4 217
+dbline 2E5 218
+dbline 2E7 21A
+dbline 30D 21B
+dbline 30E 21C
+dbline 30F 21E
+dbline 310 21F
+dbline 311 221
+dbline 312 222
+dbline 313 224
+dbline 314 225
+dbline 315 228
+dbline 316 22A
+dbline 317 22C
+dbline 319 22D
+dbline 31A 230
+dbline 31B 232
+dbline 31C 234
+dbline 31D 236
+dbline 31E 237
+dbline 31F 239
+dbline 320 23B
+dbline 321 23C
+dbline 322 23E
+dbline 323 240
+dbline 324 242
+dbline 325 244
+dbline 326 246
+dbline 327 248
+dbline 328 24A
+dbline 329 24C
+dbline 32A 24E
+dbline 32B 250
+dbline 32C 251
+dbline 32D 252
+dbline 32E 256
+dbline 32F 258
+S Boot_Counter_WriteCompareValue Def0215
+S Boot_Counter_wReadCounter Def021B
+S Boot_Counter_DisableInt Def0207
+S $sb$Boot_Counter_WriteCompareValue Def0215
+S $se$Boot_Counter_WriteCompareValue Def021B
+S $sb$Boot_Counter_wReadCounter Def021B
+S $se$Boot_Counter_wReadCounter Def0259
+S $sb$Boot_Counter_DisableInt Def0207
+S $se$Boot_Counter_DisableInt Def020B
+S _Boot_Counter_Stop Def01F2
+S Boot_Counter_Start Def020B
+S $sb$Boot_Counter_Start Def020B
+S Boot_LoadConfigInit Def0000
+S $se$Boot_Counter_Start Def020F
+S _Boot_Counter_WriteCompareValue Def0215
+S _Boot_Counter_wReadCounter Def021B
+S Boot_TxD_SendData Def0201
+S Boot_RxD_Start Def01ED
+S _Boot_Counter_DisableInt Def0207
+S Boot_TxD_Start Def01FC
+S Boot_RxD_bReadRxData Def01F6
+S $sb$Boot_TxD_SendData Def0201
+S $se$Boot_TxD_SendData Def0204
+S $sb$Boot_RxD_Start Def01ED
+S Boot_RxD_bReadRxStatus Def01F9
+S $sb$Boot_TxD_Start Def01FC
+S $se$Boot_RxD_Start Def01F2
+S $se$Boot_TxD_Start Def0201
+S Boot_TxD_bReadTxStatus Def0204
+S $sb$Boot_RxD_bReadRxData Def01F6
+S _Boot_Counter_Start Def020B
+S Boot_Counter_WritePeriod Def020F
+S $se$Boot_RxD_bReadRxData Def01F9
+S $sb$Boot_RxD_bReadRxStatus Def01F9
+S $se$Boot_RxD_bReadRxStatus Def01FC
+S $sb$Boot_TxD_bReadTxStatus Def0204
+S $se$Boot_TxD_bReadTxStatus Def0207
+S _Boot_LoadConfigInit Def0000
+S $sb$Boot_Counter_WritePeriod Def020F
+S $se$Boot_Counter_WritePeriod Def0215
+S _Boot_TxD_SendData Def0201
+S _Boot_RxD_Start Def01ED
+S _Boot_TxD_Start Def01FC
+S Boot_Counter_Stop Def01F2
+S _Boot_RxD_bReadRxData Def01F6
+S _Boot_RxD_bReadRxStatus Def01F9
+S _Boot_TxD_bReadTxStatus Def0204
+S $sb$Boot_Counter_Stop Def01F2
+S $se$Boot_Counter_Stop Def01F6
+S _Boot_Counter_WritePeriod Def020F
+T 00 00 7C 00 60 7C 00 07 7F 10 70 EF 50 00 67 50
+R 00 00 00 01 00 03 00 01 00 06 00 01
+T 00 0E 01 49 57 01 49 7C 00 20 50 01 67 50
+R 00 00 00 01 41 02 00 01 01 05 00 01 00 08 00 01
+T 00 18 01 B0 57 01 B0 7C 00 20 20 7F 38 02 10 08
+R 00 00 00 01 41 02 00 01 01 05 00 01 00 08 00 01
+T 00 24 4F 56 FC 00 D0 04 56 FC 01 18 20 70 EF 62
+R 00 00 00 01
+T 00 32 E3 00 10 08 28 39 FF A0 1F 4F 48 FC 01 A0
+R 00 00 00 01
+T 00 40 03 71 10 54 FD 18 20 75 09 00 10 08 28 4F
+R 00 00 00 01
+T 00 4E 59 FD 61 00 18 20 75 09 00 8F D7 38 FC 70
+R 00 00 00 01
+T 00 5C 3F 71 C0 7F 71 10 62 00 10 62 01 EF 70 EF
+R 00 00 00 01
+T 00 6A 62 03 EF 62 02 10 71 10 62 02 00 62 03 00
+R 00 00 00 01
+T 00 78 70 EF 62 01 00 71 10 62 04 00 62 05 FF 70
+R 00 00 00 01
+T 00 86 EF 62 07 F7 62 06 08 71 10 62 06 00 62 07
+R 00 00 00 01
+T 00 94 00 70 EF 62 05 00 71 10 62 08 00 62 09 FF
+R 00 00 00 01
+T 00 A2 70 EF 62 0B FF 62 0A 00 71 10 62 0A 00 62
+R 00 00 00 01
+T 00 B0 0B 00 70 EF 62 09 00 71 10 62 0C 00 62 0D
+R 00 00 00 01
+T 00 BE 00 70 EF 62 0F 00 62 0E 00 71 10 62 0E 00
+R 00 00 00 01
+T 00 CC 62 0F 00 70 EF 62 0D 00 71 10 62 10 00 62
+R 00 00 00 01
+T 00 DA 11 00 70 EF 62 13 00 62 12 00 71 10 62 12
+R 00 00 00 01
+T 00 E8 00 62 13 00 70 EF 62 11 00 71 10 62 14 00
+R 00 00 00 01
+T 00 F6 62 15 00 70 EF 62 17 00 62 16 00 71 10 62
+R 00 00 00 01
+T 01 04 16 00 62 17 00 70 EF 62 15 00 71 10 62 18
+R 00 00 00 01
+T 01 12 00 62 19 00 70 EF 62 1B 00 62 1A 00 71 10
+R 00 00 00 01
+T 01 20 62 1A 00 62 1B 00 70 EF 62 19 00 71 10 62
+R 00 00 00 01
+T 01 2E 1C 00 62 1D 00 70 EF 62 1F 00 62 1E 00 71
+R 00 00 00 01
+T 01 3C 10 62 1E 00 62 1F 00 70 EF 62 1D 00 7F 23
+R 00 00 00 01
+T 01 4A 00 21 00 22 00 27 00 25 80 26 40 2F 00 2D
+R 00 00 00 01
+T 01 58 00 2E 00 2B 00 29 00 2A 00 60 28 66 00 63
+R 00 00 00 01
+T 01 66 05 65 00 E6 00 E7 00 D6 00 B0 90 B1 00 B2
+R 00 00 00 01
+T 01 74 00 B3 33 B4 33 B5 02 B6 00 B8 55 B9 00 BA
+R 00 00 00 01
+T 01 82 10 BB 33 BC 33 BD 00 BE 00 C0 00 C1 00 C2
+R 00 00 00 01
+T 01 90 20 C3 33 C4 33 C5 00 C6 00 C8 55 C9 00 CA
+R 00 00 00 01
+T 01 9E 30 CB 33 CC 33 CD 00 CE 00 6C 00 6D 00 6E
+R 00 00 00 01
+T 01 AC 00 6F 00 FF 20 11 21 17 22 40 24 31 25 37
+R 00 00 00 01
+T 01 BA 26 40 2C 05 2D F1 2E 40 28 1D 29 01 2A 44
+R 00 00 00 01
+T 01 C8 61 00 69 00 60 00 62 00 67 33 68 33 63 00
+R 00 00 00 01
+T 01 D6 66 00 D1 00 D3 00 D0 00 D2 00 E1 00 E2 00
+R 00 00 00 01
+T 01 E4 DF 19 DE 00 DD 00 E7 00 FF 29 01 60 2F 7F
+R 00 00 00 01
+T 01 F2 41 23 FE 7F 5D 2E 7F 5D 2F 7F 29 01 60 2B
+R 00 00 00 01
+T 02 00 7F 60 29 7F 5D 2B 7F 41 E1 FD 7F 43 23 01
+R 00 00 00 01
+T 02 0E 7F 60 21 5B 60 25 7F 60 22 5B 60 26 7F 4F
+R 00 00 00 01
+T 02 1C 5D 26 08 5D 22 08 5D 23 08 41 23 FE 71 10
+R 00 00 00 01
+T 02 2A 5D 21 08 62 21 00 70 EF 5D 24 5D 26 08 5D
+R 00 00 00 01
+T 02 38 20 5D 22 08 52 00 60 26 52 01 60 22 71 10
+R 00 00 00 01
+T 02 46 52 03 60 21 70 EF 52 02 60 23 18 20 38 FC
+R 00 00 00 01
+T 02 54 70 3F 71 C0 7F
+R 00 00 00 01

@@ -1,0 +1,29 @@
+LTspice 24.0.12 for Windows
+Circuit: * C:\Users\drala\Documents\Radio_tools\SARK100\Analysis\Ltspice\De-embedding\Output Port Model with Bridge elements.asc
+Start Time: Sun Mar 23 08:31:14 2025
+solver = Normal
+Maximum thread count: 4
+
+
+
+trtol = 7
+.OP point found by inspection.
+.step r=10
+
+
+
+.step r=25
+
+
+
+.step r=100
+
+
+
+.step r=220
+tnom = 27
+temp = 27
+method = modified trap
+.step r=470
+Total elapsed time: 0.145 seconds.
+

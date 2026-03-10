@@ -1,0 +1,1 @@
+Added internal filtering option to smooth data output via pcLink.

@@ -1,0 +1,2 @@
+PCC-MR300 -cCOM7 -s7000000 -e7200000 -t1000 -oVDP40m.csv
+pause

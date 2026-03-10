@@ -1,0 +1,4 @@
+Internal software changes
+    - Refactoring to save memory
+    - Checking through limits of variable ranges for prevention of overflows and other glitches
+    - Other changes to save memory
